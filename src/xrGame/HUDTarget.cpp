@@ -22,7 +22,6 @@
 
 #include <ai/monsters/poltergeist/poltergeist.h>
 
-
 u32 C_ON_ENEMY		D3DCOLOR_RGBA(0xff,0,0,0x80);
 u32 C_ON_NEUTRAL	D3DCOLOR_RGBA(0xff,0xff,0x80,0x80);
 u32 C_ON_FRIEND		D3DCOLOR_RGBA(0,0xff,0,0x80);
@@ -128,7 +127,7 @@ void CHUDTarget::CursorOnFrame ()
 	}
 	
 	// Render cursor
-	if(Level().CurrentEntity())
+	if (Level().CurrentEntity())
 	{
 		PP.RQ.O			= 0; 
 		PP.RQ.range		= g_pGamePersistent->Environment().CurrentEnv->far_plane*0.99f;
@@ -141,27 +140,28 @@ void CHUDTarget::CursorOnFrame ()
 		PP.power			= 1.0f;
 		PP.pass				= 0;
 
-		if(Level().ObjectSpace.RayQuery(RQR,RD, pick_trace_callback, &PP, NULL, Level().CurrentEntity()))
-			clamp			(PP.RQ.range, NEAR_LIM, PP.RQ.range);
+		if (Level().ObjectSpace.RayQuery(RQR,RD, pick_trace_callback, &PP, NULL, Level().CurrentEntity()))
+			clamp(PP.RQ.range, NEAR_LIM, PP.RQ.range);
 	}
-
 }
 
 extern ENGINE_API BOOL g_bRendering; 
 void CHUDTarget::Render()
 {
+	BOOL b_do_rendering = (psHUD_Flags.is(HUD_CROSSHAIR|HUD_CROSSHAIR_RT|HUD_CROSSHAIR_RT2));
 
-	BOOL  b_do_rendering = ( psHUD_Flags.is(HUD_CROSSHAIR|HUD_CROSSHAIR_RT|HUD_CROSSHAIR_RT2) );
-	
-	if(!b_do_rendering)
+	if (!b_do_rendering)
 		return;
 
-	VERIFY				(g_bRendering);
+	VERIFY(g_bRendering);
 
-	CObject*	O		= Level().CurrentEntity();
-	if (0==O)			return;
-	CEntity*	E		= smart_cast<CEntity*>(O);
-	if (0==E)			return;
+	CObject* O = Level().CurrentEntity();
+	if (0 == O)
+		return;
+
+	CEntity* E = smart_cast<CEntity*>(O);
+	if (0 == E)
+		return;
 
 	Fvector pos1 = m_crosshairCastedFromPos;
 	Fvector dir1 = m_crosshairCastedToDir;
@@ -169,44 +169,42 @@ void CHUDTarget::Render()
 	Fvector dir2 = Device.vCameraDirection;
 	
 	// Render cursor
-	u32 C				= C_DEFAULT;
+	u32 C = C_DEFAULT;
 	
-	Fvector				p2;
+	Fvector p2;
 
 	if (psHUD_Flags.test(HUD_CROSSCHAIR_NEW))
-	{
 		p2.mad(pos1, dir1, PP.RQ.range);
-	}
 	else
 		p2.mad(pos2, dir2, PP.RQ.range);
 
-	Fvector4			pt;
+	Fvector4 pt;
 	Device.mFullTransform.transform(pt, p2);
 	pt.y = -pt.y;
-	float				di_size = C_SIZE/powf(pt.w,.2f);
+	float di_size = C_SIZE / powf(pt.w, .2f);
 
-	CGameFont* F		= UI().Font().pFontGraffiti19Russian;
-	F->SetAligment		(CGameFont::alCenter);
-	F->OutSetI			(0.f,0.05f);
+	CGameFont* F = UI().Font().pFontGraffiti19Russian;
+	F->SetAligment(CGameFont::alCenter);
+	F->OutSetI(0.f, 0.05f);
 
 	if (psHUD_Flags.test(HUD_CROSSHAIR_DIST))
-		F->OutSkip		();
+		F->OutSkip();
 
 	if (psHUD_Flags.test(HUD_INFO))
 	{ 
-		bool const is_poltergeist	= PP.RQ.O && !!smart_cast<CPoltergeist*> (PP.RQ.O);
+		bool const is_poltergeist = PP.RQ.O && !!smart_cast<CPoltergeist*>(PP.RQ.O);
 
-		if( (PP.RQ.O && PP.RQ.O->getVisible()) || is_poltergeist )
+		if ((PP.RQ.O && PP.RQ.O->getVisible()) || is_poltergeist)
 		{
-			CEntityAlive*	E		= smart_cast<CEntityAlive*>	(PP.RQ.O);
-			CEntityAlive*	pCurEnt = smart_cast<CEntityAlive*>	(Level().CurrentEntity());
-			PIItem			l_pI	= smart_cast<PIItem>		(PP.RQ.O);
+			CEntityAlive* E = smart_cast<CEntityAlive*>(PP.RQ.O);
+			CEntityAlive* pCurEnt = smart_cast<CEntityAlive*>(Level().CurrentEntity());
+			PIItem l_pI	= smart_cast<PIItem>(PP.RQ.O);
 
-			CInventoryOwner* our_inv_owner		= smart_cast<CInventoryOwner*>(pCurEnt);
-
+			CInventoryOwner* our_inv_owner = smart_cast<CInventoryOwner*>(pCurEnt);
+				
 			if (E && E->g_Alive() && E->cast_base_monster())
 			{
-				C				= C_ON_ENEMY;
+				C = C_ON_ENEMY;
 			}
 			else if (E && E->g_Alive() && !E->cast_base_monster())
 			{
@@ -216,41 +214,42 @@ void CHUDTarget::Render()
 				{
 					switch(RELATION_REGISTRY().GetRelationType(others_inv_owner, our_inv_owner))
 					{
-						case ALife::eRelationTypeEnemy:
-							C = C_ON_ENEMY; break;
-						case ALife::eRelationTypeNeutral:
-							C = C_ON_NEUTRAL; break;
-						case ALife::eRelationTypeFriend:
-							C = C_ON_FRIEND; break;
+					case ALife::eRelationTypeEnemy:
+						C = C_ON_ENEMY; break;
+					case ALife::eRelationTypeNeutral:
+						C = C_ON_NEUTRAL; break;
+					case ALife::eRelationTypeFriend:
+						C = C_ON_FRIEND; break;
 					}
 
 					if (fuzzyShowInfo > 0.5f)
 					{
 						CStringTable strtbl;
-						F->SetColor(subst_alpha(C,u8(iFloor(255.f*(fuzzyShowInfo-0.5f)*2.f))));
-						F->OutNext("%s", *strtbl.translate(others_inv_owner->Name()) );
-						F->OutNext("%s", *strtbl.translate(others_inv_owner->CharacterInfo().Community().id()) );
+						F->SetColor(subst_alpha(C,u8(iFloor(255.f * (fuzzyShowInfo - 0.5f) * 2.f))));
+						F->OutNext("%s", *strtbl.translate(others_inv_owner->Name()));
+						F->OutNext("%s", *strtbl.translate(others_inv_owner->CharacterInfo().Community().id()));
 					}
 				}
 
 				fuzzyShowInfo += SHOW_INFO_SPEED*Device.fTimeDelta;
 			}
-			else if (l_pI && our_inv_owner && PP.RQ.range < 2.0f * 2.0f)
-			{
-				if (fuzzyShowInfo > 0.5f && l_pI->NameItem())
+			else 
+				if (l_pI && our_inv_owner && PP.RQ.range < 2.0f * 2.0f)
 				{
-					F->SetColor(subst_alpha(C,u8(iFloor(255.f*(fuzzyShowInfo-0.5f)*2.f))));
-					F->OutNext("%s",l_pI->NameItem());
+					if (fuzzyShowInfo > 0.5f && l_pI->NameItem())
+					{
+						F->SetColor(subst_alpha(C, u8(iFloor(255.f * (fuzzyShowInfo - 0.5f) * 2.f))));
+						F->OutNext("%s", l_pI->NameItem());
+					}
+					fuzzyShowInfo += SHOW_INFO_SPEED * Device.fTimeDelta;
 				}
-				fuzzyShowInfo += SHOW_INFO_SPEED*Device.fTimeDelta;
-			}
-		};
+		}
+		else
+		{
+			fuzzyShowInfo -= HIDE_INFO_SPEED * Device.fTimeDelta;
+		}
+		clamp(fuzzyShowInfo, 0.f, 1.f);
 	}
-	else
-	{
-		fuzzyShowInfo -= HIDE_INFO_SPEED*Device.fTimeDelta;
-	}
-	clamp(fuzzyShowInfo,0.f,1.f);
 
 	if (psHUD_Flags.test(HUD_CROSSHAIR_DIST))
 	{
