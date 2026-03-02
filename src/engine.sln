@@ -59,6 +59,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libvorbisfile_static", "..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luabind", "3rd party\luabind\luabind.vcxproj", "{252E63CE-F4EE-4358-B10D-EB2C508A264D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua_extensions", "3rd party\lua-extensions\lua_extensions.vcxproj", "{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -222,6 +224,12 @@ Global
 		{252E63CE-F4EE-4358-B10D-EB2C508A264D}.Mixed|x64.Build.0 = Mixed|x64
 		{252E63CE-F4EE-4358-B10D-EB2C508A264D}.Release|x64.ActiveCfg = Release|x64
 		{252E63CE-F4EE-4358-B10D-EB2C508A264D}.Release|x64.Build.0 = Release|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Debug|x64.ActiveCfg = Debug|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Debug|x64.Build.0 = Debug|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Mixed|x64.ActiveCfg = Mixed|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Mixed|x64.Build.0 = Mixed|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Release|x64.ActiveCfg = Release|x64
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -239,6 +247,7 @@ Global
 		{3A214E06-B95E-4D61-A291-1F8DF2EC10FD} = {2BFC806B-CE92-4EA4-8FE8-5F2EA54BA348}
 		{CEBDE98B-A6AA-46E6-BC79-FAAF823DB9EC} = {2BFC806B-CE92-4EA4-8FE8-5F2EA54BA348}
 		{252E63CE-F4EE-4358-B10D-EB2C508A264D} = {2BFC806B-CE92-4EA4-8FE8-5F2EA54BA348}
+		{44F716E7-05BD-4390-AB02-5F7DAF7FEFDE} = {2BFC806B-CE92-4EA4-8FE8-5F2EA54BA348}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E58178F4-848F-41C5-84E2-79CE2464FEF4}
