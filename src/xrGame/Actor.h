@@ -392,6 +392,8 @@ public:
 	bool					CanJump					();
 	bool					CanMove					();
 	float					CameraHeight			();
+	// Alex ADD: for smooth crouch fix
+	float					CurrentHeight;
 	bool					CanSprint				();
 	bool					CanRun					();
 	void					StopAnyMove				();
