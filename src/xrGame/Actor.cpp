@@ -507,9 +507,9 @@ void	CActor::Hit(SHit* pHDS)
 	if ((mstate_real&mcSprint) && Level().CurrentControlEntity() == this && conditions().DisableSprint(pHDS))
 	{
 		bool const is_special_burn_hit_2_self = (pHDS->who == this) && (pHDS->boneID == BI_NONE) && ((pHDS->hit_type==ALife::eHitTypeBurn)||(pHDS->hit_type==ALife::eHitTypeLightBurn));
-		if ( !is_special_burn_hit_2_self )
+		if (!is_special_burn_hit_2_self)
 		{
-			mstate_wishful	&=~mcSprint;
+			mstate_wishful &= ~mcSprint;
 		}
 	}
 	
@@ -518,23 +518,26 @@ void	CActor::Hit(SHit* pHDS)
 		bool b_fireWound = (pHDS->hit_type==ALife::eHitTypeFireWound || pHDS->hit_type==ALife::eHitTypeWound_2);
 		b_initiated = b_initiated && (pHDS->hit_type==ALife::eHitTypeStrike);
 	
-		if(b_fireWound || b_initiated)
-			HitMark			(HDS.damage(), HDS.dir, HDS.who, HDS.bone(), HDS.p_in_bone_space, HDS.impulse, HDS.hit_type);
+		if (b_fireWound || b_initiated)
+			HitMark(HDS.damage(), HDS.dir, HDS.who, HDS.bone(), HDS.p_in_bone_space, HDS.impulse, HDS.hit_type);
 	}
-
-	float hit_power				= HitArtefactsOnBelt(HDS.damage(), HDS.hit_type);
 
 	if (GodMode())
 	{
-		HDS.power				= 0.0f;
-		inherited::Hit			(&HDS);
+		HDS.power = 0.0f;
+		inherited::Hit(&HDS);
 		return;
 	}
 	else 
 	{
-		HDS.power				= hit_power;
-		HDS.add_wound			= true;
-		inherited::Hit			(&HDS);
+		HDS.power = HitArtefactsOnBelt(HDS.damage(), HDS.hit_type);
+		HDS.add_wound = true;
+		if (g_Alive())
+		{
+			/* AVO: send script callback*/
+			callback(GameObject::eHit)(this->lua_game_object(), HDS.damage(), HDS.direction(), smart_cast<const CGameObject*>(HDS.who)->lua_game_object(), HDS.boneID);
+		}
+		inherited::Hit(&HDS);
 	}
 }
 
