@@ -26,37 +26,36 @@ CWeaponMagazinedWGrenade::CWeaponMagazinedWGrenade(ESoundTypes eSoundType) : CWe
 }
 
 CWeaponMagazinedWGrenade::~CWeaponMagazinedWGrenade()
-{
-}
+{}
 
 void CWeaponMagazinedWGrenade::Load	(LPCSTR section)
 {
-	inherited::Load			(section);
-	CRocketLauncher::Load	(section);
+	inherited::Load(section);
+	CRocketLauncher::Load(section);
 
 	//// Sounds
-	m_sounds.LoadSound(section,"snd_shoot_grenade"	, "sndShotG"		, false, m_eSoundShot);
-	m_sounds.LoadSound(section,"snd_reload_grenade"	, "sndReloadG"	, true, m_eSoundReload);
-	m_sounds.LoadSound(section,"snd_switch"			, "sndSwitch"		, true, m_eSoundReload);
+	m_sounds.LoadSound(section,"snd_shoot_grenade", "sndShotG", false, m_eSoundShot);
+	m_sounds.LoadSound(section,"snd_reload_grenade", "sndReloadG", true, m_eSoundReload);
+	m_sounds.LoadSound(section,"snd_switch", "sndSwitch", true, m_eSoundReload);
 	
 	m_sFlameParticles2 = pSettings->r_string(section, "grenade_flame_particles");
 	
-	if(m_eGrenadeLauncherStatus == ALife::eAddonPermanent)
+	if (m_eGrenadeLauncherStatus == ALife::eAddonPermanent)
 	{
 		CRocketLauncher::m_fLaunchSpeed = pSettings->r_float(section, "grenade_vel");
 	}
 
 	// load ammo classes SECOND (grenade_class)
-	m_ammoTypes2.clear	(); 
-	LPCSTR				S = pSettings->r_string(section,"grenade_class");
+	m_ammoTypes2.clear(); 
+	LPCSTR S = pSettings->r_string(section,"grenade_class");
 	if (S && S[0]) 
 	{
-		string128		_ammoItem;
-		int				count		= _GetItemCount	(S);
-		for (int it=0; it<count; ++it)	
+		string128 _ammoItem;
+		int count = _GetItemCount(S);
+		for (int it = 0; it<count; ++it)	
 		{
-			_GetItem				(S,it,_ammoItem);
-			m_ammoTypes2.push_back	(_ammoItem);
+			_GetItem(S, it, _ammoItem);
+			m_ammoTypes2.push_back(_ammoItem);
 		}
 	}
 
@@ -175,10 +174,7 @@ void  CWeaponMagazinedWGrenade::PerformSwitchGL()
 	swap(m_ammoType,m_ammoType2);
 	swap(m_DefaultCartridge, m_DefaultCartridge2);
 
-	xr_vector<CCartridge> l_magazine;
-	while(m_magazine.size()) { l_magazine.push_back(m_magazine.back()); m_magazine.pop_back(); }
-	while(m_magazine2.size()) { m_magazine.push_back(m_magazine2.back()); m_magazine2.pop_back(); }
-	while(l_magazine.size()) { m_magazine2.push_back(l_magazine.back()); l_magazine.pop_back(); }
+	m_magazine.swap(m_magazine2);
 	iAmmoElapsed = (int)m_magazine.size();
 
 	m_BriefInfo_CalcFrame = 0;
@@ -475,11 +471,13 @@ bool CWeaponMagazinedWGrenade::Detach(LPCSTR item_section_name, bool b_spawn_ite
 	if (ALife::eAddonAttachable == m_eGrenadeLauncherStatus &&  0 != (m_flagsAddOnState&CSE_ALifeItemWeapon::eWeaponAddonGrenadeLauncher) && !xr_strcmp(*m_sGrenadeLauncherName, item_section_name))
 	{
 		m_flagsAddOnState &= ~CSE_ALifeItemWeapon::eWeaponAddonGrenadeLauncher;
-		if (m_bGrenadeMode)
-		{
-			UnloadMagazine();
+
+		// Now we need to unload GL's magazine
+		if (!m_bGrenadeMode)
 			PerformSwitchGL();
-		}
+
+		UnloadMagazine();
+		PerformSwitchGL(); 
 
 		UpdateAddonsVisibility();
 
