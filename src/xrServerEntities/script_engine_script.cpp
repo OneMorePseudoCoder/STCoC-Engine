@@ -179,12 +179,6 @@ IC	profile_timer_script	operator+	(const profile_timer_script &portion0, const p
 	return					(result);
 }
 
-// IC	std::ostream& operator<<(std::ostream &stream, profile_timer_script &timer)
-// {
-// 	stream					<< timer.time();
-// 	return					(stream);
-// }
-
 #ifdef XRGAME_EXPORTS
 ICF	u32	script_time_global	()	{ return Device.dwTimeGlobal; }
 ICF	u32	script_time_global_async	()	{ return Device.TimerAsync_MMT(); }
@@ -205,6 +199,7 @@ static bool is_enough_address_space_available_impl()
 void CScriptEngine::script_register(lua_State *L)
 {
 	module(L)[
+        def("log1", (void(*) (LPCSTR msg)) &Log), // AVO: log below does not work due to design of vscript_log so adding new function to scripts
 		class_<profile_timer_script>("profile_timer")
 			.def(constructor<>())
 			.def(constructor<profile_timer_script&>())

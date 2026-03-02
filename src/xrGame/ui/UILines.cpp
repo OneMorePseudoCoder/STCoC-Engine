@@ -13,68 +13,70 @@
 #include "uilinestd.h"
 #include "../string_table.h"
 
-
 CUILines::CUILines()
 {
-	m_pFont							= NULL;
-	m_eTextAlign					= CGameFont::alLeft;
-	m_eVTextAlign					= valTop;
-	m_dwTextColor					= 0xffffffff;
-	m_TextOffset.set				(0.0f,0.0f);
-	m_text							="";
+	m_pFont = NULL;
+	m_eTextAlign = CGameFont::alLeft;
+	m_eVTextAlign = valTop;
+	m_dwTextColor = 0xffffffff;
+	m_TextOffset.set(0.0f, 0.0f);
+	m_text = "";
 	m_wndSize.set(0.0f, 0.0f);
 	m_wndPos.set(0.0f, 0.0f);
 	uFlags.zero();
-	uFlags.set(flNeedReparse,		FALSE);
-	uFlags.set(flComplexMode,		FALSE);
-	uFlags.set(flPasswordMode,		FALSE);
-	uFlags.set(flColoringMode,		TRUE);
-	uFlags.set(flCutWordsMode,		FALSE);
-	uFlags.set(flRecognizeNewLine,	TRUE);
+	uFlags.set(flNeedReparse, FALSE);
+	uFlags.set(flComplexMode, FALSE);
+	uFlags.set(flPasswordMode, FALSE);
+	uFlags.set(flColoringMode, TRUE);
+	uFlags.set(flCutWordsMode, FALSE);
+	uFlags.set(flRecognizeNewLine, TRUE);
 }
 
-CUILines::~CUILines(){
+CUILines::~CUILines()
+{}
 
-}
-
-void CUILines::SetTextComplexMode(bool mode){
+void CUILines::SetTextComplexMode(bool mode)
+{
 	uFlags.set(flComplexMode, mode);
 	if (mode)
 		uFlags.set(flPasswordMode, FALSE);
 }
 
-void CUILines::SetPasswordMode(bool mode){
+void CUILines::SetPasswordMode(bool mode)
+{
 	uFlags.set(flPasswordMode, mode);
 	if (mode)
 		uFlags.set(flComplexMode, false);
 }
 
-
-void CUILines::SetColoringMode(bool mode){
+void CUILines::SetColoringMode(bool mode)
+{
 	uFlags.set(flColoringMode, mode);
 }
 
-void CUILines::SetCutWordsMode(bool mode){
+void CUILines::SetCutWordsMode(bool mode)
+{
 	uFlags.set(flCutWordsMode, mode);
 }
 
-void CUILines::SetEllipsis(bool mode){
+void CUILines::SetEllipsis(bool mode)
+{
 	uFlags.set(flEllipsis, mode);	
 }
 
-void CUILines::SetUseNewLineMode(bool mode){
+void CUILines::SetUseNewLineMode(bool mode)
+{
 	uFlags.set(flRecognizeNewLine, mode);	
 }
 
-
-void CUILines::SetText(const char* text){
-	
+void CUILines::SetText(const char* text)
+{
 	if (!m_pFont)
         m_pFont = UI().Font().pFontLetterica16Russian;
 
 	if (text && text[0] != 0)
 	{
-		if(m_text==text) 
+		if (m_text == text) 
 			return;
         m_text = text;
 		uFlags.set(flNeedReparse, TRUE);
@@ -85,11 +87,11 @@ void CUILines::SetText(const char* text){
 		Reset();
 	}
 }
+
 void CUILines::SetTextST(LPCSTR str_id)
 {
-	SetText	(*CStringTable().translate(str_id));
+	SetText(*CStringTable().translate(str_id));
 }
-
 
 LPCSTR CUILines::GetText()
 {
@@ -110,30 +112,30 @@ float get_str_width(CGameFont*pFont, char ch)
 
 void CUILines::ParseText(bool force)
 {
-	if (!force && (!uFlags.test(flComplexMode) || !uFlags.test(flNeedReparse)) )
+	if (!force && (!uFlags.test(flComplexMode) || !uFlags.test(flNeedReparse)))
 		return;
 
-	if(NULL == m_pFont)
+	if (NULL == m_pFont)
 		return;
 
-	Reset		();
+	Reset();
 
 	CUILine* line = NULL;
 	if (uFlags.test(flColoringMode))
 		line = ParseTextToColoredLine(m_text.c_str());
 	else
 	{
-		line				= xr_new<CUILine>();
-		CUISubLine			subline;
-		subline.m_text		= m_text.c_str();
-		subline.m_color		= GetTextColor();
-		line->AddSubLine	(&subline);
+		line = xr_new<CUILine>();
+		CUISubLine subline;
+		subline.m_text = m_text.c_str();
+		subline.m_color = GetTextColor();
+		line->AddSubLine(&subline);
 	}
 
 	BOOL bNewLines = FALSE;
 
 	if (uFlags.test(flRecognizeNewLine))
-		if ( m_pFont->IsMultibyte() ) 
+		if (m_pFont->IsMultibyte()) 
 		{
 			CUILine *ptmp_line = xr_new<CUILine>();
 			int vsz = line->m_subLines.size();
@@ -159,12 +161,14 @@ void CUILines::ParseText(bool force)
 			line->Clear();
 			xr_free( line );
 			line=ptmp_line;
-		} else
+		} 
+		else
 		{
 			line->ProcessNewLines();
 		}
 
-	if ( m_pFont->IsMultibyte() ) {
+	if ( m_pFont->IsMultibyte() ) 
+	{
 		#define UBUFFER_SIZE 100
         u16	aMarkers[ UBUFFER_SIZE ];
 		CUILine tmp_line;
@@ -175,8 +179,10 @@ void CUILines::ParseText(bool force)
 		fTargetWidth = m_wndSize.x / fTargetWidth;
 		int vsz = line->m_subLines.size();
 		VERIFY( vsz );
-		if ( ( vsz > 1 ) && ( ! bNewLines ) ) { // only colored line, pizdets
-			for ( int i = 0 ; i < vsz ; i++ ) {
+		if ( ( vsz > 1 ) && ( ! bNewLines ) ) 
+		{ // only colored line, pizdets
+			for ( int i = 0 ; i < vsz ; i++ ) 
+			{
 				const char *pszText = line->m_subLines[i].m_text.c_str();
 				const u32 tcolor = line->m_subLines[i].m_color;
 				VERIFY( pszText );
@@ -184,14 +190,18 @@ void CUILines::ParseText(bool force)
 			}
 			m_lines.push_back( tmp_line );
 			tmp_line.Clear();
-		} else {
-			for ( int i = 0 ; i < vsz ; i++ ) {
+		} 
+		else 
+		{
+			for ( int i = 0 ; i < vsz ; i++ ) 
+			{
 				const char *pszText = line->m_subLines[i].m_text.c_str();
 				const u32 tcolor = line->m_subLines[i].m_color;
 				u16 uFrom = 0 , uPartLen = 0;
 				VERIFY( pszText );
 				u16 nMarkers = m_pFont->SplitByWidth( aMarkers , UBUFFER_SIZE , fTargetWidth , pszText );
-				for ( u16 j = 0 ; j < nMarkers ; j ++ ) {
+				for ( u16 j = 0 ; j < nMarkers ; j ++ ) 
+				{
 					uPartLen = aMarkers[ j ] - uFrom;
 					VERIFY( ( uPartLen > 0 ) && ( uPartLen < MAX_MB_CHARS ) );
 					strncpy_s( szTempLine , pszText + uFrom , uPartLen );
@@ -210,7 +220,8 @@ void CUILines::ParseText(bool force)
 				tmp_line.Clear();
 			}
 		}
-	} else
+	} 
+	else
 	{
 		float max_width							= m_wndSize.x;
 		u32 sbl_cnt								= line->m_subLines.size();
@@ -227,11 +238,11 @@ void CUILines::ParseText(bool force)
 			u32 curr_w_pos						= 0;
 			
 			u32 last_space_idx					= 0;
-			for(u32 idx=0; idx<sub_len; ++idx)
+			for (u32 idx=0; idx<sub_len; ++idx)
 			{
 				bool b_last_ch	= (idx==sub_len-1);
 				
-				if(isspace(sbl.m_text[idx]))
+				if (isspace(sbl.m_text[idx]))
 					last_space_idx = idx;
 
 				float w1		= get_str_width(m_pFont, sbl.m_text[idx]);
@@ -248,10 +259,11 @@ void CUILines::ParseText(bool force)
 					strncpy_s			(buff, sizeof(buff), sbl.m_text.c_str()+curr_w_pos, idx-curr_w_pos+1);
 					tmp_line.AddSubLine	(buff , sbl.m_color);
 					curr_w_pos			= idx+1;
-				}else
+				}
+				else
 					curr_width			+= w1;
 
-				if(bOver || (b_last_ch&&sbl.m_last_in_line) )
+				if (bOver || (b_last_ch&&sbl.m_last_in_line) )
 				{
 					m_lines.push_back	(tmp_line);
 					tmp_line.Clear		();
@@ -259,7 +271,7 @@ void CUILines::ParseText(bool force)
 					bnew_line			= false;
 				}
 			}
-			if(b_last_subl && !tmp_line.IsEmpty())
+			if (b_last_subl && !tmp_line.IsEmpty())
 			{
 				m_lines.push_back	(tmp_line);
 				tmp_line.Clear		();
@@ -274,7 +286,6 @@ void CUILines::ParseText(bool force)
 
 float CUILines::GetVisibleHeight()
 {
-
 	if (uFlags.test(flComplexMode))
 	{
 		if(uFlags.test(flNeedReparse))
@@ -310,13 +321,14 @@ void CUILines::SetFont(CGameFont* pFont)
 
 LPCSTR GetElipsisText(CGameFont* pFont, float width, LPCSTR source_text, LPSTR buff, int buff_len)
 {
-	float text_len					= pFont->SizeOf_(source_text);
-	UI().ClientToScreenScaledWidth	(text_len);
+	float text_len = pFont->SizeOf_(source_text);
+	UI().ClientToScreenScaledWidth(text_len);
 
 	if(text_len<width)
 	{
 		return source_text;
-	}else
+	}
+	else
 	{
 		buff[0]							= 0;
 		float el_len					= pFont->SizeOf_("..");
@@ -324,7 +336,7 @@ LPCSTR GetElipsisText(CGameFont* pFont, float width, LPCSTR source_text, LPSTR b
 		float total						= 0.0f;
 		u16		pos						= 0;
 		
-		while(total+el_len < width)
+		while (total+el_len < width)
 		{
 			const char c					= *(source_text+pos);
 			float ch_len					= pFont->SizeOf_(c);
@@ -362,7 +374,6 @@ void CUILines::Draw(float x, float y)
 		text_pos.set(0,0);
 
 		text_pos.x = x + GetIndentByAlign();
-//		text_pos.y = y + GetVIndentByAlign();
 		text_pos.y = y;
 		UI().ClientToScreenScaled(text_pos);
 		text_pos.y	+= GetVIndentByAlign();
@@ -376,9 +387,10 @@ void CUILines::Draw(float x, float y)
 			m_pFont->SetAligment((CGameFont::EAligment)m_eTextAlign);
 			m_pFont->Out(text_pos.x, text_pos.y, "%s", passText);
 		}
-		else{
+		else
+		{
 			m_pFont->SetAligment((CGameFont::EAligment)m_eTextAlign);
-			if(uFlags.test(flEllipsis) )
+			if (uFlags.test(flEllipsis))
 			{
 				u32 buff_len	= sizeof(char)*xr_strlen(m_text.c_str()) + 1;
 
@@ -386,7 +398,8 @@ void CUILines::Draw(float x, float y)
 				LPCSTR			str = GetElipsisText(m_pFont, m_wndSize.x, m_text.c_str(), p, buff_len);
 
 				m_pFont->Out	(text_pos.x, text_pos.y, "%s", str);
-			}else
+			}
+			else
 				m_pFont->Out(text_pos.x, text_pos.y, "%s", m_text.c_str());
 		}
 	}
@@ -445,7 +458,8 @@ float CUILines::GetIndentByAlign()const
 
 float CUILines::GetVIndentByAlign()
 {
-	switch(m_eVTextAlign) {
+	switch (m_eVTextAlign) 
+	{
 	case valTop: 
 		return 0;
 	case valCenter:
@@ -460,15 +474,16 @@ float CUILines::GetVIndentByAlign()
 #endif
 }
 
-// %c[255,255,255,255]
 u32 CUILines::GetColorFromText(const xr_string& str)const
 {
 	StrSize begin, end, comma1_pos, comma2_pos, comma3_pos;
 
 	begin = str.find(BEGIN);
 	end = str.find(END, begin);
+
     if (begin == npos || end == npos)
         return m_dwTextColor;
+
 	// try default color
 	if (npos != str.find("%c[default]", begin, end - begin))
 		return m_dwTextColor;
@@ -485,6 +500,7 @@ u32 CUILines::GetColorFromText(const xr_string& str)const
 	comma1_pos = str.find(",", begin);
 	comma2_pos = str.find(",", comma1_pos + 1);
 	comma3_pos = str.find(",", comma2_pos + 1);
+
     if (comma1_pos == npos || comma2_pos == npos || comma3_pos == npos)
         return m_dwTextColor;
 

@@ -36,7 +36,7 @@ CCustomZone::CCustomZone(void)
 	m_pIdleLAnim				= NULL;
 
 	m_StateTime.resize(eZoneStateMax);
-	for(int i=0; i<eZoneStateMax; i++)
+	for (int i = 0; i < eZoneStateMax; i++)
 		m_StateTime[i] = 0;
 
 	m_dwAffectFrameNum			= 0;
@@ -310,7 +310,7 @@ BOOL CCustomZone::net_Spawn(CSE_Abstract* DC)
 	m_zone_flags.set			(eUseOnOffTime,	(m_TimeToDisable!=0)&&(m_TimeToEnable!=0) );
 
 	//добавить источники света
-	bool br1 = (0==psDeviceFlags.test(rsR2|rsR3|rsR4));
+	bool br1 = (0 == psDeviceFlags.test(rsR2|rsR3|rsR4));
 
 	bool render_ver_allowed = !br1 || (br1&&m_zone_flags.test(eIdleLightR1));
 
@@ -1025,34 +1025,28 @@ void CCustomZone::AffectObjects()
 	OBJECT_INFO_VEC_IT it;
 	for (it = m_ObjectInfoMap.begin(); m_ObjectInfoMap.end() != it; ++it) 
 	{
-		if( !(*it).object->getDestroy() )
-			Affect( &(*it) );
+		if (!(*it).object->getDestroy())
+			Affect(&(*it));
 	}
 }
 
 void CCustomZone::UpdateBlowout()
 {
-	if(m_dwBlowoutParticlesTime>=(u32)m_iPreviousStateTime && 
-		m_dwBlowoutParticlesTime<(u32)m_iStateTime)
+	if (m_dwBlowoutParticlesTime >= (u32)m_iPreviousStateTime && m_dwBlowoutParticlesTime<(u32)m_iStateTime)
 		PlayBlowoutParticles();
 
-	if(m_dwBlowoutLightTime>=(u32)m_iPreviousStateTime && 
-		m_dwBlowoutLightTime<(u32)m_iStateTime)
-		StartBlowoutLight ();
+	if (m_dwBlowoutLightTime >= (u32)m_iPreviousStateTime && m_dwBlowoutLightTime<(u32)m_iStateTime)
+		StartBlowoutLight();
 
-	if(m_dwBlowoutSoundTime>=(u32)m_iPreviousStateTime && 
-		m_dwBlowoutSoundTime<(u32)m_iStateTime)
-		m_blowout_sound.play_at_pos	(0, Position());
+	if (m_dwBlowoutSoundTime >= (u32)m_iPreviousStateTime && m_dwBlowoutSoundTime<(u32)m_iStateTime)
+		m_blowout_sound.play_at_pos(0, Position());
 
-	if(m_zone_flags.test(eBlowoutWind) && m_dwBlowoutWindTimeStart>=(u32)m_iPreviousStateTime && 
-		m_dwBlowoutWindTimeStart<(u32)m_iStateTime)
+	if (m_zone_flags.test(eBlowoutWind) && m_dwBlowoutWindTimeStart >= (u32)m_iPreviousStateTime && m_dwBlowoutWindTimeStart<(u32)m_iStateTime)
 		StartWind();
 
 	UpdateWind();
 
-
-	if(m_dwBlowoutExplosionTime>=(u32)m_iPreviousStateTime && 
-		m_dwBlowoutExplosionTime<(u32)m_iStateTime)
+	if (m_dwBlowoutExplosionTime>=(u32)m_iPreviousStateTime && m_dwBlowoutExplosionTime<(u32)m_iStateTime)
 	{
 		AffectObjects();
 	}
@@ -1060,19 +1054,19 @@ void CCustomZone::UpdateBlowout()
 
 void  CCustomZone::OnMove()
 {
-	if(m_dwLastTimeMoved == 0)
+	if (m_dwLastTimeMoved == 0)
 	{
 		m_dwLastTimeMoved = Device.dwTimeGlobal;
 		m_vPrevPos.set(Position());
 	}
 	else
 	{
-		float time_delta	= float(Device.dwTimeGlobal - m_dwLastTimeMoved)/1000.f;
-		m_dwLastTimeMoved	= Device.dwTimeGlobal;
+		float time_delta = float(Device.dwTimeGlobal - m_dwLastTimeMoved)/1000.f;
+		m_dwLastTimeMoved = Device.dwTimeGlobal;
 
-		Fvector				vel;
+		Fvector vel;
 			
-		if(fis_zero(time_delta))
+		if (fis_zero(time_delta))
 			vel = zero_vel;
 		else
 		{
@@ -1083,10 +1077,10 @@ void  CCustomZone::OnMove()
 		if (m_pIdleParticles)
 			m_pIdleParticles->UpdateParent(XFORM(), vel);
 
-		if(m_pLight && m_pLight->get_active())
+		if (m_pLight && m_pLight->get_active())
 			m_pLight->set_position(Position());
 
-		if(m_pIdleLight && m_pIdleLight->get_active())
+		if (m_pIdleLight && m_pIdleLight->get_active())
 			m_pIdleLight->set_position(Position());
      }
 }
@@ -1113,14 +1107,14 @@ void CCustomZone::OnStateSwitch	(EZoneState new_state)
 	else
 		Enable();
 
-	if(new_state==eZoneStateAccumulate)
+	if (new_state == eZoneStateAccumulate)
 		PlayAccumParticles();
 
-	if(new_state==eZoneStateAwaking)
+	if (new_state == eZoneStateAwaking)
 		PlayAwakingParticles();
 
-	m_eZoneState			= new_state;
-	m_iPreviousStateTime	= m_iStateTime = 0;
+	m_eZoneState = new_state;
+	m_iPreviousStateTime = m_iStateTime = 0;
 };
 
 void CCustomZone::SwitchZoneState(EZoneState new_state)
@@ -1139,25 +1133,29 @@ void CCustomZone::SwitchZoneState(EZoneState new_state)
 
 bool CCustomZone::Enable()
 {
-	if (IsEnabled()) return false;
+	if (IsEnabled())
+		return false;
 
 	o_switch_2_fast();
 
-	for(OBJECT_INFO_VEC_IT it = m_ObjectInfoMap.begin(); 
-		m_ObjectInfoMap.end() != it; ++it) 
+	for (OBJECT_INFO_VEC_IT it = m_ObjectInfoMap.begin(); m_ObjectInfoMap.end() != it; ++it) 
 	{
 		CGameObject* pObject = (*it).object;
-		if (!pObject) continue;
+		if (!pObject)
+			continue;
 		PlayEntranceParticles(pObject);
 		PlayObjectIdleParticles(pObject);
 	}
-	PlayIdleParticles	();
-	return				true;
+
+	PlayIdleParticles();
+	return true;
 };
 
 bool CCustomZone::Disable()
 {
-	if (!IsEnabled()) return false;
+	if (!IsEnabled())
+		return false;
+
 	o_switch_2_slow();
 
 	for(OBJECT_INFO_VEC_IT it = m_ObjectInfoMap.begin(); m_ObjectInfoMap.end()!=it; ++it) 
@@ -1168,7 +1166,9 @@ bool CCustomZone::Disable()
 
 		StopObjectIdleParticles(pObject);
 	}
-	StopIdleParticles	();
+
+	StopIdleParticles();
+
 	if (m_actor_effector)
 		m_actor_effector->Stop();
 
@@ -1187,7 +1187,8 @@ void CCustomZone::ZoneDisable()
 
 void CCustomZone::StartWind()
 {
-	if(m_fDistanceToCurEntity>WIND_RADIUS) return;
+	if (m_fDistanceToCurEntity>WIND_RADIUS)
+		return;
 
 	m_zone_flags.set(eBlowoutWindActive, TRUE);
 
@@ -1197,33 +1198,32 @@ void CCustomZone::StartWind()
 
 void CCustomZone::StopWind()
 {
-	if(!m_zone_flags.test(eBlowoutWindActive)) return;
+	if (!m_zone_flags.test(eBlowoutWindActive))
+		return;
+
 	m_zone_flags.set(eBlowoutWindActive, FALSE);
 	g_pGamePersistent->Environment().wind_strength_factor = m_fStoreWindPower;
 }
 
 void CCustomZone::UpdateWind()
 {
-	if(!m_zone_flags.test(eBlowoutWindActive)) return;
+	if (!m_zone_flags.test(eBlowoutWindActive))
+		return;
 
-	if(m_fDistanceToCurEntity>WIND_RADIUS || m_dwBlowoutWindTimeEnd<(u32)m_iStateTime)
+	if (m_fDistanceToCurEntity > WIND_RADIUS || m_dwBlowoutWindTimeEnd<(u32)m_iStateTime)
 	{
 		StopWind();
 		return;
 	}
 
-	if(m_dwBlowoutWindTimePeak > (u32)m_iStateTime)
+	if (m_dwBlowoutWindTimePeak > (u32)m_iStateTime)
 	{
-		g_pGamePersistent->Environment().wind_strength_factor = m_fBlowoutWindPowerMax + ( m_fStoreWindPower - m_fBlowoutWindPowerMax)*
-								float(m_dwBlowoutWindTimePeak - (u32)m_iStateTime)/
-								float(m_dwBlowoutWindTimePeak - m_dwBlowoutWindTimeStart);
+		g_pGamePersistent->Environment().wind_strength_factor = m_fBlowoutWindPowerMax + (m_fStoreWindPower - m_fBlowoutWindPowerMax) * float(m_dwBlowoutWindTimePeak - (u32)m_iStateTime) / float(m_dwBlowoutWindTimePeak - m_dwBlowoutWindTimeStart);
 		clamp(g_pGamePersistent->Environment().wind_strength_factor, 0.f, 1.f);
 	}
 	else
 	{
-		g_pGamePersistent->Environment().wind_strength_factor = m_fBlowoutWindPowerMax + (m_fStoreWindPower - m_fBlowoutWindPowerMax)*
-			float((u32)m_iStateTime - m_dwBlowoutWindTimePeak)/
-			float(m_dwBlowoutWindTimeEnd - m_dwBlowoutWindTimePeak);
+		g_pGamePersistent->Environment().wind_strength_factor = m_fBlowoutWindPowerMax + (m_fStoreWindPower - m_fBlowoutWindPowerMax) * float((u32)m_iStateTime - m_dwBlowoutWindTimePeak) / float(m_dwBlowoutWindTimeEnd - m_dwBlowoutWindTimePeak);
 		clamp(g_pGamePersistent->Environment().wind_strength_factor, 0.f, 1.f);
 	}
 }
@@ -1235,47 +1235,42 @@ u32	CCustomZone::ef_anomaly_type() const
 
 u32	CCustomZone::ef_weapon_type() const
 {
-	VERIFY	(m_ef_weapon_type != u32(-1));
-	return	(m_ef_weapon_type);
+	VERIFY(m_ef_weapon_type != u32(-1));
+	return (m_ef_weapon_type);
 }
 
-void CCustomZone::CreateHit	(	u16 id_to, 
-								u16 id_from, 
-								const Fvector& hit_dir, 
-								float hit_power, 
-								s16 bone_id, 
-								const Fvector& pos_in_bone, 
-								float hit_impulse, 
-								ALife::EHitType hit_type)
+void CCustomZone::CreateHit	(u16 id_to, u16 id_from, const Fvector& hit_dir, float hit_power, s16 bone_id, const Fvector& pos_in_bone, float hit_impulse, ALife::EHitType hit_type)
 {
 	if (OnServer())
 	{
-		if(m_owner_id != u32(-1) )
+		if (m_owner_id != u32(-1))
 			id_from	= (u16)m_owner_id;
 
-		NET_Packet			l_P;
-		Fvector hdir		= hit_dir;
-		SHit Hit			= SHit(hit_power, hdir, this, bone_id, pos_in_bone, hit_impulse, hit_type, 0.0f, false);		
-		Hit.GenHeader		(GE_HIT, id_to);
-		Hit.whoID			= id_from;
-		Hit.weaponID		= this->ID();
-		Hit.Write_Packet	(l_P);
-		u_EventSend			(l_P);
+		NET_Packet l_P;
+		Fvector hdir = hit_dir;
+		SHit Hit = SHit(hit_power, hdir, this, bone_id, pos_in_bone, hit_impulse, hit_type, 0.0f, false);		
+		Hit.GenHeader(GE_HIT, id_to);
+		Hit.whoID = id_from;
+		Hit.weaponID = this->ID();
+		Hit.Write_Packet(l_P);
+		u_EventSend(l_P);
 	};
 }
 
 void CCustomZone::net_Relcase(CObject* O)
 {
-	CGameObject* GO				= smart_cast<CGameObject*>(O);
-	OBJECT_INFO_VEC_IT it		= std::find(m_ObjectInfoMap.begin(),m_ObjectInfoMap.end(), GO);
-	if(it!=m_ObjectInfoMap.end())
+	CGameObject* GO	= smart_cast<CGameObject*>(O);
+	OBJECT_INFO_VEC_IT it = std::find(m_ObjectInfoMap.begin(),m_ObjectInfoMap.end(), GO);
+	if (it != m_ObjectInfoMap.end())
 	{
-		exit_Zone				(*it);
-		m_ObjectInfoMap.erase	(it);
+		exit_Zone(*it);
+		m_ObjectInfoMap.erase(it);
 	}
-	if(GO->ID()==m_owner_id)	m_owner_id = u32(-1);
 
-	if(m_actor_effector && m_actor_effector->m_pActor && m_actor_effector->m_pActor->ID() == GO->ID())
+	if (GO->ID() == m_owner_id)
+		m_owner_id = u32(-1);
+
+	if (m_actor_effector && m_actor_effector->m_pActor && m_actor_effector->m_pActor->ID() == GO->ID())
 		m_actor_effector->Stop();
 
 	inherited::net_Relcase(O);
@@ -1283,9 +1278,9 @@ void CCustomZone::net_Relcase(CObject* O)
 
 void CCustomZone::enter_Zone(SZoneObjectInfo& io)
 {
-	if(m_zone_flags.test(eAffectPickDOF) && Level().CurrentEntity())
+	if (m_zone_flags.test(eAffectPickDOF) && Level().CurrentEntity())
 	{
-		if(io.object->ID()==Level().CurrentEntity()->ID())
+		if (io.object->ID() == Level().CurrentEntity()->ID())
 			GamePersistent().SetPickableEffectorDOF(true);
 	}
 }
@@ -1294,67 +1289,69 @@ void CCustomZone::exit_Zone	(SZoneObjectInfo& io)
 {
 	StopObjectIdleParticles(io.object);
 
-	if(m_zone_flags.test(eAffectPickDOF) && Level().CurrentEntity())
+	if (m_zone_flags.test(eAffectPickDOF) && Level().CurrentEntity())
 	{
-		if(io.object->ID()==Level().CurrentEntity()->ID())
+		if (io.object->ID() == Level().CurrentEntity()->ID())
 			GamePersistent().SetPickableEffectorDOF(false);
 	}
 }
 
 void CCustomZone::PlayAccumParticles()
 {
-	if(m_sAccumParticles.size())
+	if (m_sAccumParticles.size())
 	{
 		CParticlesObject* pParticles;
-		pParticles	= CParticlesObject::Create(*m_sAccumParticles,TRUE);
+		pParticles = CParticlesObject::Create(*m_sAccumParticles,TRUE);
 		pParticles->UpdateParent(XFORM(),zero_vel);
 		pParticles->Play(false);
 	}
 
-	if(m_accum_sound._handle())
-		m_accum_sound.play_at_pos	(0, Position());
+	if (m_accum_sound._handle())
+		m_accum_sound.play_at_pos(0, Position());
 }
 
 void CCustomZone::PlayAwakingParticles()
 {
-	if(m_sAwakingParticles.size())
+	if (m_sAwakingParticles.size())
 	{
 		CParticlesObject* pParticles;
-		pParticles	= CParticlesObject::Create(*m_sAwakingParticles,TRUE);
+		pParticles = CParticlesObject::Create(*m_sAwakingParticles,TRUE);
 		pParticles->UpdateParent(XFORM(),zero_vel);
 		pParticles->Play(false);
 	}
 
-	if(m_awaking_sound._handle())
-		m_awaking_sound.play_at_pos	(0, Position());
+	if (m_awaking_sound._handle())
+		m_awaking_sound.play_at_pos(0, Position());
 }
 
 void CCustomZone::UpdateOnOffState()
 {
-	if(!m_zone_flags.test(eUseOnOffTime)) return;
+	if (!m_zone_flags.test(eUseOnOffTime)) 
+		return;
 	
 	bool dest_state;
 	u32 t = (Device.dwTimeGlobal-m_StartTime+m_TimeShift) % (m_TimeToEnable+m_TimeToDisable);
-	if	(t < m_TimeToEnable)
+	if (t < m_TimeToEnable)
 	{
 		dest_state=true;
-	}else
-	if(t >=(m_TimeToEnable+m_TimeToDisable) ) 
+	}
+	else if (t >=(m_TimeToEnable+m_TimeToDisable)) 
 	{
-		dest_state=true;
-	}else
+		dest_state = true;
+	}
+	else
 	{
-		dest_state=false;
-		VERIFY(t<(m_TimeToEnable+m_TimeToDisable));
+		dest_state = false;
+		VERIFY(t < (m_TimeToEnable+m_TimeToDisable));
 	}
 
-	if( (eZoneStateDisabled==m_eZoneState) && dest_state)
+	if ((eZoneStateDisabled == m_eZoneState) && dest_state)
 	{
-		GoEnabledState		();
-	}else
-	if( (eZoneStateIdle==m_eZoneState) && !dest_state)
+		GoEnabledState();
+	}
+	else if ((eZoneStateIdle == m_eZoneState) && !dest_state)
 	{
-		GoDisabledState			();
+		GoDisabledState();
 	}
 }
 
@@ -1362,41 +1359,41 @@ void CCustomZone::GoDisabledState()
 {
 	//switch to disable	
 	NET_Packet P;
-	u_EventGen		(P,GE_ZONE_STATE_CHANGE,ID());
-	P.w_u8			(u8(eZoneStateDisabled));
-	u_EventSend		(P);
+	u_EventGen(P,GE_ZONE_STATE_CHANGE,ID());
+	P.w_u8(u8(eZoneStateDisabled));
+	u_EventSend(P);
 
-	OBJECT_INFO_VEC_IT it		= m_ObjectInfoMap.begin();
-	OBJECT_INFO_VEC_IT it_e		= m_ObjectInfoMap.end();
+	OBJECT_INFO_VEC_IT it = m_ObjectInfoMap.begin();
+	OBJECT_INFO_VEC_IT it_e = m_ObjectInfoMap.end();
 
-	for(;it!=it_e;++it)
+	for (;it != it_e; ++it)
 		exit_Zone(*it);
 	
-	m_ObjectInfoMap.clear		();
-	feel_touch.clear			();
+	m_ObjectInfoMap.clear();
+	feel_touch.clear();
 }
 
 void CCustomZone::GoEnabledState()
 {
-		//switch to idle	
-		NET_Packet P;
-		u_EventGen		(P,GE_ZONE_STATE_CHANGE,ID());
-		P.w_u8			(u8(eZoneStateIdle));
-		u_EventSend		(P);
+	//switch to idle	
+	NET_Packet P;
+	u_EventGen(P,GE_ZONE_STATE_CHANGE,ID());
+	P.w_u8(u8(eZoneStateIdle));
+	u_EventSend(P);
 }
 
 bool CCustomZone::feel_touch_on_contact	(CObject *O)
 {
 	if ((spatial.type | STYPE_VISIBLEFORAI) != spatial.type)
-		return			(false);
+		return (false);
 
-	return				(inherited::feel_touch_on_contact(O));
+	return (inherited::feel_touch_on_contact(O));
 }
 
 BOOL CCustomZone::AlwaysTheCrow()
 {
 	bool b_idle = ZoneState()==eZoneStateIdle || ZoneState()==eZoneStateDisabled;
- 	if(!b_idle || (m_zone_flags.test(eAlwaysFastmode) && IsEnabled()) )
+ 	if (!b_idle || (m_zone_flags.test(eAlwaysFastmode) && IsEnabled()) )
 		return TRUE;
  	else
  		return inherited::AlwaysTheCrow();
@@ -1404,41 +1401,30 @@ BOOL CCustomZone::AlwaysTheCrow()
 
 void CCustomZone::CalcDistanceTo(const Fvector& P, float& dist, float& radius)
 {
-	R_ASSERT			(CFORM()->Type()==cftShape);
-	CCF_Shape* Sh		= (CCF_Shape*)CFORM();
+	R_ASSERT(CFORM()->Type() == cftShape);
+	CCF_Shape* Sh = (CCF_Shape*)CFORM();
 
-	dist				= P.distance_to(Position());
-	float sr			= CFORM()->getSphere().R;
+	dist = P.distance_to(Position());
+	float sr = CFORM()->getSphere().R;
+
 	//quick test
-	if(Sh->Shapes().size()==1)
+	if (Sh->Shapes().size() == 1)
 	{
-		radius			= sr;
+		radius = sr;
 		return;
 	}
-/*
-	//2nd quick test
-	Fvector				SC;
-	float				dist2;
-	XF.transform_tiny	(SC,CFORM()->getSphere().P);
-	dist2				= P.distance_to(SC);
-	if(dist2>sr)
-	{
-		radius		= sr;
-		return;
-	}
-*/
+
 	//full test
 	const Fmatrix& XF	= XFORM();
 	xr_vector<CCF_Shape::shape_def>& Shapes = Sh->Shapes();
 	CCF_Shape::shape_def* nearest_s = NULL;
 	float nearest = flt_max;
 
-
 	Fvector sP;
 
 	xr_vector<CCF_Shape::shape_def>::iterator it = Shapes.begin();
 	xr_vector<CCF_Shape::shape_def>::iterator it_e = Shapes.end();
-	for(;it!=it_e;++it)
+	for (;it != it_e; ++it)
 	{
 		CCF_Shape::shape_def& s = *it;
 		float d = 0.0f;
@@ -1460,11 +1446,12 @@ void CCustomZone::CalcDistanceTo(const Fvector& P, float& dist, float& radius)
 			nearest_s	= &s;
 		}
 	}
+
 	R_ASSERT(nearest_s);
 	
-	dist	= nearest;
+	dist = nearest;
 
-	if(nearest_s->type==0)
+	if (nearest_s->type == 0)
 		radius	= nearest_s->data.sphere.R;
 	else
 	{
@@ -1474,38 +1461,39 @@ void CCustomZone::CalcDistanceTo(const Fvector& P, float& dist, float& radius)
 		radius = _max(r1,r2);
 		radius = _max(radius,r3);
 	}
-
 }
 
 // Lain: added Start/Stop idle light calls
-void CCustomZone::o_switch_2_fast				()
+void CCustomZone::o_switch_2_fast()
 {
-	if (m_zone_flags.test(eFastMode))		return	;
+	if (m_zone_flags.test(eFastMode))
+		return;
 	m_zone_flags.set(eFastMode, TRUE);
 	StartIdleLight();
-	processing_activate			();
+	processing_activate();
 }
 
-void CCustomZone::o_switch_2_slow				()
+void CCustomZone::o_switch_2_slow()
 {
-	if (!m_zone_flags.test(eFastMode))	return	;
+	if (!m_zone_flags.test(eFastMode))	
+		return;
 	m_zone_flags.set(eFastMode, FALSE);
-	if ( !light_in_slow_mode() )
+	if (!light_in_slow_mode())
 	{
 		StopIdleLight();
 	}
-	processing_deactivate		();
+	processing_deactivate();
 }
 
-void CCustomZone::save							(NET_Packet &output_packet)
+void CCustomZone::save(NET_Packet &output_packet)
 {
-	inherited::save			(output_packet);
-	output_packet.w_u8		(static_cast<u8>(m_eZoneState));
+	inherited::save(output_packet);
+	output_packet.w_u8(static_cast<u8>(m_eZoneState));
 }
 
-void CCustomZone::load							(IReader &input_packet)
+void CCustomZone::load(IReader &input_packet)
 {
-	inherited::load			(input_packet);	
+	inherited::load(input_packet);	
 
 	CCustomZone::EZoneState temp = static_cast<CCustomZone::EZoneState>(input_packet.r_u8());
 
