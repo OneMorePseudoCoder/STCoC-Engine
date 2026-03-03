@@ -36,6 +36,7 @@
 #include "ui/UIInventoryUtilities.h"
 #include "alife_object_registry.h"
 #include "xrServer_Objects_ALife_Monsters.h"
+#include "hudmanager.h"
 
 using namespace luabind;
 
@@ -43,6 +44,7 @@ LPCSTR command_line	()
 {
 	return		(Core.Params);
 }
+
 bool IsDynamicMusic()
 {
 	return !!psActorFlags.test(AF_DYNAMIC_MUSIC);
@@ -320,20 +322,10 @@ void prefetch_sound	(LPCSTR name)
 	Level().PrefetchSound(name);
 }
 
-
 CClientSpawnManager	&get_client_spawn_manager()
 {
 	return		(Level().client_spawn_manager());
 }
-/*
-void start_stop_menu(CUIDialogWnd* pDialog, bool bDoHideIndicators)
-{
-	if(pDialog->IsShown())
-		pDialog->HideDialog();
-	else
-		pDialog->ShowDialog(bDoHideIndicators);
-}
-*/
 
 void add_dialog_to_render(CUIDialogWnd* pDialog)
 {
@@ -406,19 +398,11 @@ void remove_call(const luabind::functor<bool> &condition,const luabind::functor<
 
 void add_call(const luabind::object &lua_object, LPCSTR condition,LPCSTR action)
 {
-//	try{	
-//		CPHScriptObjectCondition	*c=xr_new<CPHScriptObjectCondition>(lua_object,condition);
-//		CPHScriptObjectAction		*a=xr_new<CPHScriptObjectAction>(lua_object,action);
 		luabind::functor<bool>		_condition = object_cast<luabind::functor<bool> >(lua_object[condition]);
 		luabind::functor<void>		_action = object_cast<luabind::functor<void> >(lua_object[action]);
 		CPHScriptObjectConditionN	*c=xr_new<CPHScriptObjectConditionN>(lua_object,_condition);
 		CPHScriptObjectActionN		*a=xr_new<CPHScriptObjectActionN>(lua_object,_action);
 		Level().ph_commander_scripts().add_call_unique(c,c,a,a);
-//	}
-//	catch(...)
-//	{
-//		Msg("add_call excepted!!");
-//	}
 }
 
 void remove_call(const luabind::object &lua_object, LPCSTR condition,LPCSTR action)
@@ -453,6 +437,7 @@ cphysics_world_scripted* physics_world_scripted()
 {
 	return	get_script_wrapper<cphysics_world_scripted>(*physics_world());
 }
+
 CEnvironment *environment()
 {
 	return		(g_pGamePersistent->pEnvironment);
@@ -559,6 +544,7 @@ void set_snd_volume(float v)
 	psSoundVFactor = v;
 	clamp(psSoundVFactor,0.0f,1.0f);
 }
+
 #include "actor_statistic_mgr.h"
 void add_actor_points(LPCSTR sect, LPCSTR detail_key, int cnt, int pts)
 {
@@ -574,8 +560,6 @@ int get_actor_points(LPCSTR sect)
 {
 	return Actor()->StatisticMgr().GetSectionPoints(sect);
 }
-
-
 
 #include "ActorEffector.h"
 void add_complex_effector(LPCSTR section, int id)
@@ -600,22 +584,24 @@ void remove_pp_effector(int id)
 {
 	CPostprocessAnimator*	pp	= smart_cast<CPostprocessAnimator*>(Actor()->Cameras().GetPPEffector((EEffectorPPType)id));
 
-	if(pp) pp->Stop(1.0f);
-
+	if (pp)
+		pp->Stop(1.0f);
 }
 
 void set_pp_effector_factor(int id, float f, float f_sp)
 {
 	CPostprocessAnimator*	pp	= smart_cast<CPostprocessAnimator*>(Actor()->Cameras().GetPPEffector((EEffectorPPType)id));
 
-	if(pp) pp->SetDesiredFactor(f,f_sp);
+	if (pp)
+		pp->SetDesiredFactor(f, f_sp);
 }
 
 void set_pp_effector_factor2(int id, float f)
 {
 	CPostprocessAnimator*	pp	= smart_cast<CPostprocessAnimator*>(Actor()->Cameras().GetPPEffector((EEffectorPPType)id));
 
-	if(pp) pp->SetCurrentFactor(f);
+	if (pp)
+		pp->SetCurrentFactor(f);
 }
 
 #include "relation_registry.h"
@@ -669,7 +655,8 @@ int g_get_general_goodwill_between ( u16 from, u16 to)
 	CSE_ALifeTraderAbstract* from_obj	= smart_cast<CSE_ALifeTraderAbstract*>(ai().alife().objects().object(from));
 	CSE_ALifeTraderAbstract* to_obj		= smart_cast<CSE_ALifeTraderAbstract*>(ai().alife().objects().object(to));
 
-	if (!from_obj||!to_obj){
+	if (!from_obj||!to_obj)
+	{
 		ai().script_engine().script_log		(ScriptStorage::eLuaMessageTypeError,"RELATION_REGISTRY::get_general_goodwill_between  : cannot convert obj to CSE_ALifeTraderAbstract!");
 		return (0);
 	}	
@@ -712,7 +699,7 @@ void start_tutorial(LPCSTR name)
 
 void stop_tutorial()
 {
-	if(g_tutorial)
+	if (g_tutorial)
 		g_tutorial->Stop();	
 }
 
@@ -723,10 +710,33 @@ LPCSTR translate_string(LPCSTR str)
 
 bool has_active_tutotial()
 {
-	return (g_tutorial!=NULL);
+	return (g_tutorial != NULL);
 }
 
+//Alundaio: namespace level exports extension
+//ability to update level netpacket
+void g_send(NET_Packet& P, bool bReliable = 0, bool bSequential = 1, bool bHighPriority = 0, bool bSendImmediately = 0)
+{
+	Level().Send(P, net_flags(bReliable, bSequential, bHighPriority, bSendImmediately));
+}
 
+//ability to get the target game_object at crosshair
+CGameObject* g_get_target_obj()
+{
+	collide::rq_result& RQ = HUD().GetCurrentRayQuery();
+	CGameObject* object = smart_cast<CGameObject*>(RQ.O);
+	if (object)
+		return object;
+}
+
+float g_get_target_dist()
+{
+	collide::rq_result& RQ = HUD().GetCurrentRayQuery();
+	CGameObject* object = smart_cast<CGameObject*>(RQ.O);
+	if (object)
+		return RQ.range;
+}
+//Alundaio: END
 
 #pragma optimize("s",on)
 void CLevel::script_register(lua_State *L)
@@ -740,6 +750,12 @@ void CLevel::script_register(lua_State *L)
 
 	module(L,"level")
 	[
+		//Alundaio: Extend level namespace exports
+		def("send", g_send), //allow the ability to send netpacket to level
+		//def("ray_pick",g_ray_pick),
+		def("get_target_obj",g_get_target_obj), //intentionally named to what is in xray extensions
+		def("get_target_dist",g_get_target_dist),
+		//Alundaio: END
 		// obsolete\deprecated
 		def("object_by_id",						get_object_by_id),
 #ifdef DEBUG
