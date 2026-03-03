@@ -173,6 +173,14 @@ void CRender::level_Unload()
 
 	//*** Shaders
 	Shaders.clear		();
+	
+	if (ps_clear_models_on_unload == true)
+	{
+		Models->ClearPool(true);
+		Visuals.clear();
+		dxRenderDeviceRender::Instance().Resources->Dump(false);
+	}
+
 	b_loaded					= FALSE;
 }
 

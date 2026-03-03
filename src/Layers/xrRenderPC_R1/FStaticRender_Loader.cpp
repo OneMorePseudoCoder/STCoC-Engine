@@ -96,7 +96,15 @@ void CRender::level_Load(IReader *fs)
 
 	// End
 	pApp->LoadEnd				();
-	b_loaded					= TRUE	;
+	
+	if (ps_clear_models_on_unload == true)
+	{
+		Models->ClearPool(true);
+		Visuals.clear();
+		dxRenderDeviceRender::Instance().Resources->Dump(false);
+	}
+
+	b_loaded					= TRUE;
 }
 
 void CRender::level_Unload		()

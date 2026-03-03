@@ -139,6 +139,8 @@ float		ps_r2_ssaLOD_A				= 64.f	;
 float		ps_r2_ssaLOD_B				= 48.f	;
 float		ps_r2_tf_Mipbias			= 0.0f	;
 
+BOOL ps_clear_models_on_unload = 0; // Alundaio
+
 // R2-specific
 Flags32		ps_r2_ls_flags				= { R2FLAG_SUN 
 	//| R2FLAG_SUN_IGNORE_PORTALS
@@ -241,8 +243,7 @@ u32 dm_current_cache_size = 2401; //dm_current_cache_line*dm_current_cache_line
 float dm_current_fade = 47.5; //float(2*dm_current_size)-.5f;
 float ps_current_detail_density = 0.6;
 float ps_current_detail_height = 1.f;
-xr_token ext_quality_token[] = { {"qt_off", 0}, {"qt_low", 1}, {"qt_medium", 2},
-	{"qt_high", 3}, {"qt_extreme", 4}, {nullptr, 0} };
+xr_token ext_quality_token[] = { {"qt_off", 0}, {"qt_low", 1}, {"qt_medium", 2}, {"qt_high", 3}, {"qt_extreme", 4}, {nullptr, 0} };
 //-AVO
 
 //- Mad Max
@@ -855,7 +856,6 @@ void		xrRender_initconsole	()
 	CMD3(CCC_Mask,		"rs_hom_depth_draw",	&ps_r2_ls_flags_ext,		R_FLAGEXT_HOM_DEPTH_DRAW);
 	CMD3(CCC_Mask,		"r2_shadow_cascede_zcul",&ps_r2_ls_flags_ext,		R2FLAGEXT_SUN_ZCULLING);
 	CMD3(CCC_Mask,		"r2_shadow_cascede_old", &ps_r2_ls_flags_ext,		R2FLAGEXT_SUN_OLD);
-	
 #endif // DEBUG
 
 
@@ -883,9 +883,6 @@ void		xrRender_initconsole	()
 	CMD4(CCC_Float,		"r2_dof_kernel",&ps_r2_dof_kernel_size,				.0f,	10.f);
 	CMD4(CCC_Float,		"r2_dof_sky",	&ps_r2_dof_sky,						-10000.f,	10000.f);
 	CMD3(CCC_Mask,		"r2_dof_enable",&ps_r2_ls_flags,	R2FLAG_DOF);
-	
-//	float		ps_r2_dof_near			= 0.f;					// 0.f
-//	float		ps_r2_dof_focus			= 1.4f;					// 1.4f
 	
 	CMD3(CCC_Mask,		"r2_volumetric_lights",			&ps_r2_ls_flags,			R2FLAG_VOLUMETRIC_LIGHTS);
 //	CMD3(CCC_Mask,		"r2_sun_shafts",				&ps_r2_ls_flags,			R2FLAG_SUN_SHAFTS);
@@ -918,8 +915,6 @@ void		xrRender_initconsole	()
 	CMD3(CCC_Token,		"r3_msaa_alphatest",			&ps_r3_msaa_atest,			qmsaa__atest_token);
 	//CMD3(CCC_Token,		"r3_minmax_sm",					&ps_r3_minmax_sm,			qminmax_sm_token);
 
-
-
 	//	Allow real-time fog config reload
 #if	(RENDER == R_R3) || (RENDER == R_R4)
 #ifdef	DEBUG
@@ -937,6 +932,8 @@ void		xrRender_initconsole	()
 	
 
 //	CMD3(CCC_Mask,		"r2_sun_ignore_portals",		&ps_r2_ls_flags,			R2FLAG_SUN_IGNORE_PORTALS);
+
+	CMD4(CCC_Integer, "r__clear_models_on_unload", &ps_clear_models_on_unload, 0, 1); // Alundaio
 }
 
 void	xrRender_apply_tf		()

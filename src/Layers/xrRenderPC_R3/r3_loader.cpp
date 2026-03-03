@@ -191,13 +191,13 @@ void CRender::level_Unload()
 	//*** Shaders
 	Shaders.clear		();
 
-/*
-	Models->ClearPool( true );
-	Visuals.clear();
-	dxRenderDeviceRender::Instance().Resources->Dump(false);
-	static int unload_counter = 0;
-	Msg("The Level Unloaded.======================== %d", ++unload_counter);
-*/
+	if (ps_clear_models_on_unload == true)
+	{
+		Models->ClearPool(true);
+		Visuals.clear();
+		dxRenderDeviceRender::Instance().Resources->Dump(false);
+	}
+
 	b_loaded					= FALSE;
 }
 
