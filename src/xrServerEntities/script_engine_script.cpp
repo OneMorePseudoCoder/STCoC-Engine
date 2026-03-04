@@ -16,14 +16,12 @@ using namespace luabind;
 void LuaLog(LPCSTR caMessage)
 {
 #ifndef MASTER_GOLD
-	ai().script_engine().script_log	(ScriptStorage::eLuaMessageTypeMessage,"%s",caMessage);
-#else
-    Log(caMessage);
+	ai().script_engine().script_log	(ScriptStorage::eLuaMessageTypeMessage, "%s", caMessage);
 #endif // #ifndef MASTER_GOLD
 
 #ifdef USE_DEBUGGER
 #	ifndef USE_LUA_STUDIO
-		if( ai().script_engine().debugger() )
+		if (ai().script_engine().debugger())
 			ai().script_engine().debugger()->Write(caMessage);
 #	endif // #ifndef USE_LUA_STUDIO
 #endif // #ifdef USE_DEBUGGER
@@ -33,13 +31,14 @@ void ErrorLog(LPCSTR caMessage)
 {
 	ai().script_engine().error_log("%s",caMessage);
 #ifdef PRINT_CALL_STACK
-	if(strstr(Core.Params, "-lua_error"))
+	if (strstr(Core.Params, "-lua_error"))
 		ai().script_engine().print_stack();
 #endif // #ifdef PRINT_CALL_STACK
 	
 #ifdef USE_DEBUGGER
 #	ifndef USE_LUA_STUDIO
-		if( ai().script_engine().debugger() ){
+		if (ai().script_engine().debugger())
+		{
 			ai().script_engine().debugger()->Write(caMessage);
 		}
 #	endif // #ifndef USE_LUA_STUDIO
@@ -69,48 +68,48 @@ void FlushLogs()
 
 void verify_if_thread_is_running()
 {
-	THROW2	(ai().script_engine().current_thread(),"coroutine.yield() is called outside the LUA thread!");
+	THROW2(ai().script_engine().current_thread(),"coroutine.yield() is called outside the LUA thread!");
 }
 
 bool is_editor()
 {
 #ifdef XRGAME_EXPORTS
-	return		(false);
+	return (false);
 #else
-	return		(true);
+	return (true);
 #endif
 }
 
 #ifdef XRGAME_EXPORTS
 CRenderDevice *get_device()
 {
-	return		(&Device);
+	return (&Device);
 }
 #endif
 
 int bit_and(int i, int j)
 {
-	return			(i & j);
+	return (i & j);
 }
 
 int bit_or(int i, int j)
 {
-	return			(i | j);
+	return (i | j);
 }
 
 int bit_xor(int i, int j)
 {
-	return			(i ^ j);
+	return (i ^ j);
 }
 
 int bit_not(int i)
 {
-	return			(~i);
+	return (~i);
 }
 
 LPCSTR user_name()
 {
-	return			(Core.UserName);
+	return (Core.UserName);
 }
 
 void prefetch_module(LPCSTR file_name)
@@ -118,7 +117,8 @@ void prefetch_module(LPCSTR file_name)
 	ai().script_engine().process_file(file_name);
 }
 
-struct profile_timer_script {
+struct profile_timer_script 
+{
 	CTimer						measure;
 	u64							m_accumulator;
 	u64							m_count;
@@ -152,7 +152,8 @@ struct profile_timer_script {
 
 	IC		void					start					()
 	{
-		if (m_recurse_mark) {
+		if (m_recurse_mark) 
+		{
 			++m_recurse_mark;
 			return;
 		}
@@ -189,11 +190,11 @@ IC	profile_timer_script	operator+	(const profile_timer_script &portion0, const p
 }
 
 #ifdef XRGAME_EXPORTS
-ICF	u32	script_time_global	()	{ return Device.dwTimeGlobal; }
-ICF	u32	script_time_global_async	()	{ return Device.TimerAsync_MMT(); }
+ICF	u32	script_time_global()	{ return Device.dwTimeGlobal; }
+ICF	u32	script_time_global_async()	{ return Device.TimerAsync_MMT(); }
 #else
-ICF	u32	script_time_global	()	{ return 0; }
-ICF	u32	script_time_global_async	()	{ return 0; }
+ICF	u32	script_time_global()	{ return 0; }
+ICF	u32	script_time_global_async()	{ return 0; }
 #endif
 
 #ifdef XRGAME_EXPORTS

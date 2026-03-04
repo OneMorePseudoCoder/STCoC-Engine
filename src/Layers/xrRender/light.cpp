@@ -43,14 +43,21 @@ light::light		(void)	: ISpatial(g_SpatialSpace)
 light::~light	()
 {
 #if (RENDER==R_R2) || (RENDER==R_R3) || (RENDER==R_R4)
-	for (int f=0; f<6; f++)	xr_delete(omnipart[f]);
+	for (int f = 0; f < 6; f++)
+		xr_delete(omnipart[f]);
 #endif // (RENDER==R_R2) || (RENDER==R_R3) || (RENDER==R_R4)
 	set_active		(false);
 
 	// remove from Lights_LastFrame
 #if (RENDER==R_R2) || (RENDER==R_R3) || (RENDER==R_R4)
-	for (u32 it=0; it<RImplementation.Lights_LastFrame.size(); it++)
-		if (this==RImplementation.Lights_LastFrame[it])	RImplementation.Lights_LastFrame[it]=0;
+	for (u32 it = 0; it < RImplementation.Lights_LastFrame.size(); it++) 
+	{
+		if (RImplementation.Lights_LastFrame[it] == this)
+			RImplementation.Lights_LastFrame[it]->svis.resetoccq();
+	    RImplementation.Lights_LastFrame[it] = 0;
+	}
+	if (vis.pending)
+		RImplementation.occq_free(vis.query_id);
 #endif // (RENDER==R_R2) || (RENDER==R_R3) || (RENDER==R_R4)
 }
 
@@ -70,7 +77,7 @@ void light::set_texture		(LPCSTR name)
 	string256				temp;
 	
 	strconcat(sizeof(temp),temp,"r2\\accum_spot_",name);
-	//strconcat(sizeof(temp),temp,"_nomsaa",name);
+
 	s_spot.create			(RImplementation.Target->b_accum_spot,temp,name);
 
 #if	(RENDER!=R_R3) && (RENDER!=R_R4)

@@ -15,13 +15,12 @@
 
 #include "smap_allocator.h"
 #include "../xrRender/light_db.h"
-#include "light_render_direct.h"
+#include "../xrRender/light_render_direct.h"
 #include "../xrRender/LightTrack.h"
 #include "../xrRender/r_sun_cascades.h"
 
 #include "../../xrEngine/irenderable.h"
 #include "../../xrEngine/fmesh.h"
-
 
 class dxRender_Visual;
 
@@ -216,6 +215,7 @@ public:
 	IC u32							occq_begin					(u32&	ID		)	{ return HWOCC.occq_begin	(ID);	}
 	IC void							occq_end					(u32&	ID		)	{ HWOCC.occq_end	(ID);			}
 	IC R_occlusion::occq_result		occq_get					(u32&	ID		)	{ return HWOCC.occq_get		(ID);	}
+	IC void occq_free(u32 ID) { HWOCC.occq_free(ID); }
 
 	ICF void						apply_object				(IRenderable*	O)
 	{

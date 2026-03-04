@@ -355,6 +355,9 @@
     <ClInclude Include="..\xrRender\xrRender_console.h" />
     <ClInclude Include="..\xrRender\xrStripify.h" />
     <ClInclude Include="..\xrRender\xr_effgamma.h" />
+    <ClInclude Include="..\xrRender\light.h" />
+    <ClInclude Include="..\xrRender\Light_Render_Direct.h" />
+    <ClInclude Include="..\xrRender\light_smapvis.h" />
     <ClInclude Include="blender_bloom_build.h" />
     <ClInclude Include="blender_combine.h" />
     <ClInclude Include="blender_cut.h" />
@@ -375,10 +378,7 @@
     <ClInclude Include="DetailFormat.h" />
     <ClInclude Include="dx11HDAOCSBlender.h" />
     <ClInclude Include="dx11MinMaxSMBlender.h" />
-    <ClInclude Include="..\xrRender\light.h" />
     <ClInclude Include="light_gi.h" />
-    <ClInclude Include="Light_Render_Direct.h" />
-    <ClInclude Include="light_smapvis.h" />
     <ClInclude Include="r2_types.h" />
     <ClInclude Include="r4.h" />
     <ClInclude Include="r4_rendertarget.h" />
@@ -529,6 +529,9 @@
     <ClCompile Include="..\xrRender\xrRender_console.cpp" />
     <ClCompile Include="..\xrRender\xrStripify.cpp" />
     <ClCompile Include="..\xrRender\xr_effgamma.cpp" />
+    <ClCompile Include="..\xrRender\Light_Render_Direct.cpp" />
+    <ClCompile Include="..\xrRender\Light_Render_Direct_ComputeXFS.cpp" />
+    <ClCompile Include="..\xrRender\light_smapvis.cpp" />
     <ClCompile Include="blender_bloom_build.cpp" />
     <ClCompile Include="blender_combine.cpp" />
     <ClCompile Include="blender_cut.cpp" />
@@ -548,9 +551,6 @@
     <ClCompile Include="dx11HDAOCSBlender.cpp" />
     <ClCompile Include="dx11MinMaxSMBlender.cpp" />
     <ClCompile Include="light_GI.cpp" />
-    <ClCompile Include="Light_Render_Direct.cpp" />
-    <ClCompile Include="Light_Render_Direct_ComputeXFS.cpp" />
-    <ClCompile Include="light_smapvis.cpp" />
     <ClCompile Include="light_vis.cpp" />
     <ClCompile Include="r2_blenders.cpp" />
     <ClCompile Include="r2_R_calculate.cpp" />
