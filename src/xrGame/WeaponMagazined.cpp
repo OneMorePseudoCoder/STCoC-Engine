@@ -196,6 +196,12 @@ void CWeaponMagazined::FireStart()
 		if (smart_cast<CActor*>(this->H_Parent()) && (Level().CurrentViewEntity() == H_Parent()))
 			CurrentGameUI()->AddCustomStatic("gun_jammed", true);
 
+		//Alundaio
+		CGameObject	*object = smart_cast<CGameObject*>(H_Parent());
+		if (object)
+			object->callback(GameObject::eOnWeaponJammed)(object->lua_game_object(), this->lua_game_object());
+		//-Alundaio
+
 		OnEmptyClick();
 	}
 }
@@ -1361,17 +1367,23 @@ void CWeaponMagazined::OnZoomIn()
 	if (GetState() == eIdle)
 		PlayAnimIdle();
 
+	//Alundaio: callback not sure why vs2013 gives error, it's fine
+	CGameObject	*object = smart_cast<CGameObject*>(H_Parent());
+	if (object)
+		object->callback(GameObject::eOnWeaponZoomIn)(object->lua_game_object(), this->lua_game_object());
+	//-Alundaio
+
 	CActor* pActor = smart_cast<CActor*>(H_Parent());
 	if (pActor)
 	{
-		CEffectorZoomInertion* S = smart_cast<CEffectorZoomInertion*>	(pActor->Cameras().GetCamEffector(eCEZoom));
+		CEffectorZoomInertion* S = smart_cast<CEffectorZoomInertion*>(pActor->Cameras().GetCamEffector(eCEZoom));
 		if (!S)	
 		{
-			S = (CEffectorZoomInertion*)pActor->Cameras().AddCamEffector(xr_new<CEffectorZoomInertion> ());
+			S = (CEffectorZoomInertion*)pActor->Cameras().AddCamEffector(xr_new<CEffectorZoomInertion>());
 			S->Init(this);
 		};
-		S->SetRndSeed			(pActor->GetZoomRndSeed());
-		R_ASSERT				(S);
+		S->SetRndSeed(pActor->GetZoomRndSeed());
+		R_ASSERT(S);
 	}
 }
 
@@ -1385,10 +1397,16 @@ void CWeaponMagazined::OnZoomOut()
 	if (GetState() == eIdle)
 		PlayAnimIdle();
 
+	//Alundaio
+	CGameObject	*object = smart_cast<CGameObject*>(H_Parent());
+	if (object)
+		object->callback(GameObject::eOnWeaponZoomOut)(object->lua_game_object(), this->lua_game_object());
+	//-Alundaio
+
 	CActor* pActor = smart_cast<CActor*>(H_Parent());
 
 	if (pActor)
-		pActor->Cameras().RemoveCamEffector	(eCEZoom);
+		pActor->Cameras().RemoveCamEffector(eCEZoom);
 }
 
 //переключение режимов стрельбы одиночными и очередями

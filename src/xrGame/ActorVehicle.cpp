@@ -63,7 +63,9 @@ void CActor::attach_Vehicle(CHolderCustom* vehicle)
 
 	CStepManager::on_animation_start(MotionID(), 0);
 	
+	//Alundaio
 	this->callback(GameObject::eAttachVehicle)(car->lua_game_object());
+	//-Alundaio
 }
 
 void CActor::detach_Vehicle()
@@ -86,6 +88,10 @@ void CActor::detach_Vehicle()
 	car->PPhysicsShell()->SplitterHolderActivate();
 	m_holder->detach_Actor();
 
+	//Alundaio
+	this->callback(GameObject::eDetachVehicle)(car->lua_game_object());
+	//-Alundaio
+
 	character_physics_support()->movement()->SetPosition(m_holder->ExitPosition());
 	character_physics_support()->movement()->SetVelocity(m_holder->ExitVelocity());
 
@@ -101,8 +107,6 @@ void CActor::detach_Vehicle()
 	m_holderID = u16(-1);
 
 	SetWeaponHideState(INV_STATE_CAR, false);
-	
-	this->callback(GameObject::eDetachVehicle)(car->lua_game_object());
 }
 
 bool CActor::use_Vehicle(CHolderCustom* object)
@@ -137,8 +141,13 @@ bool CActor::use_Vehicle(CHolderCustom* object)
 				attach_Vehicle(vehicle);
 				
 			}
-			else if (auto car = smart_cast<CCar*>(vehicle))
+			else
+			{
+				//Alundaio
+				CCar* car = smart_cast<CCar*>(vehicle);
 				this->callback(GameObject::eUseVehicle)(car->lua_game_object());
+				//-Alundaio
+			}
 			return true;
 		}
 		return false;

@@ -109,6 +109,10 @@ void CScriptGameObject::script_register(lua_State *L)
 				value("on_attach_vehicle",			int(GameObject::eAttachVehicle)),
 				value("on_detach_vehicle",			int(GameObject::eDetachVehicle)),
 				value("on_use_vehicle", 			int(GameObject::eUseVehicle)),
+				// weapon 
+				value("weapon_jammed",				int(GameObject::eOnWeaponJammed)),
+				value("weapon_zoom_in",				int(GameObject::eOnWeaponZoomIn)),
+				value("weapon_zoom_out",			int(GameObject::eOnWeaponZoomOut)),
 				//-AVO
 
 				value("map_location_added",			int(GameObject::eMapLocationAdded))

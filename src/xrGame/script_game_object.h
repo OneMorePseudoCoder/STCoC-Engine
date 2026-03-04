@@ -15,6 +15,7 @@
 #include "character_info_defs.h"
 #include "game_graph_space.h"
 #include "game_location_selector.h"
+#include "ui/UIWindow.h" //Alundaio
 
 enum EPdaMsg;
 enum ESoundTypes;
@@ -31,12 +32,14 @@ namespace doors { class door; }
 class NET_Packet;
 class CGameTask;
 
-namespace PatrolPathManager { 
+namespace PatrolPathManager 
+{ 
 	enum EPatrolStartType;
 	enum EPatrolRouteType;
 };
 
-namespace MemorySpace {
+namespace MemorySpace 
+{
 	struct CMemoryInfo;
 	struct CVisibleObject;
 	struct CSoundObject;
@@ -44,7 +47,8 @@ namespace MemorySpace {
 	struct CNotYetVisibleObject;
 };
 
-namespace MonsterSpace {
+namespace MonsterSpace 
+{
 	enum EBodyState;
 	enum EMovementType;
 	enum EMovementDirection;
@@ -62,7 +66,8 @@ namespace MonsterSpace {
 	struct SBoneRotation;
 };
 
-namespace GameObject {
+namespace GameObject 
+{
 	enum ECallbackType;
 };
 
@@ -87,6 +92,7 @@ class CScriptGameObject;
 class CZoneCampfire;
 class CPhysicObject;
 class CArtefact;
+class CUIWindow; //Alundaio: For ScopeTexture
 
 #ifdef DEBUG
 	template <typename _object_type>
@@ -95,46 +101,36 @@ class CArtefact;
 	template <typename _object_type>
 	class CPropertyEvaluator;
 
-	template <
-		typename _object_type,
-		bool	 _reverse_search,
-		typename _world_operator,
-		typename _condition_evaluator,
-		typename _world_operator_ptr,
-		typename _condition_evaluator_ptr
-	>
+	template <typename _object_type, bool _reverse_search, typename _world_operator, typename _condition_evaluator, typename _world_operator_ptr, typename _condition_evaluator_ptr>
 	class CActionPlanner;
 
-	typedef CActionPlanner<
-		CScriptGameObject,
-		false,
-		CActionBase<CScriptGameObject>,
-		CPropertyEvaluator<CScriptGameObject>,
-		CActionBase<CScriptGameObject>*,
-		CPropertyEvaluator<CScriptGameObject>*
-	>								script_planner;
+	typedef CActionPlanner<CScriptGameObject, false, CActionBase<CScriptGameObject>, CPropertyEvaluator<CScriptGameObject>, CActionBase<CScriptGameObject>*, CPropertyEvaluator<CScriptGameObject>*> script_planner;
 #endif // DEBUG
 
 class CScriptGameObject;
 
-namespace SightManager {
+namespace SightManager 
+{
 	enum ESightType;
 }
 
-struct CSightParams {
+struct CSightParams 
+{
 	SightManager::ESightType	m_sight_type;
 	CScriptGameObject			*m_object;
 	Fvector						m_vector;
 };
 
-namespace luabind {
+namespace luabind 
+{
 	template <typename return_type>
 	class functor;
 
 	class object;
 } // namespace luabind
 
-class CScriptGameObject {
+class CScriptGameObject 
+{
 	mutable CGameObject		*m_game_object;
 							CScriptGameObject		(CScriptGameObject const& game_object);
 
@@ -385,8 +381,14 @@ public:
 			bool				Weapon_IsGrenadeLauncherAttached();
 			bool				Weapon_IsScopeAttached			();
 			bool				Weapon_IsSilencerAttached		();
-			void				Weapon_AddonAttach(CScriptGameObject &item); //Alundaio
-			void				Weapon_AddonDetach(LPCSTR item_section);	//Alundaio
+			//Alundaio
+			void				Weapon_AddonAttach(CScriptGameObject* item);
+			void				Weapon_AddonDetach(LPCSTR item_section);
+
+			void				AttachVehicle(CScriptGameObject* veh);
+			void				DetachVehicle();
+			void				ForceSetPosition(Fvector3 pos);
+			//-Alundaio
 			int					Weapon_GrenadeLauncher_Status	();
 			int					Weapon_Scope_Status				();
 			int					Weapon_Silencer_Status			();
@@ -589,7 +591,20 @@ public:
 			void				DisableAnomaly			();
 			float				GetAnomalyPower			();
 			void				SetAnomalyPower			(float p);
-			
+
+			//Alun
+            float				GetArtefactHealthRestoreSpeed			();
+            float				GetArtefactRadiationRestoreSpeed		();
+            float				GetArtefactSatietyRestoreSpeed			();
+            float				GetArtefactPowerRestoreSpeed			();
+            float				GetArtefactBleedingRestoreSpeed			(); 
+                        
+            void				SetArtefactHealthRestoreSpeed			(float value);
+            void				SetArtefactRadiationRestoreSpeed		(float value);
+            void				SetArtefactSatietyRestoreSpeed			(float value);
+            void				SetArtefactPowerRestoreSpeed			(float value);
+            void				SetArtefactBleedingRestoreSpeed			(float value);
+			//-Alun
 	
 			// HELICOPTER
 			CHelicopter*		get_helicopter			();
