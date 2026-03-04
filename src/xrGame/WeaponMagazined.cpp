@@ -1545,37 +1545,23 @@ bool CWeaponMagazined::GetBriefInfo(II_BriefInfo& info)
 	{
 		info.fmj_ammo._set("--");
 		info.ap_ammo._set("--");
+		info.third_ammo._set("--"); //Alundaio
 	}
 	else
 	{
+		//Alundaio: Added third ammo type and cleanup
 		info.fmj_ammo._set("");
 		info.ap_ammo._set("");
+		info.third_ammo._set("");
 
-		if (at_size >= 1 && at_size < 3)
-		{
-			xr_sprintf(ammo, "%d", GetAmmoCount(0));
-			info.fmj_ammo._set(ammo);
-		}
-		if (at_size == 2)
-		{
-			xr_sprintf(ammo, "%d", GetAmmoCount(1));
-			info.ap_ammo._set(ammo);
-		}
-		if (at_size >= 3)
-		{
-			xr_sprintf(ammo, "%d", GetAmmoCount(m_ammoType));
-			info.fmj_ammo._set(ammo);
-			u8 m = 0;
-			u64 ap = 0;
-			while (m < at_size)
-			{
-				if (m != m_ammoType)
-					ap += GetAmmoCount(m);
-				m++;
-			}
-			xr_sprintf(ammo, "%d", ap);
-			info.ap_ammo._set(ammo);
-		}
+		xr_sprintf(int_str, "%d", GetAmmoCount(m_ammoType));
+		if (m_ammoType == 0)
+			info.fmj_ammo._set(int_str);
+		else if (m_ammoType == 1)
+			info.ap_ammo._set(int_str);
+		else
+			info.third_ammo._set(int_str);
+		//-Alundaio
 	}
 
 	if (ae != 0 && m_magazine.size() != 0)

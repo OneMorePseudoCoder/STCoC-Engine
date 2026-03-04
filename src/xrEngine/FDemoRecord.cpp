@@ -31,29 +31,8 @@ void setup_lm_screenshot_matrices()
 {
     psHUD_Flags.assign(0);
 
- //   // build camera matrix
- //   Fbox bb = curr_lm_fbox;
- //   bb.getcenter(Device.vCameraPosition);
-
- //   Device.vCameraDirection.set(0.f, -1.f, EPS_S);
- //   Device.vCameraTop.set(0.f, 0.f, 1.f);
- //   Device.vCameraRight.set(1.f, 0.f, 0.f);
- //   Device.mView.build_camera_dir(Device.vCameraPosition, Device.vCameraDirection, Device.vCameraTop);
-
- //   bb.xform(Device.mView);
- //   // build project matrix
- //   Device.mProject.build_projection_ortho(bb.max.x-bb.min.x,bb.max.y-bb.min.y,bb.min.z,bb.max.z);
-	//Device.mFullTransform.mul(Device.mProject, Device.mView);
-	//D3DXMatrixInverse((D3DXMATRIX*)&Device.mInvFullTransform, 0, (D3DXMATRIX*)&Device.mFullTransform);
-
-	//if (g_pGameLevel)
-	//	g_pGameLevel->ApplyCamera();
-
-	//Device.m_pRender->SetCacheXform(Device.mView, Device.mProject);
 	Device.m_bMakeLevelMap = true;
 	Device.curr_lm_fbox = curr_lm_fbox;
-
-
 }
 
 Fbox get_level_screenshot_bound()
@@ -71,18 +50,14 @@ Fbox get_level_screenshot_bound()
 
     return res;
 }
+
 void _InitializeFont(CGameFont*& F, LPCSTR section, u32 flags);
-CDemoRecord::CDemoRecord(const char* name, float life_time) : CEffectorCam(cefDemo, life_time/*,FALSE*/)
+CDemoRecord::CDemoRecord(const char* name, float life_time) : CEffectorCam(cefDemo, life_time)
 {
     stored_red_text = g_bDisableRedText;
     g_bDisableRedText = TRUE;
     m_iLMScreenshotFragment = -1;
-    /*
-     stored_weapon = psHUD_Flags.test(HUD_WEAPON);
-     stored_cross = psHUD_Flags.test(HUD_CROSSHAIR);
-     psHUD_Flags.set(HUD_WEAPON, FALSE);
-     psHUD_Flags.set(HUD_CROSSHAIR, FALSE);
-     */
+
     m_b_redirect_input_to_level = false;
     _unlink(name);
     file = FS.w_open(name);
@@ -97,8 +72,10 @@ CDemoRecord::CDemoRecord(const char* name, float life_time) : CEffectorCam(cefDe
         Fvector DYaw;
         DYaw.set(dir.x, 0.f, dir.z);
         DYaw.normalize_safe();
-        if (DYaw.x < 0) m_HPB.x = acosf(DYaw.z);
-        else m_HPB.x = 2 * PI - acosf(DYaw.z);
+        if (DYaw.x < 0)
+			m_HPB.x = acosf(DYaw.z);
+        else
+			m_HPB.x = 2 * PI - acosf(DYaw.z);
 
         // parse pitch
         dir.normalize_safe();
@@ -154,12 +131,9 @@ void CDemoRecord::MakeScreenshotFace()
     switch (m_Stage)
     {
     case 0:
-        //s_hud_flag.assign(psHUD_Flags);
-        //psHUD_Flags.assign(0);
         break;
     case 1:
         Render->Screenshot();
-        //psHUD_Flags.assign(s_hud_flag);
         m_bMakeScreenshot = FALSE;
         break;
     }
@@ -326,7 +300,6 @@ BOOL CDemoRecord::ProcessCam(SCamEffectorInfo& info)
     {
         if (IR_GetKeyState(DIK_F1))
         {
-
             pApp->pFontSystem->SetColor(color_rgba(255, 0, 0, 255));
             pApp->pFontSystem->SetAligment(CGameFont::alCenter);
             pApp->pFontSystem->OutSetI(0, -.05f);
@@ -385,6 +358,7 @@ BOOL CDemoRecord::ProcessCam(SCamEffectorInfo& info)
         }
         else
             g_position.p.set(m_Position);
+
         // move
         Fvector vmove;
 
@@ -430,22 +404,30 @@ void CDemoRecord::IR_OnKeyboardPress(int dik)
     }
     if (dik == DIK_GRAVE)
         Console->Show();
-    if (dik == DIK_SPACE) RecordKey();
-    if (dik == DIK_BACK) MakeCubemap();
-    if (dik == DIK_F11) MakeLevelMapScreenshot(IR_GetKeyState(DIK_LCONTROL));
-    if (dik == DIK_F12) MakeScreenshot();
-    if (dik == DIK_ESCAPE) fLifeTime = -1;
+    if (dik == DIK_SPACE)
+		RecordKey();
+    if (dik == DIK_BACK)
+		MakeCubemap();
+    if (dik == DIK_F11)
+		MakeLevelMapScreenshot(IR_GetKeyState(DIK_LCONTROL));
+    if (dik == DIK_F12)
+		MakeScreenshot();
+    if (dik == DIK_ESCAPE)
+		fLifeTime = -1;
 
-#ifndef MASTER_GOLD
-    if (dik == DIK_RETURN)
-    {
-        if (g_pGameLevel->CurrentEntity())
-        {
-            g_pGameLevel->CurrentEntity()->ForceTransform(m_Camera);
-            fLifeTime = -1;
-        }
-    }
-#endif // #ifndef MASTER_GOLD
+//Alundaio: Teleport to demo cam
+	if (dik == DIK_RETURN)
+	{
+		if (strstr(Core.Params, "-dbg"))
+		{
+			if (g_pGameLevel->CurrentEntity())
+			{
+				g_pGameLevel->CurrentEntity()->ForceTransform(m_Camera);
+				fLifeTime = -1;
+			}
+		}
+	}
+//-Alundaio
 
     if (dik == DIK_PAUSE)
         Device.Pause(!Device.Paused(), TRUE, TRUE, "demo_record");
