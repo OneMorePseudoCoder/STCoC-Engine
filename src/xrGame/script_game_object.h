@@ -175,7 +175,7 @@ public:
 	_DECLARE_FUNCTION10	(Squad		,	int		);
 	_DECLARE_FUNCTION10	(Group		,	int		);
 
-			void				Kill				(CScriptGameObject* who);
+			void				Kill				(CScriptGameObject* who, bool bypass_actor_check = false /*AVO: added for actor before death callback*/);
 
 	// CEntityAlive
 	_DECLARE_FUNCTION10	(GetFOV				,			float);
@@ -301,7 +301,7 @@ public:
 			bool				inv_box_can_take		(bool status);
 			bool				inv_box_can_take_status	();
 
-	//передача порции информации InventoryOwner
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ InventoryOwner
 			bool				GiveInfoPortion		(LPCSTR info_id);
 			bool				DisableInfoPortion	(LPCSTR info_id);
 			void				GiveGameNews		(LPCSTR caption, LPCSTR news, LPCSTR texture_name, int delay, int show_time);
@@ -309,10 +309,10 @@ public:
 
 			void				AddIconedTalkMessage_old(LPCSTR text, LPCSTR texture_name, LPCSTR templ_name) {};
 			void				AddIconedTalkMessage(LPCSTR caption, LPCSTR text, LPCSTR texture_name, LPCSTR templ_name);
-	//предикаты наличия/отсутствия порции информации у персонажа
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			bool				HasInfo				(LPCSTR info_id);
 			bool				DontHasInfo			(LPCSTR info_id);
-	//работа с заданиями
+	//пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			ETaskState			GetGameTaskState	(LPCSTR task_id);
 			void				SetGameTaskState	(ETaskState state, LPCSTR task_id);
 			void				GiveTaskToActor		(CGameTask* t, u32 dt, bool bCheckExisting, u32 t_timer);
@@ -767,7 +767,46 @@ public:
 			bool				is_door_blocked_by_npc					() const;
 			bool				is_weapon_going_to_be_strapped			( CScriptGameObject const* object ) const;
 
-	doors::door*				m_door;
+			//AVO: functions for object testing
+			_DECLARE_FUNCTION10(IsGameObject, bool);
+			_DECLARE_FUNCTION10(IsHeli, bool);
+			_DECLARE_FUNCTION10(IsEntityAlive, bool);
+			_DECLARE_FUNCTION10(IsInventoryItem, bool);
+			_DECLARE_FUNCTION10(IsInventoryOwner, bool);
+			_DECLARE_FUNCTION10(IsActor, bool);
+			_DECLARE_FUNCTION10(IsCustomMonster, bool);
+			_DECLARE_FUNCTION10(IsWeapon, bool);
+			_DECLARE_FUNCTION10(IsMedkit, bool);
+			_DECLARE_FUNCTION10(IsEatableItem, bool);
+			_DECLARE_FUNCTION10(IsAntirad, bool);
+			_DECLARE_FUNCTION10(IsCustomOutfit, bool);
+			_DECLARE_FUNCTION10(IsScope, bool);
+			_DECLARE_FUNCTION10(IsSilencer, bool);
+			_DECLARE_FUNCTION10(IsGrenadeLauncher, bool);
+			_DECLARE_FUNCTION10(IsWeaponMagazined, bool);
+			_DECLARE_FUNCTION10(IsSpaceRestrictor, bool);
+			_DECLARE_FUNCTION10(IsStalker, bool);
+			_DECLARE_FUNCTION10(IsAnomaly, bool);
+			_DECLARE_FUNCTION10(IsMonster, bool);
+			_DECLARE_FUNCTION10(IsExplosive, bool);
+			_DECLARE_FUNCTION10(IsScriptZone, bool);
+			_DECLARE_FUNCTION10(IsProjector, bool);
+			_DECLARE_FUNCTION10(IsTrader, bool);
+			_DECLARE_FUNCTION10(IsHudItem, bool);
+			_DECLARE_FUNCTION10(IsFoodItem, bool);
+			_DECLARE_FUNCTION10(IsArtefact, bool);
+			_DECLARE_FUNCTION10(IsAmmo, bool);
+			_DECLARE_FUNCTION10(IsMissile, bool);
+			_DECLARE_FUNCTION10(IsPhysicsShellHolder, bool);
+			_DECLARE_FUNCTION10(IsGrenade, bool);
+			_DECLARE_FUNCTION10(IsBottleItem, bool);
+			_DECLARE_FUNCTION10(IsTorch, bool);
+			_DECLARE_FUNCTION10(IsWeaponGL, bool);
+			_DECLARE_FUNCTION10(IsInventoryBox, bool);
+			void SetHealthEx(float hp);
+			//end AVO
+
+	doors::door* m_door;
 
 	DECLARE_SCRIPT_REGISTER_FUNCTION
 };
@@ -775,8 +814,8 @@ add_to_type_list(CScriptGameObject)
 #undef script_type_list
 #define script_type_list save_type_list(CScriptGameObject)
 
-extern void sell_condition	(CScriptIniFile *ini_file, LPCSTR section);
-extern void sell_condition	(float friend_factor, float enemy_factor);
-extern void buy_condition	(CScriptIniFile *ini_file, LPCSTR section);
-extern void buy_condition	(float friend_factor, float enemy_factor);
-extern void show_condition	(CScriptIniFile *ini_file, LPCSTR section);
+extern void sell_condition(CScriptIniFile *ini_file, LPCSTR section);
+extern void sell_condition(float friend_factor, float enemy_factor);
+extern void buy_condition(CScriptIniFile *ini_file, LPCSTR section);
+extern void buy_condition(float friend_factor, float enemy_factor);
+extern void show_condition(CScriptIniFile *ini_file, LPCSTR section);

@@ -77,7 +77,7 @@ void CEntity::Die(CObject* who)
 	Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).unregister_member(this);
 }
 
-//обновление состояния
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 float CEntity::CalcCondition(float hit)
 {
 	if (Local() && g_Alive()) 
@@ -136,7 +136,7 @@ void CEntity::Load		(LPCSTR section)
 #pragma todo("Jim to Dima: no specific figures or comments needed")	
 	m_fMorale			= 66.f;
 
-	//время убирания тела с уровня
+	//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	m_dwBodyRemoveTime	= READ_IF_EXISTS(pSettings,r_u32,section,"body_remove_time",BODY_REMOVE_TIME);
 	//////////////////////////////////////
 }
@@ -199,7 +199,7 @@ BOOL CEntity::net_Spawn		(CSE_Abstract* DC)
 		++Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).m_dwAliveCount;
 	}
 
-	if(!g_Alive())
+	if (!g_Alive())
 	{
 		m_level_death_time		= Device.dwTimeGlobal;
 		m_game_death_time		= E->m_game_death_time;;
@@ -238,22 +238,32 @@ void CEntity::net_Destroy	()
 	set_ready_to_save		();
 }
 
-void CEntity::KillEntity(u16 whoID)
+void CEntity::KillEntity(u16 whoID, BOOL bypass_actor_check /*AVO: added for actor_before_death callback*/)
 {
+	//AVO: allow scripts to process actor condition and prevent actor's death or kill him if desired.
+	//IMPORTANT: if you wish to kill actor you need to call db.actor:kill(level:object_by_id(whoID), true) in actor_before_death callback, to ensure all objects are properly destroyed
+	// this will bypass below if block and go to normal KillEntity routine.
+	if ((this->ID() == Actor()->ID()) && (bypass_actor_check != TRUE))
+	{
+		Actor()->callback(GameObject::eActorBeforeDeath)(whoID);
+		return;
+	}
+	//-AVO
+
 	if (whoID != ID()) 
 	{
 #ifdef DEBUG
 		if (m_killer_id != ALife::_OBJECT_ID(-1)) 
 		{
-			Msg			("! Entity [%s][%s] already has killer with id %d, but new killer id arrived - %d",*cNameSect(),*cName(),m_killer_id,whoID);
+			Msg("! Entity [%s][%s] already has killer with id %d, but new killer id arrived - %d",*cNameSect(),*cName(),m_killer_id,whoID);
 
-			CObject		*old_killer = Level().Objects.net_Find(m_killer_id);
-			Msg			("! Old killer is %s",old_killer ? *old_killer->cName() : "unknown");
+			CObject *old_killer = Level().Objects.net_Find(m_killer_id);
+			Msg("! Old killer is %s",old_killer ? *old_killer->cName() : "unknown");
 
-			CObject		*new_killer = Level().Objects.net_Find(whoID);
-			Msg			("! New killer is %s",new_killer ? *new_killer->cName() : "unknown");
+			CObject *new_killer = Level().Objects.net_Find(whoID);
+			Msg("! New killer is %s",new_killer ? *new_killer->cName() : "unknown");
 
-			VERIFY		(m_killer_id == ALife::_OBJECT_ID(-1));
+			VERIFY(m_killer_id == ALife::_OBJECT_ID(-1));
 		}
 #endif
 	}
@@ -263,99 +273,93 @@ void CEntity::KillEntity(u16 whoID)
 			return;
 	}
 
-	m_killer_id			= whoID;
+	m_killer_id = whoID;
 
-	set_death_time		();
+	set_death_time();
 
 	if (!getDestroy())
 	{
-		NET_Packet		P;
-		u_EventGen		(P,GE_DIE,ID());
-		P.w_u16			(u16(whoID));
-		P.w_u32			(0);
+		NET_Packet P;
+		u_EventGen(P, GE_DIE, ID());
+		P.w_u16(u16(whoID));
+		P.w_u32(0);
 		if (OnServer())
 			u_EventSend	(P, net_flags(TRUE, TRUE, FALSE, TRUE));
 	}
 };
 
-void CEntity::reinit			()
+void CEntity::reinit()
 {
-	inherited::reinit			();
+	inherited::reinit();
 }
 
-void CEntity::reload			(LPCSTR section)
+void CEntity::reload(LPCSTR section)
 {
-	inherited::reload			(section);
+	inherited::reload(section);
 	if (!use_simplified_visual())
-		CDamageManager::reload	(section,"damage",pSettings);
+		CDamageManager::reload(section, "damage", pSettings);
 }
 
-void CEntity::set_death_time	()
+void CEntity::set_death_time()
 {
 	m_level_death_time	= Device.dwTimeGlobal;
 	m_game_death_time	= ai().get_alife() ? ai().alife().time_manager().game_time() : Level().GetGameTime();
 }
 
-bool CEntity::IsFocused			()const	{ return (smart_cast<const CEntity*>(g_pGameLevel->CurrentEntity())==this);		}
+bool CEntity::IsFocused	() const { return (smart_cast<const CEntity*>(g_pGameLevel->CurrentEntity()) == this); }
 
-bool CEntity::IsMyCamera		()const	{ return (smart_cast<const CEntity*>(g_pGameLevel->CurrentViewEntity())==this);	}
+bool CEntity::IsMyCamera() const { return (smart_cast<const CEntity*>(g_pGameLevel->CurrentViewEntity()) == this); }
 
-void CEntity::set_ready_to_save	()
+void CEntity::set_ready_to_save() {}
+
+DLL_Pure *CEntity::_construct()
 {
-}
-
-DLL_Pure *CEntity::_construct	()
-{
-	inherited::_construct		();
-	CDamageManager::_construct	();
-	m_entity_condition			= create_entity_condition(NULL);
-	return						(this);
+	inherited::_construct();
+	CDamageManager::_construct();
+	m_entity_condition = create_entity_condition(NULL);
+	return (this);
 }
 
 const u32 FORGET_KILLER_TIME = 180000;
 
-void CEntity::shedule_Update	(u32 dt)
+void CEntity::shedule_Update(u32 dt)
 {
-	inherited::shedule_Update	(dt);
+	inherited::shedule_Update(dt);
 	if (!getDestroy() && !g_Alive() && (m_killer_id != u16(-1))) 
 	{
 		if (Device.dwTimeGlobal > m_level_death_time + FORGET_KILLER_TIME) 
 		{
-			m_killer_id			= u16(-1);
-			NET_Packet			P;
-			u_EventGen			(P,GE_ASSIGN_KILLER,ID());
-			P.w_u16				(u16(-1));
-			u_EventSend			(P);
+			m_killer_id = u16(-1);
+			NET_Packet P;
+			u_EventGen(P, GE_ASSIGN_KILLER, ID());
+			P.w_u16	(u16(-1));
+			u_EventSend(P);
 		}
 	}
 }
 
-void CEntity::on_before_change_team	()
-{
-}
+void CEntity::on_before_change_team() {}
 
-void CEntity::on_after_change_team	()
-{
-}
+void CEntity::on_after_change_team() {}
 
 void CEntity::ChangeTeam(int team, int squad, int group)
 {
 	if ((team == g_Team()) && (squad == g_Squad()) && (group == g_Group())) 
 		return;
 
-	VERIFY2					(g_Alive(), "Try to change team of a dead object");
+	VERIFY2(g_Alive(), "Try to change team of a dead object");
 	
-	VERIFY					(m_registered_member);
+	VERIFY(m_registered_member);
 
 	// remove from current team
-	on_before_change_team	();
-	Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).unregister_member	(this);
+	on_before_change_team();
+	Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).unregister_member(this);
 
-	id_Team					= team;
-	id_Squad				= squad;
-	id_Group				= group;
+	id_Team = team;
+	id_Squad = squad;
+	id_Group = group;
 
 	// add to new team
-	Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).register_member		(this);
-	on_after_change_team	();
+	Level().seniority_holder().team(g_Team()).squad(g_Squad()).group(g_Group()).register_member	(this);
+	on_after_change_team();
 }

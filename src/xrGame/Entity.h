@@ -1,22 +1,19 @@
 #pragma once
-
-
 #include "physicsshellholder.h"
 #include "damage_manager.h"
 #include "entitycondition.h"
-// refs
-class	ENGINE_API CCameraBase;
-class	ENGINE_API C3DSound;
-class	ENGINE_API CMotionDef;
-class	ENGINE_API IKinematics;
-class	ENGINE_API CBoneInstance;
-class	CWeaponList;
-class   CPHMovementControl;
-class	CHudItem;
 
-class CEntity : 
-		public CPhysicsShellHolder,
-		public CDamageManager
+// refs
+class ENGINE_API CCameraBase;
+class ENGINE_API C3DSound;
+class ENGINE_API CMotionDef;
+class ENGINE_API IKinematics;
+class ENGINE_API CBoneInstance;
+class CWeaponList;
+class CPHMovementControl;
+class CHudItem;
+
+class CEntity : public CPhysicsShellHolder, public CDamageManager
 {
 	friend class CEntityCondition;
 private:
@@ -97,8 +94,7 @@ public:
 	virtual void			HitImpulse			(float P, Fvector &vWorldDir, 	Fvector& vLocalDir)	= 0;
 
 	virtual void			Die					(CObject* who);
-//			void			KillEntity			(CObject* who);
-			void			KillEntity			(u16 whoID);
+			void			KillEntity			(u16 whoID, BOOL bypass_actor_check = FALSE);
 		
 	// Events
 	virtual void			OnEvent				( NET_Packet& P, u16 type		);
