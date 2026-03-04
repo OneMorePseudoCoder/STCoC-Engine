@@ -177,7 +177,7 @@ CActor::CActor() : CEntityAlive()
 	m_pUsableObject			= NULL;
 
 	m_anims					= xr_new<SActorMotions>();
-//.	m_vehicle_anims			= xr_new<SActorVehicleAnims>();
+	m_vehicle_anims			= xr_new<SActorVehicleAnims>();
 	m_entity_condition		= NULL;
 	m_iLastHitterID			= u16(-1);
 	m_iLastHittingWeaponID	= u16(-1);
@@ -220,7 +220,7 @@ CActor::~CActor()
 	xr_delete				(m_pPhysics_support);
 
 	xr_delete				(m_anims);
-//.	xr_delete				(m_vehicle_anims);
+	xr_delete				(m_vehicle_anims);
 }
 
 void CActor::reinit	()

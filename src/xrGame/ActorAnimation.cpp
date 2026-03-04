@@ -256,7 +256,8 @@ void SVehicleAnimCollection::Create(IKinematicsAnimated* V,u16 num)
 	steer_left=	V->ID_Cycle(strconcat(sizeof(buf),buf,"steering_idle_",buff1,"ls"));
 	steer_right=V->ID_Cycle(strconcat(sizeof(buf),buf,"steering_idle_",buff1,"rs"));
 
-	for(int i=0;MAX_IDLES>i;++i){
+	for (int i=0;MAX_IDLES>i;++i)
+	{
 		idles[i]=V->ID_Cycle_Safe(strconcat(sizeof(buf),buf,"steering_idle_",buff1,itoa(i,buff2,10)));
 		if(idles[i]) idles_num++;
 		else break;
@@ -265,40 +266,42 @@ void SVehicleAnimCollection::Create(IKinematicsAnimated* V,u16 num)
 
 void CActor::steer_Vehicle(float angle)	
 {
-	if(!m_holder)		return;
-/*
-	CCar*	car			= smart_cast<CCar*>(m_holder);
-	u16 anim_type       = car->DriverAnimationType();
+	if (!m_holder)
+		return;
+
+	CCar* car = smart_cast<CCar*>(m_holder);
+	u16 anim_type = car->DriverAnimationType();
 	SVehicleAnimCollection& anims=m_vehicle_anims->m_vehicles_type_collections[anim_type];
-	if(angle==0.f) 		smart_cast<IKinematicsAnimated*>	(Visual())->PlayCycle(anims.idles[0]);
-	else if(angle>0.f)	smart_cast<IKinematicsAnimated*>	(Visual())->PlayCycle(anims.steer_right);
-	else				smart_cast<IKinematicsAnimated*>	(Visual())->PlayCycle(anims.steer_left);
-*/
+	if (angle == 0.f)
+ 		smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(anims.idles[0]);
+	else if (angle > 0.f)
+		smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(anims.steer_right);
+	else	
+		smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(anims.steer_left);
 }
 
-void legs_play_callback		(CBlend *blend)
+void legs_play_callback(CBlend *blend)
 {
-	CActor					*object = (CActor*)blend->CallbackParam;
-	VERIFY					(object);
+	CActor *object = (CActor*)blend->CallbackParam;
+	VERIFY(object);
 	object->m_current_legs.invalidate();
 }
 
-void CActor::g_SetSprintAnimation( u32 mstate_rl,MotionID &head,MotionID &torso,MotionID &legs)
+void CActor::g_SetSprintAnimation(u32 mstate_rl,MotionID &head,MotionID &torso,MotionID &legs)
 {
-	SActorSprintState& sprint			= m_anims->m_sprint;
+	SActorSprintState& sprint = m_anims->m_sprint;
 	
-	bool jump = (mstate_rl&mcFall)		||
-				(mstate_rl&mcLanding)	||
-				(mstate_rl&mcLanding)	||
-				(mstate_rl&mcLanding2)	||
-				(mstate_rl&mcJump)		;
+	bool jump = (mstate_rl&mcFall) || (mstate_rl&mcLanding)	|| (mstate_rl&mcLanding)	|| (mstate_rl&mcLanding2)	|| (mstate_rl&mcJump)		;
 	
-	if		(mstate_rl & mcFwd)		legs = (!jump) ? sprint.legs_fwd	: sprint.legs_jump_fwd;
-	else if (mstate_rl & mcLStrafe) legs = (!jump) ? sprint.legs_ls		: sprint.legs_jump_ls;
-	else if (mstate_rl & mcRStrafe)	legs = (!jump) ? sprint.legs_rs		: sprint.legs_jump_rs;	
+	if (mstate_rl & mcFwd)		
+		legs = (!jump) ? sprint.legs_fwd : sprint.legs_jump_fwd;
+	else if (mstate_rl & mcLStrafe) 
+		legs = (!jump) ? sprint.legs_ls : sprint.legs_jump_ls;
+	else if (mstate_rl & mcRStrafe)	
+		legs = (!jump) ? sprint.legs_rs : sprint.legs_jump_rs;	
 }
 
-CMotion*        FindMotionKeys(MotionID motion_ID,IRenderVisual* V)
+CMotion* FindMotionKeys(MotionID motion_ID,IRenderVisual* V)
 {
 	IKinematicsAnimated* VA = smart_cast<IKinematicsAnimated*>(V);
 	return (VA && motion_ID.valid())?VA->LL_GetRootMotion(motion_ID):0;
@@ -307,80 +310,96 @@ CMotion*        FindMotionKeys(MotionID motion_ID,IRenderVisual* V)
 #ifdef DEBUG
 BOOL	g_ShowAnimationInfo = TRUE;
 #endif // DEBUG
-char* mov_state[] ={
+char* mov_state[] =
+{
 	"idle",
 	"walk",
 	"run",
 	"sprint",
 };
+
 void CActor::g_SetAnimation( u32 mstate_rl )
 {
-
-
-	if (!g_Alive()) {
-		if (m_current_legs||m_current_torso){
-			SActorState*				ST = 0;
-			if (mstate_rl&mcCrouch)		ST = &m_anims->m_crouch;
-			else						ST = &m_anims->m_normal;
-			mstate_real					= 0;
-			m_current_legs.invalidate	();
-			m_current_torso.invalidate	();
-
-			//smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(m_anims->m_dead_stop);
+	if (!g_Alive()) 
+	{
+		if (m_current_legs||m_current_torso)
+		{
+			SActorState* ST = 0;
+			if (mstate_rl&mcCrouch)		
+				ST = &m_anims->m_crouch;
+			else						
+				ST = &m_anims->m_normal;
+			mstate_real = 0;
+			m_current_legs.invalidate();
+			m_current_torso.invalidate();
 		}
 
 		return;
 	}
-	STorsoWpn::eMovingState	moving_idx 		= STorsoWpn::eIdle;
-	SActorState*					ST 		= 0;
-	SAnimState*						AS 		= 0;
+
+	STorsoWpn::eMovingState	moving_idx = STorsoWpn::eIdle;
+	SActorState* ST = 0;
+	SAnimState* AS = 0;
 	
-	if		(mstate_rl&mcCrouch)	
-		ST 		= &m_anims->m_crouch;
+	if (mstate_rl&mcCrouch)	
+		ST = &m_anims->m_crouch;
 	else if	(mstate_rl&mcClimb)		
-		ST 		= &m_anims->m_climb;
+		ST = &m_anims->m_climb;
 	else							
-		ST 		= &m_anims->m_normal;
+		ST = &m_anims->m_normal;
 
 	bool bAccelerated = isActorAccelerated(mstate_rl, IsZoomAimingMode());
-	if ( bAccelerated )
+	if (bAccelerated)
 	{
-		AS							= &ST->m_run;
-	}else{
-		AS							= &ST->m_walk;
+		AS = &ST->m_run;
 	}
-	if(mstate_rl&mcAnyMove)
+	else
 	{
-		if( bAccelerated )
-			moving_idx				= STorsoWpn::eRun;
+		AS = &ST->m_walk;
+	}
+
+	if (mstate_rl&mcAnyMove)
+	{
+		if (bAccelerated)
+			moving_idx = STorsoWpn::eRun;
 		else
-			moving_idx				= STorsoWpn::eWalk;
+			moving_idx = STorsoWpn::eWalk;
 	}
+
 	// анимации
-	MotionID 						M_legs;
-	MotionID 						M_torso;
-	MotionID 						M_head;
+	MotionID M_legs;
+	MotionID M_torso;
+	MotionID M_head;
 
 	//если мы просто стоим на месте
 	bool is_standing = false;
 
 	// Legs
-	if		(mstate_rl&mcLanding)	M_legs	= ST->landing[0];
-	else if (mstate_rl&mcLanding2)	M_legs	= ST->landing[1];
-	else if ((mstate_rl&mcTurn)&&
-			!(mstate_rl&mcClimb))	M_legs	= ST->legs_turn;
-	else if (mstate_rl&mcFall)		M_legs	= ST->jump_idle;
-	else if (mstate_rl&mcJump)		M_legs	= ST->jump_begin;
-	else if (mstate_rl&mcFwd)		M_legs	= AS->legs_fwd;
-	else if (mstate_rl&mcBack)		M_legs	= AS->legs_back;
-	else if (mstate_rl&mcLStrafe)	M_legs	= AS->legs_ls;
-	else if (mstate_rl&mcRStrafe)	M_legs	= AS->legs_rs;
-	else is_standing = true;
+	if (mstate_rl&mcLanding)
+		M_legs = ST->landing[0];
+	else if (mstate_rl&mcLanding2)
+		M_legs = ST->landing[1];
+	else if ((mstate_rl&mcTurn) && !(mstate_rl&mcClimb))
+		M_legs = ST->legs_turn;
+	else if (mstate_rl&mcFall)	
+		M_legs = ST->jump_idle;
+	else if (mstate_rl&mcJump)
+		M_legs = ST->jump_begin;
+	else if (mstate_rl&mcFwd)
+		M_legs = AS->legs_fwd;
+	else if (mstate_rl&mcBack)
+		M_legs = AS->legs_back;
+	else if (mstate_rl&mcLStrafe)
+		M_legs = AS->legs_ls;
+	else if (mstate_rl&mcRStrafe)
+		M_legs = AS->legs_rs;
+	else
+		is_standing = true;
 
-	if(mstate_rl&mcSprint)
+	if (mstate_rl&mcSprint)
 	{
-		g_SetSprintAnimation			(mstate_rl,M_head,M_torso,M_legs);
-		moving_idx						= STorsoWpn::eSprint;
+		g_SetSprintAnimation(mstate_rl, M_head, M_torso, M_legs);
+		moving_idx = STorsoWpn::eSprint;
 	}
 
 	if (this == Level().CurrentViewEntity())
@@ -388,8 +407,8 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 		if ((mstate_rl&mcSprint) != (mstate_old&mcSprint))
 		{
 			g_player_hud->OnMovementChanged(mcSprint);
-		}else
-		if ((mstate_rl&mcAnyMove) != (mstate_old&mcAnyMove))
+		}
+		else if ((mstate_rl&mcAnyMove) != (mstate_old&mcAnyMove))
 		{
 			g_player_hud->OnMovementChanged(mcAnyMove);
 		}
@@ -397,15 +416,19 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 
 	//-----------------------------------------------------------------------
 	// Torso
-	if(mstate_rl&mcClimb)
+	if (mstate_rl&mcClimb)
 	{
-		if		(mstate_rl&mcFwd)		M_torso	= AS->legs_fwd;
-		else if (mstate_rl&mcBack)		M_torso	= AS->legs_back;
-		else if (mstate_rl&mcLStrafe)	M_torso	= AS->legs_ls;
-		else if (mstate_rl&mcRStrafe)	M_torso	= AS->legs_rs;
+		if (mstate_rl&mcFwd)
+			M_torso	= AS->legs_fwd;
+		else if (mstate_rl&mcBack)	
+			M_torso	= AS->legs_back;
+		else if (mstate_rl&mcLStrafe)
+			M_torso	= AS->legs_ls;
+		else if (mstate_rl&mcRStrafe)
+			M_torso	= AS->legs_rs;
 	}
 	
-	if(!M_torso)
+	if (!M_torso)
 	{
 		CInventoryItem* _i = inventory().ActiveItem();
 		CHudItem		*H = smart_cast<CHudItem*>(_i);
@@ -413,7 +436,8 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 		CMissile		*M = smart_cast<CMissile*>(_i);
 		CArtefact		*A = smart_cast<CArtefact*>(_i);
 					
-		if (H) {
+		if (H) 
+		{
 			VERIFY(H->animation_slot() <= _total_anim_slots_);
 			STorsoWpn* TW			= &ST->m_torso[H->animation_slot() - 1];
 			if (!b_DropActivated&&!fis_zero(f_DropPower))
@@ -536,17 +560,19 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 			}
 		}
 	}
-	MotionID		mid = smart_cast<IKinematicsAnimated*>(Visual())->ID_Cycle("norm_idle_0");
+
+	MotionID mid = smart_cast<IKinematicsAnimated*>(Visual())->ID_Cycle("norm_idle_0");
 
 	if (!M_legs)
 	{
-		if((mstate_rl&mcCrouch)&&!isActorAccelerated(mstate_rl, IsZoomAimingMode()))//!(mstate_rl&mcAccel))
+		if ((mstate_rl&mcCrouch)&&!isActorAccelerated(mstate_rl, IsZoomAimingMode()))
 		{
 			M_legs=smart_cast<IKinematicsAnimated*>(Visual())->ID_Cycle("cr_idle_1");
 		}
 		else 
 			M_legs	= ST->legs_idle;
 	}
+
 	if (!M_head)					
 		M_head	= ST->m_head_idle;
 
@@ -559,7 +585,7 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 	}
 	
 	// есть анимация для всего - запустим / иначе запустим анимацию по частям
-	if (m_current_torso!=M_torso)
+	if (m_current_torso != M_torso)
 	{
 		if (m_bAnimTorsoPlayed)		
 			m_current_torso_blend = smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(M_torso,TRUE,AnimTorsoPlayCallBack,this);
@@ -569,9 +595,9 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 		m_current_torso=M_torso;
 	}
 	
-	if(m_current_head!=M_head)
+	if (m_current_head!=M_head)
 	{
-		if(M_head)
+		if (M_head)
 			smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(M_head);
 
 		m_current_head=M_head;
@@ -579,48 +605,46 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 
 	if (m_current_legs!=M_legs)
 	{
-		float pos					= 0.f;
-		VERIFY						(!m_current_legs_blend || !fis_zero(m_current_legs_blend->timeTotal));
-		if ((mstate_real&mcAnyMove)&&(mstate_old&mcAnyMove)&&m_current_legs_blend)
-			pos						= fmod(m_current_legs_blend->timeCurrent,m_current_legs_blend->timeTotal)/m_current_legs_blend->timeTotal;
+		float pos = 0.f;
+		VERIFY(!m_current_legs_blend || !fis_zero(m_current_legs_blend->timeTotal));
+		if ((mstate_real&mcAnyMove) && (mstate_old&mcAnyMove)&&m_current_legs_blend)
+			pos = fmod(m_current_legs_blend->timeCurrent,m_current_legs_blend->timeTotal)/m_current_legs_blend->timeTotal;
 
 
-		IKinematicsAnimated* ka		= smart_cast<IKinematicsAnimated*>(Visual());
-		m_current_legs_blend		= PlayMotionByParts(ka, M_legs, TRUE, legs_play_callback, this);
-//		m_current_legs_blend		= smart_cast<IKinematicsAnimated*>(Visual())->PlayCycle(M_legs,TRUE,legs_play_callback,this);
+		IKinematicsAnimated* ka = smart_cast<IKinematicsAnimated*>(Visual());
+		m_current_legs_blend = PlayMotionByParts(ka, M_legs, TRUE, legs_play_callback, this);
 
-
-		if ((!(mstate_old&mcAnyMove))&&(mstate_real&mcAnyMove))
+		if ((!(mstate_old&mcAnyMove)) && (mstate_real&mcAnyMove))
 		{
-			pos						= 0.5f;//0.5f*Random.randI(2);
+			pos = 0.5f;
 		}
+
 		if (m_current_legs_blend)
 			m_current_legs_blend->timeCurrent = m_current_legs_blend->timeTotal*pos;
 
-		m_current_legs				= M_legs;
+		m_current_legs = M_legs;
 
 		CStepManager::on_animation_start(M_legs, m_current_legs_blend);
 	}
 
-
-
 #ifdef DEBUG
-	if(bDebug && g_ShowAnimationInfo)
+	if (bDebug && g_ShowAnimationInfo)
 	{
-		UI().Font().pFontStat->OutSetI	(0,0);
+		UI().Font().pFontStat->OutSetI(0, 0);
 		UI().Font().pFontStat->OutNext("[%s]",mov_state[moving_idx]);
 		IKinematicsAnimated* KA = smart_cast<IKinematicsAnimated*>(Visual());
-		if(M_torso)
+		if (M_torso)
 			UI().Font().pFontStat->OutNext("torso [%s]",KA->LL_MotionDefName_dbg(M_torso).first);
-		if(M_head)
+		if (M_head)
 			UI().Font().pFontStat->OutNext("head [%s]",KA->LL_MotionDefName_dbg(M_head).first);
-		if(M_legs)
+		if (M_legs)
 			UI().Font().pFontStat->OutNext("legs [%s]",KA->LL_MotionDefName_dbg(M_legs).first);
 	}
 #endif
 
 #ifdef DEBUG
-	if ((Level().CurrentControlEntity() == this) && g_ShowAnimationInfo) {
+	if ((Level().CurrentControlEntity() == this) && g_ShowAnimationInfo) 
+	{
 		string128 buf;
 		xr_strcpy(buf,"");
 		if (isActorAccelerated(mstate_rl, IsZoomAimingMode()))		xr_strcat(buf,"Accel ");

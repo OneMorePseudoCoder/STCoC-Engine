@@ -1,18 +1,14 @@
 #include "stdafx.h"
 #include "car.h"
-//#if 0
 
 #include "ParticlesObject.h"
-//#include "Physics.h"
 
 #ifdef DEBUG
 #	include "../xrEngine/StatGraph.h"
 #	include "PHDebug.h"
 #endif // DEBUG
 
-//#include "hit.h"
 #include "PHDestroyable.h"
-
 #include "cameralook.h"
 #include "camerafirsteye.h"
 #include "Actor.h"
@@ -27,13 +23,11 @@
 #include "CarWeapon.h"
 #include "game_object_space.h"
 #include "../xrEngine/gamemtllib.h"
-//#include "PHActivationShape.h"
 #include "CharacterPhysicsSupport.h"
 #include "car_memory.h"
 #include "../xrphysics/IPHWorld.h"
-BONE_P_MAP CCar::bone_map=BONE_P_MAP();
 
-//extern CPHWorld*	ph_world;
+BONE_P_MAP CCar::bone_map=BONE_P_MAP();
 
 CCar::CCar()
 {
@@ -838,14 +832,10 @@ void CCar::CreateSkeleton(CSE_Abstract	*po)
 		pK->CalculateBones	(TRUE);
 	}
 	phys_shell_verify_object_model ( *this );
-#pragma todo(" replace below by P_build_Shell or call inherited")
-	m_pPhysicsShell		= P_create_Shell();
-	m_pPhysicsShell->build_FromKinematics(pK,&bone_map);
-	m_pPhysicsShell->set_PhysicsRefObject(this);
-	m_pPhysicsShell->mXFORM.set(XFORM());
-	m_pPhysicsShell->Activate(true);
-	m_pPhysicsShell->SetAirResistance(0.f,0.f);
-	m_pPhysicsShell->SetPrefereExactIntegration();
+
+	//Alundaio: p_build_shell
+	m_pPhysicsShell = P_build_Shell(this, true, &bone_map);
+	//-Alundaio
 
 	ApplySpawnIniToPhysicShell(&po->spawn_ini(),m_pPhysicsShell,false);
 	ApplySpawnIniToPhysicShell(pK->LL_UserData(),m_pPhysicsShell,false);
@@ -2032,8 +2022,79 @@ Fvector	CCar::		ExitVelocity				()
 	CPhysicsElement *E=P->get_ElementByStoreOrder(0);
 	Fvector v=ExitPosition();
 	E->GetPointVel( v, v );
-	//dBodyGetPointVel(E->get_body(),v.x,v.y,v.z,cast_fp(v));
 	return v;
 }
 
-//#endif // #if 0
+/************************************************** added by Ray Twitty (aka Shadows) START **************************************************/
+float CCar::GetfFuel()
+{
+	return m_fuel;
+}
+
+void CCar::SetfFuel(float fuel)
+{
+	m_fuel = fuel;
+}
+
+float CCar::GetfFuelTank()
+{
+	return m_fuel_tank;
+}
+
+void CCar::SetfFuelTank(float fuel_tank)
+{
+	m_fuel_tank = fuel_tank;
+}
+
+float CCar::GetfFuelConsumption()
+{
+	return m_fuel_consumption;
+}
+
+void CCar::SetfFuelConsumption(float fuel_consumption)
+{
+	m_fuel_consumption = fuel_consumption;
+}
+
+void CCar::ChangefFuel(float fuel)
+{
+	if(m_fuel + fuel < 0)
+	{
+		m_fuel = 0;
+		return;
+	}
+
+	if(fuel < m_fuel_tank - m_fuel)
+	{
+		m_fuel += fuel;
+	}
+	else
+	{
+		m_fuel = m_fuel_tank;
+	}
+}
+
+void CCar::ChangefHealth(float health)
+{
+	float current_health = GetfHealth();
+	if(current_health + health < 0)
+	{
+		SetfHealth(0);
+		return;
+	}
+
+	if(health < 1 - current_health)
+	{
+		SetfHealth(current_health + health);
+	}
+	else
+	{
+		SetfHealth(1);
+	}
+}
+
+bool CCar::isActiveEngine()
+{
+	return b_engine_on;
+}
+/*************************************************** added by Ray Twitty (aka Shadows) END ***************************************************/
