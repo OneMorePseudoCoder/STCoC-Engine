@@ -1029,6 +1029,7 @@
     <ClCompile Include="ZoneVisual.cpp" />
     <ClCompile Include="zone_effector.cpp" />
     <ClCompile Include="ZudaArtifact.cpp" />
+    <ClCompile Include="AmebaZone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\xrServerEntities\ai_sounds.h" />
@@ -2475,6 +2476,7 @@
     <ClInclude Include="ZoneVisual.h" />
     <ClInclude Include="zone_effector.h" />
     <ClInclude Include="ZudaArtifact.h" />
+    <ClInclude Include="AmebaZone.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai\monsters\chimera\chimera_attack_state.h" />
