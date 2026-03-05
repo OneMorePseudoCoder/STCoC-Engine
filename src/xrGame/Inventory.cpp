@@ -957,7 +957,7 @@ bool CInventory::Eat(PIItem pIItem)
 		pIItem->SetDropManual(TRUE);
 	}
 	
-	if (IsUsingCondition())
+	if (pItemToEat->IsUsingCondition() && Actor()->m_inventory == this)
 		CurrentGameUI()->GetActorMenu().RefreshConsumableCells();
 
 	return true;
