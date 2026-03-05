@@ -76,17 +76,17 @@ void CInventory::ReloadInv()
 {
 	m_slots.clear();
 
-	u32 sz = pSettings->r_s32("inventory", "slots_count");
+	u32 sz = LAST_SLOT + 1; //pSettings->r_s32("inventory", "slots_count");
 	m_slots.resize(sz + 1); //first is [1]
 
 	string256 temp;
 	for (u16 i = FirstSlot(); i <= LastSlot(); ++i)
 	{
 		xr_sprintf(temp, "slot_persistent_%d", i);
-		m_slots[i].m_bPersistent = !!pSettings->r_bool("inventory", temp);
+		m_slots[i].m_bPersistent = !!READ_IF_EXISTS(pSettings, r_bool, "inventory", temp, false);
 
 		xr_sprintf(temp, "slot_active_%d", i);
-		m_slots[i].m_bAct = !!pSettings->r_bool("inventory", temp);
+		m_slots[i].m_bAct = !!READ_IF_EXISTS(pSettings, r_bool, "inventory", temp, false);
 	};
 }
 
@@ -1083,7 +1083,6 @@ bool CInventory::CanTakeItem(CInventoryItem *inventory_item) const
 	return	true;
 }
 
-
 u32  CInventory::BeltWidth() const
 {
 	CActor* pActor = smart_cast<CActor*>( m_pOwner );
@@ -1098,55 +1097,54 @@ u32  CInventory::BeltWidth() const
 	return 0; //m_iMaxBelt;
 }
 
-void  CInventory::AddAvailableItems(TIItemContainer& items_container, bool for_trade) const
+void CInventory::AddAvailableItems(TIItemContainer& items_container, bool for_trade) const
 {
-	for(TIItemContainer::const_iterator it = m_ruck.begin(); m_ruck.end() != it; ++it) 
+	for (TIItemContainer::const_iterator it = m_ruck.begin(); m_ruck.end() != it; ++it) 
 	{
 		PIItem pIItem = *it;
-		if(!for_trade || pIItem->CanTrade())
+		if (!for_trade || pIItem->CanTrade())
 			items_container.push_back(pIItem);
 	}
 
-	if(m_bBeltUseful)
+	if (m_bBeltUseful)
 	{
-		for(TIItemContainer::const_iterator it = m_belt.begin(); m_belt.end() != it; ++it) 
+		for (TIItemContainer::const_iterator it = m_belt.begin(); m_belt.end() != it; ++it) 
 		{
 			PIItem pIItem = *it;
-			if(!for_trade || pIItem->CanTrade())
+			if (!for_trade || pIItem->CanTrade())
 				items_container.push_back(pIItem);
 		}
 	}
 	
-	if(m_bSlotsUseful)
+	if (m_bSlotsUseful)
 	{
 		u16 I = FirstSlot();
 		u16 E = LastSlot();
-		for(;I<=E;++I)
+		for (;I <= E; ++I)
 		{
 			PIItem item = ItemFromSlot(I);
-			if(item && (!for_trade || item->CanTrade())  )
+			if (item && (!for_trade || item->CanTrade()))
 			{
-				if(!SlotIsPersistent(I) || item->BaseSlot()==GRENADE_SLOT )
+				if (!SlotIsPersistent(I) || item->BaseSlot() == GRENADE_SLOT)
 					items_container.push_back(item);
 			}
 		}
 	}		
 }
 
-bool CInventory::isBeautifulForActiveSlot	(CInventoryItem *pIItem)
+bool CInventory::isBeautifulForActiveSlot(CInventoryItem *pIItem)
 {
 	u16 I = FirstSlot();
 	u16 E = LastSlot();
-	for(;I<=E;++I)
+	for (;I <= E; ++I)
 	{
 		PIItem item = ItemFromSlot(I);
 		if (item && item->IsNecessaryItem(pIItem))
-			return		(true);
+			return (true);
 	}
-	return				(false);
+	return (false);
 }
 
-//.#include "WeaponHUD.h"
 void CInventory::Items_SetCurrentEntityHud(bool current_entity)
 {
 	TIItemContainer::iterator it;
@@ -1167,9 +1165,9 @@ void CInventory::SetSlotsBlocked(u16 mask, bool bBlock)
 {
 	R_ASSERT(OnServer());
 
-	for(u16 i = FirstSlot(), ie = LastSlot(); i <= ie; ++i)
+	for (u16 i = FirstSlot(), ie = LastSlot(); i <= ie; ++i)
 	{
-		if(mask & (1<<i))
+		if (mask & (1 << i))
 		{
 			if (bBlock)
 				BlockSlot(i);
@@ -1181,7 +1179,8 @@ void CInventory::SetSlotsBlocked(u16 mask, bool bBlock)
 	if (bBlock)
 	{
 		TryDeactivateActiveSlot();	
-	} else
+	} 
+	else
 	{
 		TryActivatePrevSlot();
 	}
@@ -1189,19 +1188,13 @@ void CInventory::SetSlotsBlocked(u16 mask, bool bBlock)
 
 void CInventory::TryActivatePrevSlot()
 {
-	u16 ActiveSlot		= GetActiveSlot();
-	u16 PrevActiveSlot	= GetPrevActiveSlot();
-	u16 NextActiveSlot	= GetNextActiveSlot();
-	if ((
-			(ActiveSlot == NO_ACTIVE_SLOT) ||
-			(NextActiveSlot == NO_ACTIVE_SLOT)
-		) &&
-		(PrevActiveSlot != NO_ACTIVE_SLOT))
+	u16 ActiveSlot = GetActiveSlot();
+	u16 PrevActiveSlot = GetPrevActiveSlot();
+	u16 NextActiveSlot = GetNextActiveSlot();
+	if (((ActiveSlot == NO_ACTIVE_SLOT) || (NextActiveSlot == NO_ACTIVE_SLOT)) && (PrevActiveSlot != NO_ACTIVE_SLOT))
 	{
 		PIItem prev_active_item = ItemFromSlot(PrevActiveSlot);
-		if (prev_active_item &&
-			!IsSlotBlocked(prev_active_item) &&
-			m_slots[PrevActiveSlot].CanBeActivated())
+		if (prev_active_item && !IsSlotBlocked(prev_active_item) && m_slots[PrevActiveSlot].CanBeActivated())
 		{
 #ifndef MASTER_GOLD
 			Msg("Set slots blocked: activating prev slot [%d], Frame[%d]", PrevActiveSlot, Device.dwFrame);
@@ -1212,35 +1205,30 @@ void CInventory::TryActivatePrevSlot()
 	}
 }
 
-void CInventory::TryDeactivateActiveSlot	()
+void CInventory::TryDeactivateActiveSlot()
 {
-	u16 ActiveSlot		= GetActiveSlot();
-	u16 NextActiveSlot	= GetNextActiveSlot();
+	u16 ActiveSlot = GetActiveSlot();
+	u16 NextActiveSlot = GetNextActiveSlot();
 
 	if ((ActiveSlot == NO_ACTIVE_SLOT) && (NextActiveSlot == NO_ACTIVE_SLOT))
 		return;
 	
-	PIItem		active_item = (ActiveSlot != NO_ACTIVE_SLOT) ? 
-		ItemFromSlot(ActiveSlot) : NULL;
-	PIItem		next_active_item = (NextActiveSlot != NO_ACTIVE_SLOT) ?
-		ItemFromSlot(NextActiveSlot) : NULL;
+	PIItem active_item = (ActiveSlot != NO_ACTIVE_SLOT) ? ItemFromSlot(ActiveSlot) : NULL;
+	PIItem next_active_item = (NextActiveSlot != NO_ACTIVE_SLOT) ? ItemFromSlot(NextActiveSlot) : NULL;
 
-	if (active_item &&
-		(IsSlotBlocked(active_item) || !m_slots[ActiveSlot].CanBeActivated())
-		)
+	if (active_item && (IsSlotBlocked(active_item) || !m_slots[ActiveSlot].CanBeActivated()))
 	{
 #ifndef MASTER_GOLD
 		Msg("Set slots blocked: activating slot [-1], Frame[%d]", Device.dwFrame);
 #endif // #ifndef MASTER_GOLD
 		ItemFromSlot(ActiveSlot)->DiscardState();
-		Activate			(NO_ACTIVE_SLOT);
-		SetPrevActiveSlot	(ActiveSlot);
-	} else if (next_active_item &&
-		(IsSlotBlocked(next_active_item) || !m_slots[NextActiveSlot].CanBeActivated())
-		)
+		Activate(NO_ACTIVE_SLOT);
+		SetPrevActiveSlot(ActiveSlot);
+	} 
+	else if (next_active_item && (IsSlotBlocked(next_active_item) || !m_slots[NextActiveSlot].CanBeActivated()))
 	{
-		Activate			(NO_ACTIVE_SLOT);
-		SetPrevActiveSlot	(NextActiveSlot);
+		Activate(NO_ACTIVE_SLOT);
+		SetPrevActiveSlot(NextActiveSlot);
 	}
 }
 
@@ -1250,15 +1238,13 @@ void CInventory::BlockSlot(u16 slot_id)
 	
 	++m_blocked_slots[slot_id];
 	
-	VERIFY2(m_blocked_slots[slot_id] < 5,
-		make_string("blocked slot [%d] overflow").c_str());	
+	VERIFY2(m_blocked_slots[slot_id] < 5, make_string("blocked slot [%d] overflow").c_str());	
 }
 
 void CInventory::UnblockSlot(u16 slot_id)
 {
 	VERIFY(slot_id <= LAST_SLOT);
-	VERIFY2(m_blocked_slots[slot_id] > 0,
-		make_string("blocked slot [%d] underflow").c_str());	
+	VERIFY2(m_blocked_slots[slot_id] > 0, make_string("blocked slot [%d] underflow").c_str());	
 	
 	--m_blocked_slots[slot_id];	
 }

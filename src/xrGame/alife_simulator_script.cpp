@@ -316,16 +316,6 @@ void teleport_object(CALifeSimulator *alife, ALife::_OBJECT_ID id, GameGraph::_G
 	alife->teleport_object(id, game_vertex_id, level_vertex_id, position);
 }
 
-//void disable_info_portion						(const CALifeSimulator *self, const ALife::_OBJECT_ID &id)
-//{
-//	THROW								(self);
-//}
-
-//void give_info_portion							(const CALifeSimulator *self, const ALife::_OBJECT_ID &id)
-//{
-//	THROW								(self);
-//}
-
 #pragma optimize("s",on)
 void CALifeSimulator::script_register			(lua_State *L)
 {
@@ -359,7 +349,7 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("has_info",				&has_info)
 			.def("dont_has_info",			&dont_has_info)
 			.def("switch_distance",			&CALifeSimulator::switch_distance)
-			.def("switch_distance",			&CALifeSimulator::set_switch_distance)
+			.def("set_switch_distance",		&CALifeSimulator::set_switch_distance)
 			//Alundaio: extend alife simulator exports
 			.def("teleport_object", 		&teleport_object)
 			//Alundaio: END

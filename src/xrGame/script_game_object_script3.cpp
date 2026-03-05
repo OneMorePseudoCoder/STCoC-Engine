@@ -347,26 +347,27 @@ class_<CScriptGameObject> script_register_game_object2(class_<CScriptGameObject>
 		.def("attach_vehicle", &CScriptGameObject::AttachVehicle)
 		.def("detach_vehicle", &CScriptGameObject::DetachVehicle)
 		.def("get_attached_vehicle", &CScriptGameObject::GetAttachedVehicle)
+		.def("get_luminocity_hemi", &CScriptGameObject::GetLuminocityHemi)
+		.def("get_luminocity", &CScriptGameObject::GetLuminocity)
 		//For Weapons
 		.def("weapon_addon_attach", &CScriptGameObject::Weapon_AddonAttach)
 		.def("weapon_addon_detach", &CScriptGameObject::Weapon_AddonDetach)
 		//For Weapon & Outfit
-		.def("add_upgrade", &CScriptGameObject::AddUpgrade)
+		.def("add_upgrade", &CScriptGameObject::InstallUpgrade)
 		.def("has_upgrade", &CScriptGameObject::HasUpgrade)
 		.def("iterate_installed_upgrades", &CScriptGameObject::IterateInstalledUpgrades)
 		//For anything with PPhysicShell (ie. car, heli, npcs, player)
+		.def("bone_visible", &CScriptGameObject::IsBoneVisible)
+		.def("set_bone_visible", &CScriptGameObject::SetBoneVisible)
+		.def("set_health_ex", &CScriptGameObject::SetHealthEx)
 		.def("force_set_position", &CScriptGameObject::ForceSetPosition)
 		// For CHudItem
 		.def("play_hud_motion", &CScriptGameObject::PlayHudMotion)
 		.def("switch_state", &CScriptGameObject::SwitchState)
 		.def("get_state", &CScriptGameObject::GetState)
-		.def("activate_hud_item", &CScriptGameObject::ActivateHudItem)
-		.def("deactivate_hud_item", &CScriptGameObject::DeactivateHudItem)
 		//Alundaio: END
 
 		//AVO: additional functions
-		.def("is_actor_indoors", &CScriptGameObject::IsActorIndoors)
-		.def("is_npc_indoors", &CScriptGameObject::IsNPCIndoors)
 		.def("is_game_object", &CScriptGameObject::IsGameObject)
 		.def("is_helicopter", &CScriptGameObject::IsHeli)
 		.def("is_entity_alive", &CScriptGameObject::IsEntityAlive)

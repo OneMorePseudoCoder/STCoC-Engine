@@ -993,8 +993,7 @@ void	CCharacterPhysicsSupport::	CreateShell						( CObject* who, Fvector& dp, Fv
 	m_pPhysicsShell->set_Kinematics(K);
 	m_pPhysicsShell->RunSimulation();
 	m_pPhysicsShell->mXFORM.set(mXFORM);
-	m_pPhysicsShell->SetCallbacks( );
-	//
+	m_pPhysicsShell->SetCallbacks();
 
 	if (anim_mov_ctrl) //we do not whant to move by long animation in root 
 		BR.set_callback_overwrite (TRUE);
@@ -1016,10 +1015,24 @@ void	CCharacterPhysicsSupport::	CreateShell						( CObject* who, Fvector& dp, Fv
 	m_eState=esDead;
 	m_flags.set(fl_skeleton_in_shell,TRUE);
 	
-	m_pPhysicsShell->SetIgnoreDynamic();
+	m_pPhysicsShell->SetPrefereExactIntegration(); //use exact integration for ragdolls in single
+    //AVO: turn on collision with dead bodies (thanks malandrinus)
+	//Alundaio: DEAD_BODY_COLLSION ONLY FOR ACTOR, NPC get stuck on bodies in chokepoints
+	CActor* A = smart_cast<CActor*>(&m_EntityAlife);
+	if (A)
+	{
+		m_pPhysicsShell->SetRemoveCharacterCollLADisable();
+	}
+	else 
+	{
+		m_pPhysicsShell->SetRemoveCharacterCollLADisable();
+	}
+	//-Alundaio
+    //-AVO
 	m_pPhysicsShell->SetIgnoreSmall();
 	AddActiveWeaponCollision();
 }
+
 void	CCharacterPhysicsSupport::	EndActivateFreeShell			( CObject* who, const Fvector& inital_entity_position, const Fvector& dp, const Fvector & velocity )
 {
 	VERIFY ( m_pPhysicsShell );

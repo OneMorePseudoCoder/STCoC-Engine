@@ -1280,43 +1280,58 @@ u32 CScriptGameObject::GetState()
 	return 65535;
 }
 
-void CScriptGameObject::ActivateHudItem()
+void CScriptGameObject::SetBoneVisible(LPCSTR bone_name, bool bVisibility, bool bRecursive)
 {
-	CWeapon* Weapon = object().cast_weapon();
-	if (Weapon)
-	{
-		Weapon->ActivateItem();
-		return;
-	}
+	IKinematics* k = object().Visual()->dcast_PKinematics();
 
-	CInventoryItem* IItem = object().cast_inventory_item();
-	if (!IItem)
+	if (!k)
 		return;
 
-	IItem->ActivateItem();
+	u16 bone_id = k->LL_BoneID(bone_name);
+	if (bone_id == BI_NONE)
+		return;
+
+	if (bVisibility == !k->LL_GetBoneVisible(bone_id))
+		k->LL_SetBoneVisible(bone_id, bVisibility, bRecursive);
 
 	return;
 }
 
-void CScriptGameObject::DeactivateHudItem()
+bool CScriptGameObject::IsBoneVisible(LPCSTR bone_name)
 {
-	CWeapon* Weapon = object().cast_weapon();
-	if (Weapon)
-	{
-		Weapon->DeactivateItem();
-		return;
-	}
+	IKinematics* k = object().Visual()->dcast_PKinematics();
 
-	CInventoryItem* IItem = object().cast_inventory_item();
-	if (!IItem)
-		return;
+	if (!k)
+		return false;
 
-	IItem->DeactivateItem();
+	u16 bone_id = k->LL_BoneID(bone_name);
+	if (bone_id == BI_NONE)
+		return false;
 
-	return;
+	return k->LL_GetBoneVisible(bone_id)==TRUE?true:false;
 }
 
-void CScriptGameObject::ForceSetPosition(Fvector pos, bool bActivate = false)
+float CScriptGameObject::GetLuminocityHemi()
+{
+	CObject *e = smart_cast<CObject*>(&object());
+	if (!e || !e->renderable_ROS())
+	{
+		return 0;
+	}
+	return e->renderable_ROS()->get_luminocity_hemi();
+}
+
+float CScriptGameObject::GetLuminocity()
+{
+	CObject *e = smart_cast<CObject*>(&object());
+	if (!e || !e->renderable_ROS())
+	{
+		return 0;
+	}
+	return e->renderable_ROS()->get_luminocity();
+}
+
+void CScriptGameObject::ForceSetPosition(Fvector pos, bool bActivate)
 {
 	CPhysicsShellHolder* sh = object().cast_physics_shell_holder();
 	if (!sh)

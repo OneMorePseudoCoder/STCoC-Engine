@@ -382,12 +382,14 @@ public:
 			bool				Weapon_IsScopeAttached			();
 			bool				Weapon_IsSilencerAttached		();
 			//Alundaio
+			float				GetLuminocityHemi();
+			float				GetLuminocity();
 			//Weapon
 			void				Weapon_AddonAttach(CScriptGameObject* item);
 			void				Weapon_AddonDetach(LPCSTR item_section);
 			//Weapon & Outfit
-			bool				HasUpgrade(LPCSTR upgrade) const;
-			void				AddUpgrade(LPCSTR upgrade);
+			bool				InstallUpgrade(LPCSTR upgrade);
+			bool				HasUpgrade(LPCSTR upgrade);
 			void				IterateInstalledUpgrades(luabind::functor<void> functor);
 			
 			//Car
@@ -401,8 +403,9 @@ public:
 			u32					PlayHudMotion(LPCSTR M, bool bMixIn,u32 state);
 			void				SwitchState(u32 state);
 			u32					GetState();
-			void				ActivateHudItem();
-			void				DeactivateHudItem();
+			//Works for anything with visual
+			bool				IsBoneVisible(LPCSTR bone_name);
+			void				SetBoneVisible(LPCSTR bone_name, bool bVisibility, bool bRecursive = true);
 			//-Alundaio
 			int					Weapon_GrenadeLauncher_Status	();
 			int					Weapon_Scope_Status				();
@@ -833,8 +836,6 @@ public:
 			_DECLARE_FUNCTION10(IsTorch, bool);
 			_DECLARE_FUNCTION10(IsWeaponGL, bool);
 			_DECLARE_FUNCTION10(IsInventoryBox, bool);
-			bool IsActorIndoors() const;
-			bool IsNPCIndoors() const;
 			void SetHealthEx(float hp);
 			//end AVO
 

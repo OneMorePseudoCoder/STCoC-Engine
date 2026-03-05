@@ -35,18 +35,18 @@
 #include "../WeaponRPG7.h"
 #include "../CustomOutfit.h"
 #include "../ActorHelmet.h"
+#include "script_game_object.h" //Alundaio
 
-// -----
+using namespace luabind; //Alundaio
 
 const LPCSTR g_inventory_upgrade_xml = "inventory_upgrade.xml";
 
 CUIInventoryUpgradeWnd::Scheme::Scheme()
-{
-}
+{}
 
 CUIInventoryUpgradeWnd::Scheme::~Scheme()
 {
-	delete_data( cells );
+	delete_data(cells);
 }
 
 // =============================================================================================
@@ -106,22 +106,21 @@ void CUIInventoryUpgradeWnd::InitInventory( CInventoryItem* item, bool can_upgra
 	m_inv_item = item;
 	bool is_shader = false;
 	// Загружаем картинку
-	if(smart_cast<CWeapon*>(item))
+	if (smart_cast<CWeapon*>(item))
 	{
 		is_shader = true;
 		m_item->SetShader(InventoryUtilities::GetWeaponUpgradeIconsShader());
-		if(smart_cast<CWeaponRPG7*>(item))
+		if (smart_cast<CWeaponRPG7*>(item))
 			m_item->SetShader(InventoryUtilities::GetOutfitUpgradeIconsShader());
 	}
-	else if(smart_cast<CCustomOutfit*>(item) || smart_cast<CHelmet*>(item))
+	else if (smart_cast<CCustomOutfit*>(item) || smart_cast<CHelmet*>(item))
 	{
 		is_shader = true;
 		m_item->SetShader(InventoryUtilities::GetOutfitUpgradeIconsShader());
 	}
 
-	if(m_item && is_shader)
+	if (m_item && is_shader)
 	{
-
 		Irect item_upgrade_grid_rect = item->GetUpgrIconRect();
 		Frect texture_rect;
 		texture_rect.lt.set			(item_upgrade_grid_rect.x1,	item_upgrade_grid_rect.y1);
@@ -131,7 +130,7 @@ void CUIInventoryUpgradeWnd::InitInventory( CInventoryItem* item, bool can_upgra
 		m_item->TextureOn			();
 		m_item->SetStretchTexture	(true);
 		Fvector2 v_r				= Fvector2().set(item_upgrade_grid_rect.x2,	item_upgrade_grid_rect.y2);
-		if(UI().is_widescreen())
+		if (UI().is_widescreen())
 			v_r.x					*= 0.8f;
 
 		m_item->GetUIStaticItem().SetSize	(v_r);
@@ -338,6 +337,15 @@ void CUIInventoryUpgradeWnd::OnMesBoxYes()
 		CUIActorMenu* parent_wnd = smart_cast<CUIActorMenu*>( m_pParentWnd );
 		if ( parent_wnd )
 		{
+			//Alundaio: tell script that item has been upgraded
+			luabind::functor<void> funct;
+			ai().script_engine().functor("inventory_upgrades.effect_upgrade_item", funct);
+			if (funct)
+			{
+				CGameObject* GO = m_inv_item->cast_game_object();
+				funct(GO->lua_game_object(), m_cur_upgrade_id);
+			}
+			//-Alundaio
 			parent_wnd->UpdateActor();
 			parent_wnd->SeparateUpgradeItem();
 		}

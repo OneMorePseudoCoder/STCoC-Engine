@@ -86,7 +86,7 @@ void CWeaponMagazined::Load	(LPCSTR section)
 
 	if (m_bCustomShotSounds)
 	{
-		if(WeaponSoundExist(section, "snd_shoot_auto"))
+		if (WeaponSoundExist(section, "snd_shoot_auto"))
 			m_sounds.LoadSound(section, "snd_shoot_auto", "sndShot_a", false, m_eSoundShot);
 
 		if (WeaponSoundExist(section, "snd_shoot_echo"))
@@ -96,11 +96,11 @@ void CWeaponMagazined::Load	(LPCSTR section)
 	m_sSndShotCurrent = "sndShot";
 		
 	//звуки и партиклы глушителя, еслит такой есть
-	if ( m_eSilencerStatus == ALife::eAddonAttachable || m_eSilencerStatus == ALife::eAddonPermanent )
+	if (m_eSilencerStatus == ALife::eAddonAttachable || m_eSilencerStatus == ALife::eAddonPermanent)
 	{
-		if(pSettings->line_exist(section, "silencer_flame_particles"))
+		if (pSettings->line_exist(section, "silencer_flame_particles"))
 			m_sSilencerFlameParticles = pSettings->r_string(section, "silencer_flame_particles");
-		if(pSettings->line_exist(section, "silencer_smoke_particles"))
+		if (pSettings->line_exist(section, "silencer_smoke_particles"))
 			m_sSilencerSmokeParticles = pSettings->r_string(section, "silencer_smoke_particles");
 		
 		m_sounds.LoadSound(section,"snd_silncer_shot", "sndSilencerShot", false, m_eSoundShot);
@@ -132,7 +132,7 @@ void CWeaponMagazined::Load	(LPCSTR section)
 		int ModesCount = _GetItemCount(FireModesList.c_str());
 		m_aFireModes.clear();
 		
-		for (int i=0; i<ModesCount; i++)
+		for (int i = 0; i < ModesCount; i++)
 		{
 			string16 sItem;
 			_GetItem(FireModesList.c_str(), i, sItem);
@@ -253,7 +253,7 @@ bool CWeaponMagazined::TryReload()
 			Actor()->callback(GameObject::eWeaponNoAmmoAvailable)(lua_game_object(), AC);
 		}
 
-		m_pCurrentAmmo = smart_cast<CWeaponAmmo*>(m_pInventory->GetAny( m_ammoTypes[m_ammoType].c_str() ));
+		m_pCurrentAmmo = smart_cast<CWeaponAmmo*>(m_pInventory->GetAny(m_ammoTypes[m_ammoType].c_str()));
 		
 		if (IsMisfire() && iAmmoElapsed)
 		{
@@ -281,7 +281,7 @@ bool CWeaponMagazined::TryReload()
 		}
 	}
 	
-	if (GetState()!=eIdle)
+	if (GetState() != eIdle)
 		SwitchState(eIdle);
 
 	return false;
@@ -289,11 +289,11 @@ bool CWeaponMagazined::TryReload()
 
 bool CWeaponMagazined::IsAmmoAvailable()
 {
-	if (smart_cast<CWeaponAmmo*>(m_pInventory->GetAny( m_ammoTypes[m_ammoType].c_str() )))
+	if (smart_cast<CWeaponAmmo*>(m_pInventory->GetAny(m_ammoTypes[m_ammoType].c_str())))
 		return (true);
 	else
-		for(u32 i = 0; i < m_ammoTypes.size(); ++i)
-			if (smart_cast<CWeaponAmmo*>(m_pInventory->GetAny( m_ammoTypes[i].c_str() )))
+		for (u32 i = 0; i < m_ammoTypes.size(); ++i)
+			if (smart_cast<CWeaponAmmo*>(m_pInventory->GetAny(m_ammoTypes[i].c_str())))
 				return (true);
 	return (false);
 }
@@ -1554,13 +1554,21 @@ bool CWeaponMagazined::GetBriefInfo(II_BriefInfo& info)
 		info.ap_ammo._set("");
 		info.third_ammo._set("");
 
-		xr_sprintf(int_str, "%d", GetAmmoCount(m_ammoType));
-		if (m_ammoType == 0)
+		if (at_size >= 1)
+		{
+			xr_sprintf(int_str, "%d", GetAmmoCount(0));
 			info.fmj_ammo._set(int_str);
-		else if (m_ammoType == 1)
+		}
+		if (at_size >= 2)
+		{
+			xr_sprintf(int_str, "%d", GetAmmoCount(1));
 			info.ap_ammo._set(int_str);
-		else
+		}
+		if (at_size >= 3)
+		{
+			xr_sprintf(int_str, "%d", GetAmmoCount(2));
 			info.third_ammo._set(int_str);
+		}
 		//-Alundaio
 	}
 

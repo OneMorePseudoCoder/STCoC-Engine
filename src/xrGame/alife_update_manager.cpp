@@ -24,10 +24,12 @@
 #include "mt_config.h"
 
 using namespace ALife;
+using namespace luabind; //Alundaio
 
 extern string_path g_last_saved_game;
 
-class CSwitchPredicate {
+class CSwitchPredicate 
+{
 private:
 	CALifeSwitchManager *m_switch_manager;
 
@@ -52,7 +54,7 @@ public:
 	}
 };
 
-CALifeUpdateManager::CALifeUpdateManager	(xrServer *server, LPCSTR section) :
+CALifeUpdateManager::CALifeUpdateManager(xrServer *server, LPCSTR section) :
 	CALifeSwitchManager		(server,section),
 	CALifeSurgeManager		(server,section),
 	CALifeStorageManager	(server,section),
@@ -69,68 +71,59 @@ CALifeUpdateManager::CALifeUpdateManager	(xrServer *server, LPCSTR section) :
 	m_first_time			= true;
 }
 
-CALifeUpdateManager::~CALifeUpdateManager	()
+CALifeUpdateManager::~CALifeUpdateManager()
 {
-	shedule_unregister		();
-	Device.remove_from_seq_parallel	(
-		fastdelegate::FastDelegate0<>(
-			this,
-			&CALifeUpdateManager::update
-		)
-	);
+	shedule_unregister();
+	Device.remove_from_seq_parallel(fastdelegate::FastDelegate0<>(this, &CALifeUpdateManager::update));
 }
 
-float CALifeUpdateManager::shedule_Scale	()
+float CALifeUpdateManager::shedule_Scale()
 {
-	return					(.5f); // (schedule_min + schedule_max)*0.5f
+	return (.5f);
 }
 
-void CALifeUpdateManager::update_switch	()
+void CALifeUpdateManager::update_switch()
 {
-	init_ef_storage						();
+	init_ef_storage();
 
 	START_PROFILE("ALife/switch");
-	graph().level().update				( CSwitchPredicate(this), Device.dwPrecacheFrame > 0 );
+	graph().level().update(CSwitchPredicate(this), Device.dwPrecacheFrame > 0);
 	STOP_PROFILE
 }
 
-void CALifeUpdateManager::update_scheduled	(bool init_ef)
+void CALifeUpdateManager::update_scheduled(bool init_ef)
 {
 	if (init_ef)
-		init_ef_storage					();
+		init_ef_storage();
 
 	START_PROFILE("ALife/scheduled");
-	scheduled().update					();
+	scheduled().update();
 	STOP_PROFILE
 }
 
-void CALifeUpdateManager::update			()
+void CALifeUpdateManager::update()
 {
-	update_switch						();
-	update_scheduled					(false);
+	update_switch();
+	update_scheduled(false);
 }
 
-void CALifeUpdateManager::shedule_Update	(u32 dt)
+void CALifeUpdateManager::shedule_Update(u32 dt)
 {
-	ISheduled::shedule_Update		(dt);
+	ISheduled::shedule_Update(dt);
 
 	if (!initialized())
 		return;
 
-	if (!m_first_time && g_mt_config.test(mtALife)) {
-		Device.seqParallel.push_back(
-			fastdelegate::FastDelegate0<>(
-				this,
-				&CALifeUpdateManager::update
-			)
-		);
+	if (!m_first_time && g_mt_config.test(mtALife)) 
+	{
+		Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(this, &CALifeUpdateManager::update));
 		return;
 	}
 
-	m_first_time					= false;
+	m_first_time = false;
 
 	START_PROFILE("ALife/update")
-	update							();
+	update();
 	STOP_PROFILE
 }
 
@@ -154,7 +147,11 @@ bool CALifeUpdateManager::change_level	(NET_Packet &net_packet)
 	if (m_changing_level)
 		return						(false);
 
-//	prepare_objects_for_save		();
+	luabind::functor<void>	funct;
+	ai().script_engine().functor("_G.CALifeUpdateManager__on_before_change_level", funct);
+	if (funct)
+		funct(&net_packet);
+
 	// we couldn't use prepare_objects_for_save since we need 
 	// get updates from client 
 	// then change actor server entity 

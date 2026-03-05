@@ -311,9 +311,9 @@ public:
 	CActorCameraManager&	Cameras				() 	{VERIFY(m_pActorEffector); return *m_pActorEffector;}
 	IC CCameraBase*			cam_Active			()	{return cameras[cam_active];}
 	IC CCameraBase*			cam_FirstEye		()	{return cameras[eacFirstEye];}
+	virtual	void			cam_Set				(EActorCameras style); //Alundaio: made public
 
 protected:
-	virtual	void			cam_Set					(EActorCameras style);
 	void					cam_Update				(float dt, float fFOV);
 	void					cam_Lookout				( const Fmatrix &xform, float camera_height );
 	void					camUpdateLadder			(float dt);

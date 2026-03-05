@@ -722,7 +722,7 @@ void g_send(NET_Packet& P, bool bReliable = 0, bool bSequential = 1, bool bHighP
 }
 
 //can spawn entities like bolts, phantoms, ammo, etc. which normally crash when using alife():create()
-void spawn_section(LPCSTR sSection, Fvector3 vPosition, u32 LevelVertexID, u16 ParentID, bool bReturnItem)
+void spawn_section(LPCSTR sSection, Fvector3 vPosition, u32 LevelVertexID, u16 ParentID, bool bReturnItem = false)
 {
 	Level().spawn_item(sSection, vPosition, LevelVertexID, ParentID, bReturnItem);
 }
@@ -757,6 +757,22 @@ u32 g_get_target_element()
 
 	return (0);
 }
+
+u8 get_active_cam()
+{
+	CActor* actor = smart_cast<CActor*>(Level().CurrentViewEntity());
+	if (actor)
+		return (u8)actor->cam_Active();
+
+	return 255;
+}
+
+void set_active_cam(u8 mode)
+{
+	CActor* actor = smart_cast<CActor*>(Level().CurrentViewEntity());
+	if (actor && mode <= ACTOR_DEFS::EActorCameras::eacMaxCam)
+		actor->cam_Set((ACTOR_DEFS::EActorCameras)mode);
+}
 //Alundaio: END
 
 #pragma optimize("s",on)
@@ -777,6 +793,8 @@ void CLevel::script_register(lua_State *L)
 		def("get_target_dist",g_get_target_dist),
 		def("get_target_element", &g_get_target_element), //Can get bone cursor is targetting
 		def("spawn_item", &spawn_section),
+		def("get_active_cam", &get_active_cam),
+		def("set_active_cam", &set_active_cam),
 		//Alundaio: END
 		// obsolete\deprecated
 		def("object_by_id",						get_object_by_id),
