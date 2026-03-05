@@ -702,37 +702,41 @@ CUIDragDropListEx* CUIActorMenu::GetSlotList(u16 slot_idx)
 	return NULL;
 }
 
-bool CUIActorMenu::TryUseItem( CUICellItem* cell_itm )
+bool CUIActorMenu::TryUseItem(CUICellItem* cell_itm)
 {
-	if ( !cell_itm )
+	if (!cell_itm)
 	{
 		return false;
 	}
+
 	PIItem item	= (PIItem)cell_itm->m_pData;
 
-	CBottleItem*	pBottleItem		= smart_cast<CBottleItem*>	(item);
-	CMedkit*		pMedkit			= smart_cast<CMedkit*>		(item);
-	CAntirad*		pAntirad		= smart_cast<CAntirad*>		(item);
-	CEatableItem*	pEatableItem	= smart_cast<CEatableItem*>	(item);
+	CBottleItem* pBottleItem = smart_cast<CBottleItem*>(item);
+	CMedkit* pMedkit = smart_cast<CMedkit*>	(item);
+	CAntirad* pAntirad = smart_cast<CAntirad*>(item);
+	CEatableItem* pEatableItem	= smart_cast<CEatableItem*>(item);
 
-	if ( !(pMedkit || pAntirad || pEatableItem || pBottleItem) )
+	if (!(pMedkit || pAntirad || pEatableItem || pBottleItem))
 	{
 		return false;
 	}
-	if ( !item->Useful() )
+
+	if (!item->Useful())
 	{
 		return false;
 	}
+	
+	cell_itm->UpdateConditionProgressBar(); //Alundaio
+
 	u16 recipient = m_pActorInvOwner->object_id();
-	if ( item->parent_id() != recipient )
+	if (item->parent_id() != recipient)
 	{
-		//move_item_from_to	(itm->parent_id(), recipient, itm->object_id());
-		cell_itm->OwnerList()->RemoveItem( cell_itm, false );
+		cell_itm->OwnerList()->RemoveItem(cell_itm, false);
 	}
 
-	SendEvent_Item_Eat		( item, recipient );
-	PlaySnd					( eItemUse );
-	SetCurrentItem			( NULL );
+	SendEvent_Item_Eat(item, recipient);
+	PlaySnd(eItemUse);
+	SetCurrentItem(NULL);
 	return true;
 }
 
@@ -1107,7 +1111,10 @@ void CUIActorMenu::ProcessPropertiesBoxClicked( CUIWindow* w, void* d )
 	case INVENTORY_TO_SLOT_ACTION:	ToSlot( cell_item, true, item->BaseSlot() );		break;
 	case INVENTORY_TO_BELT_ACTION:	ToBelt( cell_item, false );		break;
 	case INVENTORY_TO_BAG_ACTION:	ToBag ( cell_item, false );		break;
-	case INVENTORY_EAT_ACTION:		TryUseItem( cell_item ); 		break;
+	case INVENTORY_EAT_ACTION:
+		CurrentGameUI()->GetActorMenu().SetCurrentConsumable(cell_item);
+		TryUseItem(cell_item);
+ 		break;
 	case INVENTORY_DROP_ACTION:
 		{
 			void* d = m_UIPropertiesBox->GetClickedItem()->GetData();
@@ -1205,7 +1212,7 @@ void CUIActorMenu::ProcessPropertiesBoxClicked( CUIWindow* w, void* d )
 		}
 	case INVENTORY_REPAIR:
 		{
-			TryRepairItem(this,0);
+			TryRepairItem(this, 0);
 			return;
 			break;
 		}
@@ -1219,7 +1226,7 @@ void CUIActorMenu::ProcessPropertiesBoxClicked( CUIWindow* w, void* d )
 		}
 	}//switch
 
-	SetCurrentItem( NULL );
+	SetCurrentItem(NULL);
 	UpdateItemsPlace();
 	UpdateConditionProgressBars();
 }//ProcessPropertiesBoxClicked
@@ -1232,16 +1239,16 @@ void CUIActorMenu::UpdateOutfit()
 	}
 
 	u32 af_count = m_pActorInvOwner->inventory().BeltWidth();
-	VERIFY( 0 <= af_count && af_count <= 5 );
+	VERIFY(0 <= af_count && af_count <= 5);
 
-	VERIFY( m_pInventoryBeltList );
-	CCustomOutfit* outfit    = m_pActorInvOwner->GetOutfit();
-	if(outfit && !outfit->bIsHelmetAvaliable)
+	VERIFY(m_pInventoryBeltList);
+	CCustomOutfit* outfit = m_pActorInvOwner->GetOutfit();
+	if (outfit && !outfit->bIsHelmetAvaliable)
 		m_HelmetOver->Show(true);
 	else
 		m_HelmetOver->Show(false);
 
-	if ( !outfit )
+	if (!outfit)
 	{
 		MoveArtefactsToBag();
 		return;
@@ -1251,22 +1258,54 @@ void CUIActorMenu::UpdateOutfit()
 	afc.x = af_count;//1;
 	afc.y = 1;//af_count;
 
-	m_pInventoryBeltList->SetCellsCapacity( afc );
+	m_pInventoryBeltList->SetCellsCapacity(afc);
 
-	for ( u8 i = 0; i < af_count ; ++i )
+	for (u8 i = 0; i < af_count ; ++i)
 	{
-		m_belt_list_over[i]->SetVisible( false );
+		m_belt_list_over[i]->SetVisible(false);
 	}
-
 }
 
 void CUIActorMenu::MoveArtefactsToBag()
 {
-	while ( m_pInventoryBeltList->ItemsCount() )
+	while (m_pInventoryBeltList->ItemsCount())
 	{
 		CUICellItem* ci = m_pInventoryBeltList->GetItemIdx(0);
-		VERIFY( ci && ci->m_pData );
-		ToBag( ci, false );
+		VERIFY(ci && ci->m_pData);
+		ToBag(ci, false);
 	}//for i
-	m_pInventoryBeltList->ClearAll( true );
+	m_pInventoryBeltList->ClearAll(true);
+}
+
+void CUIActorMenu::RefreshConsumableCells()
+{
+	CUICellItem* ci = GetCurrentConsumable();
+	if (!ci)
+		return;
+
+	if (ci->ChildsCount() > 0)
+	{
+		CEatableItem* eitm = smart_cast<CEatableItem*>((CEatableItem*)ci->m_pData);
+		if (eitm)
+		{
+			CUIDragDropListEx* invlist = GetListByType(iActorBag);
+			
+			if (invlist->IsOwner(ci))
+			{
+				CUICellItem* parent = invlist->RemoveItem(ci, true);
+
+				if (parent->ChildsCount() > 0)
+				{
+					while (parent->ChildsCount())
+					{
+						CUICellItem* child = parent->PopChild(NULL);
+						invlist->SetItem(child);
+					}
+				}
+				invlist->SetItem(parent);
+			}
+		}
+	}
+
+	SetCurrentConsumable(NULL);
 }

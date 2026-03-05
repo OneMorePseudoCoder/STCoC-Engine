@@ -5,6 +5,9 @@
 //	Author		: Yuri Dobronravin
 //	Description : Eatable item
 ////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
 #include "eatable_item.h"
@@ -14,44 +17,73 @@
 #include "entity_alive.h"
 #include "EntityCondition.h"
 #include "InventoryOwner.h"
+#include "UIGameCustom.h"
+#include "ui/UIActorMenu.h"
 
 CEatableItem::CEatableItem()
 {
-	m_iPortionsNum = -1;
-	m_physic_item	= 0;
+	m_physic_item = 0;
+	
+	m_iMaxUses = 1;
+	m_iRemainingUses = 1;
+	m_bRemoveAfterUse = TRUE;
 }
 
 CEatableItem::~CEatableItem()
-{
-}
+{}
 
-DLL_Pure *CEatableItem::_construct	()
+DLL_Pure *CEatableItem::_construct()
 {
-	m_physic_item	= smart_cast<CPhysicItem*>(this);
-	return			(inherited::_construct());
+	m_physic_item = smart_cast<CPhysicItem*>(this);
+	return(inherited::_construct());
 }
 
 void CEatableItem::Load(LPCSTR section)
 {
 	inherited::Load(section);
 
-	m_iPortionsNum				= pSettings->r_s32	(section, "eat_portions_num");
-	VERIFY						(m_iPortionsNum<10000);
+	m_iRemainingUses = m_iMaxUses = READ_IF_EXISTS(pSettings, r_u16, section, "max_uses", 1);
+	m_bRemoveAfterUse = READ_IF_EXISTS(pSettings, r_bool, section, "remove_after_use", TRUE);
+
+	if (IsUsingCondition())
+	{
+		SetCondition((float)m_iRemainingUses / (float)m_iMaxUses);
+	}
 }
 
-BOOL CEatableItem::net_Spawn				(CSE_Abstract* DC)
+void CEatableItem::load(IReader &packet)
 {
-	if (!inherited::net_Spawn(DC)) return FALSE;
+	inherited::load(packet);
+	m_iRemainingUses = packet.r_u16();
+}
+
+void CEatableItem::save(NET_Packet &packet)
+{
+	inherited::save(packet);
+	packet.w_u16(m_iRemainingUses);
+}
+
+BOOL CEatableItem::net_Spawn(CSE_Abstract* DC)
+{
+	if (!inherited::net_Spawn(DC))
+		return FALSE;
+
+	if (IsUsingCondition())
+	{
+		SetCondition((float)m_iRemainingUses / (float)m_iMaxUses);
+	}
 
 	return TRUE;
 };
 
 bool CEatableItem::Useful() const
 {
-	if(!inherited::Useful()) return false;
+	if (!inherited::Useful())
+		return false;
 
 	//проверить не все ли еще съедено
-	if(m_iPortionsNum == 0) return false;
+	if (m_iRemainingUses == 0)
+		return false;
 
 	return true;
 }
@@ -59,39 +91,39 @@ bool CEatableItem::Useful() const
 void CEatableItem::OnH_A_Independent() 
 {
 	inherited::OnH_A_Independent();
-	if(!Useful()) 
+	if (!Useful()) 
 	{
-		if (object().Local() && OnServer())	object().DestroyObject	();
+		if (object().Local() && OnServer())	object().DestroyObject();
 	}	
 }
 
 void CEatableItem::OnH_B_Independent(bool just_before_destroy)
 {
-	if(!Useful()) 
+	if (!Useful()) 
 	{
 		object().setVisible(FALSE);
 		object().setEnabled(FALSE);
 		if (m_physic_item)
-			m_physic_item->m_ready_to_destroy	= true;
+			m_physic_item->m_ready_to_destroy = true;
 	}
 	inherited::OnH_B_Independent(just_before_destroy);
 }
 
-bool CEatableItem::UseBy (CEntityAlive* entity_alive)
+bool CEatableItem::UseBy(CEntityAlive* entity_alive)
 {
-	SMedicineInfluenceValues	V;
-	V.Load						(m_physic_item->cNameSect());
+	SMedicineInfluenceValues V;
+	V.Load(m_physic_item->cNameSect());
 
 	CInventoryOwner* IO	= smart_cast<CInventoryOwner*>(entity_alive);
-	R_ASSERT		(IO);
-	R_ASSERT		(m_pInventory==IO->m_inventory);
-	R_ASSERT		(object().H_Parent()->ID()==entity_alive->ID());
+	R_ASSERT(IO);
+	R_ASSERT(m_pInventory == IO->m_inventory);
+	R_ASSERT(object().H_Parent()->ID() == entity_alive->ID());
 
 	entity_alive->conditions().ApplyInfluence(V, m_physic_item->cNameSect());
 
-	for(u8 i = 0; i<(u8)eBoostMaxCount; i++)
+	for (u8 i = 0; i < (u8)eBoostMaxCount; i++)
 	{
-		if(pSettings->line_exist(m_physic_item->cNameSect().c_str(), ef_boosters_section_names[i]))
+		if (pSettings->line_exist(m_physic_item->cNameSect().c_str(), ef_boosters_section_names[i]))
 		{
 			SBooster B;
 			B.Load(m_physic_item->cNameSect(), (EBoostParams)i);
@@ -101,16 +133,22 @@ bool CEatableItem::UseBy (CEntityAlive* entity_alive)
 
 	if (OnServer())
 	{
-		NET_Packet				tmp_packet;
-		CGameObject::u_EventGen	(tmp_packet, GEG_PLAYER_USE_BOOSTER, entity_alive->ID());
-		tmp_packet.w_u16		(object_id());
-		Level().Send			(tmp_packet);
+		NET_Packet tmp_packet;
+		CGameObject::u_EventGen(tmp_packet, GEG_PLAYER_USE_BOOSTER, entity_alive->ID());
+		tmp_packet.w_u16(object_id());
+		Level().Send(tmp_packet);
 	}
 	
-	if(m_iPortionsNum > 0)
-		--m_iPortionsNum;
+	if (m_iRemainingUses > 0)
+	{
+		--m_iRemainingUses;
+	}
 	else
-		m_iPortionsNum = 0;
+	{
+		m_iRemainingUses = 0;
+	}
+
+	SetCondition((float)m_iRemainingUses / (float)m_iMaxUses);
 
 	return true;
 }

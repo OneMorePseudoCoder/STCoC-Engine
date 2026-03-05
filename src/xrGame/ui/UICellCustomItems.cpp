@@ -10,7 +10,6 @@
 
 namespace detail 
 {
-
 struct is_helper_pred
 {
 	bool operator ()(CUICellItem* child)
@@ -19,26 +18,22 @@ struct is_helper_pred
 	}
 
 }; // struct is_helper_pred
-
 } //namespace detail 
-
 
 CUIInventoryCellItem::CUIInventoryCellItem(CInventoryItem* itm)
 {
-	m_pData											= (void*)itm;
+	m_pData = (void*)itm;
 
-	inherited::SetShader							(InventoryUtilities::GetEquipmentIconsShader());
+	inherited::SetShader(InventoryUtilities::GetEquipmentIconsShader());
 
-	m_grid_size.set									(itm->GetInvGridRect().rb);
+	m_grid_size.set(itm->GetInvGridRect().rb);
 	Frect rect; 
-	rect.lt.set										(	INV_GRID_WIDTHF*itm->GetInvGridRect().x1, 
-														INV_GRID_HEIGHTF*itm->GetInvGridRect().y1 );
+	rect.lt.set(INV_GRID_WIDTHF * itm->GetInvGridRect().x1, INV_GRID_HEIGHTF * itm->GetInvGridRect().y1);
 
-	rect.rb.set										(	rect.lt.x+INV_GRID_WIDTHF*m_grid_size.x, 
-														rect.lt.y+INV_GRID_HEIGHTF*m_grid_size.y);
+	rect.rb.set(rect.lt.x + INV_GRID_WIDTHF * m_grid_size.x, rect.lt.y + INV_GRID_HEIGHTF * m_grid_size.y);
 
-	inherited::SetTextureRect						(rect);
-	inherited::SetStretchTexture					(true);
+	inherited::SetTextureRect(rect);
+	inherited::SetStretchTexture(true);
 }
 
 bool CUIInventoryCellItem::EqualTo(CUICellItem* itm)
@@ -85,15 +80,16 @@ void CUIInventoryCellItem::SetIsHelper (bool is_helper)
 
 void CUIInventoryCellItem::Update()
 {
-	inherited::Update	();
+	inherited::Update();
+	inherited:UpdateConditionProgressBar(); //Alundaio
 	UpdateItemText();
 
 	u32 color = GetTextureColor();
-	if ( IsHelper() && !ChildsCount() )
+	if (IsHelper() && !ChildsCount())
 	{
 		color = 0xbbbbbbbb;
 	}
-	else if ( IsHelperOrHasHelperChild() )
+	else if (IsHelperOrHasHelperChild())
 	{
 		color = 0xffffffff;
 	}

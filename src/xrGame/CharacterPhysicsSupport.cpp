@@ -1006,9 +1006,9 @@ void	CCharacterPhysicsSupport::	CreateShell						( CObject* who, Fvector& dp, Fv
 
 
 	K->CalculateBones_Invalidate();
-	K->CalculateBones	(TRUE);
+	K->CalculateBones(TRUE);
 
-	if( m_eType != etBitting )
+	if (m_eType != etBitting)
 		K->LL_SetBoneRoot( physics_root );
 
 	m_flags.set(fl_death_anim_on,FALSE);
@@ -1016,19 +1016,15 @@ void	CCharacterPhysicsSupport::	CreateShell						( CObject* who, Fvector& dp, Fv
 	m_flags.set(fl_skeleton_in_shell,TRUE);
 	
 	m_pPhysicsShell->SetPrefereExactIntegration(); //use exact integration for ragdolls in single
-    //AVO: turn on collision with dead bodies (thanks malandrinus)
+	//AVO: turn on collision with dead bodies (thanks malandrinus)
 	//Alundaio: DEAD_BODY_COLLSION ONLY FOR ACTOR, NPC get stuck on bodies in chokepoints
 	CActor* A = smart_cast<CActor*>(&m_EntityAlife);
-	if (A)
-	{
-		m_pPhysicsShell->SetRemoveCharacterCollLADisable();
-	}
-	else 
+	if (!A)
 	{
 		m_pPhysicsShell->SetRemoveCharacterCollLADisable();
 	}
 	//-Alundaio
-    //-AVO
+	//-AVO
 	m_pPhysicsShell->SetIgnoreSmall();
 	AddActiveWeaponCollision();
 }
@@ -1083,28 +1079,9 @@ if( dbg_draw_ragdoll_spawn )
 	m_pPhysicsShell->GetGlobalTransformDynamic(&mXFORM);
 	m_pPhysicsShell->mXFORM.set(mXFORM);
 
-
-
-	//if( false &&  anim_mov_ctrl && anim_mov_blend && anim_mov_blend->blend != CBlend::eFREE_SLOT &&  anim_mov_blend->timeCurrent + Device.fTimeDelta*anim_mov_blend->speed < anim_mov_blend->timeTotal-SAMPLE_SPF-EPS)//.
-	//{
-	//	const Fmatrix sv_xform = mXFORM;
-	//	mXFORM.set( start_xform );
-	//	//anim_mov_blend->blendPower = 1;
-	//	anim_mov_blend->timeCurrent  += Device.fTimeDelta * anim_mov_blend->speed;
-	//	m_pPhysicsShell->AnimToVelocityState( Device.fTimeDelta, 2 * default_l_limit, 10.f * default_w_limit );
-	//	mXFORM.set( sv_xform );
-	//}
-	IKinematics* K=smart_cast<IKinematics*>( m_EntityAlife.Visual( ) );
-	//u16 root =K->LL_GetBoneRoot();
-	//if( root!=0 )
-	//{
-	//	K->LL_GetTransform( 0 ).set( Fidentity );
-	//	
-	//	K->LL_SetBoneVisible( 0, FALSE, FALSE );
-	//}
-	
+	IKinematics* K = smart_cast<IKinematics*>(m_EntityAlife.Visual());
 	K->CalculateBones_Invalidate();
-	K->CalculateBones	(TRUE);
+	K->CalculateBones(TRUE);
 }
 
 void CCharacterPhysicsSupport::in_ChangeVisual()

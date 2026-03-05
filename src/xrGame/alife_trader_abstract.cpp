@@ -36,7 +36,7 @@ void CSE_ALifeTraderAbstract::spawn_supplies	()
 	pda->m_specific_character	= specific_character();
 #endif
 
-	if(m_SpecificCharacter.size())
+	if (m_SpecificCharacter.size())
 	{
 		//если в custom data объекта есть
 		//секция [dont_spawn_character_supplies]

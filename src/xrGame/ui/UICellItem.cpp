@@ -2,6 +2,7 @@
 #include "UICellItem.h"
 #include "uicursor.h"
 #include "../inventory_item.h"
+#include "../eatable_item.h"
 #include "UIDragDropListEx.h"
 #include "../xr_level_controller.h"
 #include "../../xrEngine/xr_input.h"
@@ -13,6 +14,9 @@
 #include "Weapon.h"
 #include "CustomOutfit.h"
 #include "ActorHelmet.h"
+
+#include "UIGameCustom.h"
+#include "UIActorMenu.h"
 
 CUICellItem* CUICellItem::m_mouse_selected_item = NULL;
 
@@ -91,7 +95,8 @@ void CUICellItem::Update()
 	{
 		SetHeading			( 90.0f * (PI/180.0f) );
 		SetHeadingPivot		(Fvector2().set(0.0f,0.0f), Fvector2().set(0.0f,GetWndSize().y), true);
-	}else
+	}
+	else
 		ResetHeadingPivot	();
 
 	inherited::Update();
@@ -126,29 +131,30 @@ void CUICellItem::Update()
 
 bool CUICellItem::OnMouseAction(float x, float y, EUIMessages mouse_action)
 {
-	if ( mouse_action == WINDOW_LBUTTON_DOWN )
+	if (mouse_action == WINDOW_LBUTTON_DOWN)
 	{
-		GetMessageTarget()->SendMessage( this, DRAG_DROP_ITEM_LBUTTON_CLICK, NULL );
-		GetMessageTarget()->SendMessage( this, DRAG_DROP_ITEM_SELECTED, NULL );
+		GetMessageTarget()->SendMessage(this, DRAG_DROP_ITEM_LBUTTON_CLICK, NULL);
+		GetMessageTarget()->SendMessage(this, DRAG_DROP_ITEM_SELECTED, NULL);
 		m_mouse_selected_item = this;
 		return false;
 	}
-	else if ( mouse_action == WINDOW_MOUSE_MOVE )
+	else if (mouse_action == WINDOW_MOUSE_MOVE)
 	{
-		if ( pInput->iGetAsyncBtnState(0) && m_mouse_selected_item && m_mouse_selected_item == this )
+		if (pInput->iGetAsyncBtnState(0) && m_mouse_selected_item && m_mouse_selected_item == this)
 		{
-			GetMessageTarget()->SendMessage( this, DRAG_DROP_ITEM_DRAG, NULL );
+			GetMessageTarget()->SendMessage(this, DRAG_DROP_ITEM_DRAG, NULL);
+			CurrentGameUI()->GetActorMenu().SetCurrentConsumable(this);
 			return true;
 		}
 	}
-	else if ( mouse_action == WINDOW_LBUTTON_DB_CLICK )
+	else if (mouse_action == WINDOW_LBUTTON_DB_CLICK)
 	{
-		GetMessageTarget()->SendMessage( this, DRAG_DROP_ITEM_DB_CLICK, NULL );
+		GetMessageTarget()->SendMessage(this, DRAG_DROP_ITEM_DB_CLICK, NULL);
 		return true;
 	}
-	else if ( mouse_action == WINDOW_RBUTTON_DOWN )
+	else if (mouse_action == WINDOW_RBUTTON_DOWN)
 	{
-		GetMessageTarget()->SendMessage( this, DRAG_DROP_ITEM_RBUTTON_CLICK, NULL );
+		GetMessageTarget()->SendMessage(this, DRAG_DROP_ITEM_RBUTTON_CLICK, NULL);
 		return true;
 	}
 	
@@ -201,17 +207,43 @@ void CUICellItem::SetOwnerList(CUIDragDropListEx* p)
 
 void CUICellItem::UpdateConditionProgressBar()
 {
-
-	if(m_pParentList && m_pParentList->GetConditionProgBarVisibility())
+	if (m_pParentList && m_pParentList->GetConditionProgBarVisibility())
 	{
 		PIItem itm = (PIItem)m_pData;
-		CWeapon* pWeapon = smart_cast<CWeapon*>(itm);
-		CCustomOutfit* pOutfit = smart_cast<CCustomOutfit*>(itm);
-		CHelmet* pHelmet = smart_cast<CHelmet*>(itm);
-		if(pWeapon || pOutfit || pHelmet)
+		if (itm->IsUsingCondition())
 		{
+			float cond = itm->GetCondition();
+
+			CEatableItem* eitm = smart_cast<CEatableItem*>(itm);
+			if (eitm)
+			{
+				u16 max_uses = eitm->GetMaxUses();
+				if (max_uses > 1)
+				{
+					u16 remaining_uses = eitm->GetRemainingUses();
+					if (remaining_uses < 1)
+					{
+						cond = 0.0f;
+					}
+					else if (max_uses > 8)
+					{
+						cond = (float)remaining_uses / (float)max_uses;
+					}
+					else
+					{
+						cond = ((float)remaining_uses * 0.125f) - 0.0625f;
+						if (max_uses < 8)
+						{
+							m_pConditionState->ShowBackground(false);
+						}
+					}
+
+					m_pConditionState->m_bUseGradient = true;
+				}
+			}
+
 			Ivector2 itm_grid_size = GetGridSize();
-			if(m_pParentList->GetVerticalPlacement())
+			if (m_pParentList->GetVerticalPlacement())
 				std::swap(itm_grid_size.x, itm_grid_size.y);
 
 			Ivector2 cell_size = m_pParentList->CellSize();
@@ -220,7 +252,7 @@ void CUICellItem::UpdateConditionProgressBar()
 			float y = itm_grid_size.y * (cell_size.y + cell_space.y) - m_pConditionState->GetHeight() - 2.f;
 
 			m_pConditionState->SetWndPos(Fvector2().set(x,y));
-			m_pConditionState->SetProgressPos(iCeil(itm->GetCondition()*13.0f)/13.0f);
+			m_pConditionState->SetProgressPos(iCeil(cond * 13.0f) / 13.0f);
 			m_pConditionState->Show(true);
 			return;
 		}

@@ -1,3 +1,8 @@
+////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
+
 #include "pch_script.h"
 #include "inventory.h"
 #include "actor.h"
@@ -24,22 +29,21 @@
 using namespace InventoryUtilities;
 
 // what to block
-u16	INV_STATE_LADDER		= (1<<INV_SLOT_3 | 1<<BINOCULAR_SLOT);
-u16	INV_STATE_CAR			= INV_STATE_LADDER;
-u16	INV_STATE_BLOCK_ALL		= 0xffff;
-u16	INV_STATE_INV_WND		= INV_STATE_BLOCK_ALL;
-u16	INV_STATE_BUY_MENU		= INV_STATE_BLOCK_ALL;
+u16	INV_STATE_LADDER = (1 << INV_SLOT_3 | 1 << BINOCULAR_SLOT);
+u16	INV_STATE_CAR = INV_STATE_LADDER;
+u16	INV_STATE_BLOCK_ALL = 0xffff;
+u16	INV_STATE_INV_WND = INV_STATE_BLOCK_ALL;
+u16	INV_STATE_BUY_MENU = INV_STATE_BLOCK_ALL;
 
 CInventorySlot::CInventorySlot() 
 {
-	m_pIItem				= NULL;
-	m_bAct					= true;
-	m_bPersistent			= false;
+	m_pIItem = NULL;
+	m_bAct = true;
+	m_bPersistent = false;
 }
 
 CInventorySlot::~CInventorySlot() 
-{
-}
+{}
 
 bool CInventorySlot::CanBeActivated() const 
 {
@@ -48,25 +52,25 @@ bool CInventorySlot::CanBeActivated() const
 
 CInventory::CInventory() 
 {
-	m_fMaxWeight								= pSettings->r_float	("inventory","max_weight");
+	m_fMaxWeight = pSettings->r_float("inventory", "max_weight");
 	
 	ReloadInv();
 
-	m_iActiveSlot								= NO_ACTIVE_SLOT;
-	m_iNextActiveSlot							= NO_ACTIVE_SLOT;
-	m_iPrevActiveSlot							= NO_ACTIVE_SLOT;
+	m_iActiveSlot = NO_ACTIVE_SLOT;
+	m_iNextActiveSlot = NO_ACTIVE_SLOT;
+	m_iPrevActiveSlot = NO_ACTIVE_SLOT;
 
-	m_bSlotsUseful								= true;
-	m_bBeltUseful								= false;
+	m_bSlotsUseful = true;
+	m_bBeltUseful = false;
 
-	m_fTotalWeight								= -1.f;
-	m_dwModifyFrame								= 0;
-	m_drop_last_frame							= false;
+	m_fTotalWeight = -1.f;
+	m_dwModifyFrame = 0;
+	m_drop_last_frame = false;
 	
-	InitPriorityGroupsForQSwitch				();
-	m_next_item_iteration_time					= 0;
+	InitPriorityGroupsForQSwitch();
+	m_next_item_iteration_time = 0;
 
-	for (u16 i = 0; i < LAST_SLOT+1; ++i)
+	for (u16 i = 0; i < LAST_SLOT + 1; ++i)
 	{
 		m_blocked_slots[i] = 0;
 	}
@@ -91,23 +95,22 @@ void CInventory::ReloadInv()
 }
 
 CInventory::~CInventory() 
-{
-}
+{}
 
 void CInventory::Clear()
 {
-	m_all.clear							();
-	m_ruck.clear						();
-	m_belt.clear						();
+	m_all.clear();
+	m_ruck.clear();
+	m_belt.clear();
 	
-	for(u16 i=FirstSlot(); i<=LastSlot(); i++)
-		m_slots[i].m_pIItem				= NULL;
+	for (u16 i = FirstSlot(); i <= LastSlot(); i++)
+		m_slots[i].m_pIItem = NULL;
 
-	m_pOwner							= NULL;
-	ReloadInv							();
+	m_pOwner = NULL;
+	ReloadInv();
 
-	CalcTotalWeight						();
-	InvalidateState						();
+	CalcTotalWeight();
+	InvalidateState();
 }
 
 void CInventory::Take(CGameObject *pObj, bool bNotActivate, bool strict_placement)
@@ -164,37 +167,42 @@ void CInventory::Take(CGameObject *pObj, bool bNotActivate, bool strict_placemen
 		break;
 	}
 
-	if(pIItem->CurrPlace()==eItemPlaceUndefined)
+	if (pIItem->CurrPlace() == eItemPlaceUndefined)
 	{
-		if( !pIItem->RuckDefault() )
+		if (!pIItem->RuckDefault())
 		{
-			if( CanPutInSlot(pIItem, pIItem->BaseSlot()) )
+			if (CanPutInSlot(pIItem, pIItem->BaseSlot()))
 			{
-				result						= Slot(pIItem->BaseSlot(), pIItem, bNotActivate,strict_placement); VERIFY(result);
-			}else
+				result = Slot(pIItem->BaseSlot(), pIItem, bNotActivate,strict_placement); VERIFY(result);
+			}
+			else
 				if (CanPutInBelt(pIItem))
 				{
-					result					= Belt(pIItem,strict_placement); VERIFY(result);
-				}else
-				{
-					result					= Ruck(pIItem,strict_placement); VERIFY(result);
+					result = Belt(pIItem,strict_placement);
+					VERIFY(result);
 				}
-		}else
+				else
+				{
+					result = Ruck(pIItem,strict_placement);
+					VERIFY(result);
+				}
+		}
+		else
 		{
-			result						= Ruck(pIItem,strict_placement); VERIFY(result);
+			result = Ruck(pIItem,strict_placement);
+			VERIFY(result);
 		}
 	}
 	
-	m_pOwner->OnItemTake				(pIItem);
+	m_pOwner->OnItemTake(pIItem);
 
-	CalcTotalWeight						();
-	InvalidateState						();
+	CalcTotalWeight();
+	InvalidateState();
 
 	pIItem->object().processing_deactivate();
-	VERIFY								(pIItem->CurrPlace() != eItemPlaceUndefined);
+	VERIFY(pIItem->CurrPlace() != eItemPlaceUndefined);
 
-
-	if( CurrentGameUI() )
+	if (CurrentGameUI())
 	{
 		CObject* pActor_owner = smart_cast<CObject*>(m_pOwner);
 
@@ -202,9 +210,9 @@ void CInventory::Take(CGameObject *pObj, bool bNotActivate, bool strict_placemen
 		{
 			CurrentGameUI()->OnInventoryAction(pIItem, GE_OWNERSHIP_TAKE);
 		}
-		else if(CurrentGameUI()->GetActorMenu().GetMenuMode()==mmDeadBodySearch)
+		else if (CurrentGameUI()->GetActorMenu().GetMenuMode() == mmDeadBodySearch)
 		{
-			if(m_pOwner==CurrentGameUI()->GetActorMenu().GetPartner())
+			if (m_pOwner == CurrentGameUI()->GetActorMenu().GetPartner())
 				CurrentGameUI()->OnInventoryAction(pIItem, GE_OWNERSHIP_TAKE);
 		}
 	};
@@ -212,41 +220,48 @@ void CInventory::Take(CGameObject *pObj, bool bNotActivate, bool strict_placemen
 
 bool CInventory::DropItem(CGameObject *pObj, bool just_before_destroy, bool dont_create_shell) 
 {
-	CInventoryItem *pIItem				= smart_cast<CInventoryItem*>(pObj);
-	VERIFY								(pIItem);
-	VERIFY								(pIItem->m_pInventory);
-	VERIFY								(pIItem->m_pInventory==this);
-	VERIFY								(pIItem->m_ItemCurrPlace.type!=eItemPlaceUndefined);
+	CInventoryItem *pIItem = smart_cast<CInventoryItem*>(pObj);
+	VERIFY(pIItem);
+	VERIFY(pIItem->m_pInventory);
+	VERIFY(pIItem->m_pInventory == this);
+	VERIFY(pIItem->m_ItemCurrPlace.type != eItemPlaceUndefined);
 	
 	pIItem->object().processing_activate(); 
 	
-	switch(pIItem->CurrPlace())
+	switch (pIItem->CurrPlace())
 	{
-	case eItemPlaceBelt:{
+	case eItemPlaceBelt:
+	{
 			VERIFY(InBelt(pIItem));
 			TIItemContainer::iterator temp_iter = std::find(m_belt.begin(), m_belt.end(), pIItem);
 			if (temp_iter != m_belt.end())
 			{
 				m_belt.erase(temp_iter);
-			} else
+			} 
+			else
 			{
 				Msg("! ERROR: CInventory::Drop item not found in belt...");
 			}
 			pIItem->object().processing_deactivate();
-		}break;
-	case eItemPlaceRuck:{
+		}
+		break;
+	case eItemPlaceRuck:
+	{
 			VERIFY(InRuck(pIItem));
 			TIItemContainer::iterator temp_iter = std::find(m_ruck.begin(), m_ruck.end(), pIItem);
 			if (temp_iter != m_ruck.end())
 			{
 				m_ruck.erase(temp_iter);
-			} else
+			} 
+			else
 			{
 				Msg("! ERROR: CInventory::Drop item not found in ruck...");
 			}
-		}break;
-	case eItemPlaceSlot:{
-			VERIFY			(InSlot(pIItem));
+		}
+		break;
+	case eItemPlaceSlot:
+	{
+			VERIFY(InSlot(pIItem));
 			if(m_iActiveSlot == pIItem->CurrSlot())
 			{
 				CActor* pActor	= smart_cast<CActor*>(m_pOwner);
@@ -269,26 +284,27 @@ bool CInventory::DropItem(CGameObject *pObj, bool just_before_destroy, bool dont
 			}
 			m_slots[pIItem->CurrSlot()].m_pIItem = NULL;							
 			pIItem->object().processing_deactivate();
-		}break;
+		}
+		break;
 	default:
 		NODEFAULT;
 	};
+
 	TIItemContainer::iterator it = std::find(m_all.begin(), m_all.end(), pIItem);
-	if(it!=m_all.end())
+	if (it != m_all.end())
 		m_all.erase(std::find(m_all.begin(), m_all.end(), pIItem));
 	else
 		Msg("! CInventory::Drop item not found in inventory!!!");
 
 	pIItem->m_pInventory = NULL;
 
+	m_pOwner->OnItemDrop(smart_cast<CInventoryItem*>(pObj), just_before_destroy);
 
-	m_pOwner->OnItemDrop	(smart_cast<CInventoryItem*>(pObj), just_before_destroy);
+	CalcTotalWeight();
+	InvalidateState();
+	m_drop_last_frame = true;
 
-	CalcTotalWeight					();
-	InvalidateState					();
-	m_drop_last_frame				= true;
-
-	if( CurrentGameUI() )
+	if (CurrentGameUI())
 	{
 		CObject* pActor_owner = smart_cast<CObject*>(m_pOwner);
 
@@ -930,15 +946,21 @@ bool CInventory::Eat(PIItem pIItem)
 	Msg( "--- Actor [%d] use or eat [%d][%s]", entity_alive->ID(), pItemToEat->object().ID(), pItemToEat->object().cNameSect().c_str() );
 #endif // MP_LOGGING
 
-	if(Actor()->m_inventory == this)
+	if (Actor()->m_inventory == this)
 		Actor()->callback(GameObject::eUseObject)((smart_cast<CGameObject*>(pIItem))->lua_game_object());
 
-	if(pItemToEat->Empty())
+	if (pItemToEat->Empty())
 	{
+		if (!pItemToEat->CanDelete())
+			return false;
+
 		pIItem->SetDropManual(TRUE);
-		return		false;
 	}
-	return			true;
+	
+	if (IsUsingCondition())
+		CurrentGameUI()->GetActorMenu().RefreshConsumableCells();
+
+	return true;
 }
 
 bool CInventory::ClientEat(PIItem pIItem)

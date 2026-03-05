@@ -5,6 +5,9 @@
 //	Author		: Victor Reutsky, Yuri Dobronravin
 //	Description : Inventory item
 ////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -54,7 +57,6 @@ struct net_updateInvData
 	u32				m_dwIEndTime;
 };
 
-
 class CInventoryItem : 
 	public CAttachableItem,
 	public CHitImmunity
@@ -65,19 +67,21 @@ class CInventoryItem :
 private:
 	typedef CAttachableItem inherited;
 protected:
-	enum EIIFlags{				FdropManual			=(1<<0),
-								FCanTake			=(1<<1),
-								FCanTrade			=(1<<2),
-								Fbelt				=(1<<3),
-								Fruck				=(1<<4),
-								FRuckDefault		=(1<<5),
-								FUsingCondition		=(1<<6),
-								FAllowSprint		=(1<<7),
-								Fuseful_for_NPC		=(1<<8),
-								FInInterpolation	=(1<<9),
-								FInInterpolate		=(1<<10),
-								FIsQuestItem		=(1<<11),
-								FIsHelperItem		=(1<<12),
+	enum EIIFlags
+	{				
+		FdropManual			=(1<<0),
+		FCanTake			=(1<<1),
+		FCanTrade			=(1<<2),
+		Fbelt				=(1<<3),
+		Fruck				=(1<<4),
+		FRuckDefault		=(1<<5),
+		FUsingCondition		=(1<<6),
+		FAllowSprint		=(1<<7),
+		Fuseful_for_NPC		=(1<<8),
+		FInInterpolation	=(1<<9),
+		FInInterpolate		=(1<<10),
+		FIsQuestItem		=(1<<11),
+		FIsHelperItem		=(1<<12),
 	};
 
 	Flags16						m_flags;
@@ -97,6 +101,7 @@ public:
 	virtual void				OnEvent				(NET_Packet& P, u16 type);
 	
 	virtual bool				Useful				() const;									// !!! Переопределить. (см. в Inventory.cpp)
+	virtual bool				IsUsingCondition	() const { return ( m_flags.test( FUsingCondition ) > 0 ); };
 	virtual bool				Attach				(PIItem pIItem, bool b_send_event) {return false;}
 	virtual bool				Detach				(PIItem pIItem) {return false;}
 	//при детаче спаунится новая вещь при заданно названии секции

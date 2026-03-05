@@ -10,6 +10,7 @@ CUIProgressBar::CUIProgressBar(void)
 
 	m_bBackgroundPresent	= false;
 	m_bUseColor				= false;
+	m_bUseGradient			= true; //Alundaio
 
 	AttachChild				(&m_UIBackgroundItem);
 	AttachChild				(&m_UIProgressItem);
@@ -34,30 +35,38 @@ void CUIProgressBar::InitProgressBar(Fvector2 pos, Fvector2 size, EOrientMode mo
 
 void CUIProgressBar::UpdateProgressBar()
 {
-	if( fsimilar(m_MaxPos,m_MinPos) ) m_MaxPos	+= EPS;
+	if (fsimilar(m_MaxPos, m_MinPos))
+		m_MaxPos += EPS;
 
-	float progressbar_unit = 1/(m_MaxPos-m_MinPos);
+	float progressbar_unit = 1 / (m_MaxPos - m_MinPos);
 
-	float fCurrentLength = m_ProgressPos.x*progressbar_unit;
+	float fCurrentLength = m_ProgressPos.x * progressbar_unit;
 
-	if ( m_orient_mode == om_horz || m_orient_mode == om_back )
+	if (m_orient_mode == om_horz || m_orient_mode == om_back)
 	{
 		m_CurrentLength = GetWidth()*fCurrentLength;
 	}
-	else if ( m_orient_mode == om_vert || m_orient_mode == om_down )
+	else if (m_orient_mode == om_vert || m_orient_mode == om_down)
 	{
-		m_CurrentLength = GetHeight()*fCurrentLength;
+		m_CurrentLength = GetHeight() * fCurrentLength;
 	}
 	else
 	{
 		m_CurrentLength = 0.0f;
 	}
 
-	if(m_bUseColor)
+	if (m_bUseColor)
 	{
-		Fcolor curr;
-		curr.lerp							(m_minColor,m_middleColor,m_maxColor,fCurrentLength);
-		m_UIProgressItem.SetTextureColor	(curr.get());
+		if (m_bUseGradient)
+		{
+			Fcolor curr;
+			curr.lerp(m_minColor ,m_middleColor, m_maxColor, fCurrentLength);
+			m_UIProgressItem.SetTextureColor(curr.get());
+		}
+		else
+		{
+			m_UIProgressItem.SetTextureColor(m_maxColor.get());
+		}
 	}
 }
 

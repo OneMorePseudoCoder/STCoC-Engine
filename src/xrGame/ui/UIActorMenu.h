@@ -25,51 +25,59 @@ class CUIPropertiesBox;
 class CTrade;
 class CUIProgressBar;
 
-namespace inventory { namespace upgrade {
+namespace inventory 
+{ 
+namespace upgrade 
+{
 	class Upgrade;
-} } // namespace upgrade, inventory
+} 
+} // namespace upgrade, inventory
 
-enum EDDListType{
-		iInvalid,
-		iActorSlot,
-		iActorBag,
-		iActorBelt,
+enum EDDListType
+{
+	iInvalid,
+	iActorSlot,
+	iActorBag,
+	iActorBelt,
 
-		iActorTrade,
-		iPartnerTradeBag,
-		iPartnerTrade,
-		iDeadBodyBag,
-		iQuickSlot,
-		iTrashSlot,
-		iListTypeMax
+	iActorTrade,
+	iPartnerTradeBag,
+	iPartnerTrade,
+	iDeadBodyBag,
+	iQuickSlot,
+	iTrashSlot,
+	iListTypeMax
 };
 
-enum EMenuMode{
-		mmUndefined,
-		mmInventory,
-		mmTrade,
-		mmUpgrade,
-		mmDeadBodySearch,
+enum EMenuMode
+{
+	mmUndefined,
+	mmInventory,
+	mmTrade,
+	mmUpgrade,
+	mmDeadBodySearch,
 };
 
-class CUIActorMenu :	public CUIDialogWnd, 
-						public CUIWndCallback
+class CUIActorMenu : public CUIDialogWnd, public CUIWndCallback
 {
 	typedef CUIDialogWnd		inherited;
 	typedef inventory::upgrade::Upgrade 	Upgrade_type;
 
 protected:
-	enum eActorMenuSndAction{	eSndOpen	=0,
-								eSndClose,
-								eItemToSlot,
-								eItemToBelt,
-								eItemToRuck,
-								eProperties,
-								eDropItem,
-								eAttachAddon,
-								eDetachAddon,
-								eItemUse,
-								eSndMax};
+	enum eActorMenuSndAction
+	{	
+		eSndOpen = 0,
+		eSndClose,
+		eItemToSlot,
+		eItemToBelt,
+		eItemToRuck,
+		eProperties,
+		eDropItem,
+		eAttachAddon,
+		eDetachAddon,
+		eItemUse,
+		eSndMax
+	};
 
 	EMenuMode					m_currMenuMode;
 	ref_sound					sounds					[eSndMax];
@@ -80,6 +88,7 @@ protected:
 	CUICellItem*				m_InfoCellItem;
 	u32							m_InfoCellItem_timer;
 	CUICellItem*				m_pCurrentCellItem;
+	CUICellItem* 				m_pCurrentConsumable;
 	CUICellItem*				m_upgrade_selected;
 	CUIPropertiesBox*			m_UIPropertiesBox;
 
@@ -212,7 +221,6 @@ protected:
 	void						BindDragDropListEvents		(CUIDragDropListEx* lst);
 	
 	EDDListType					GetListType					(CUIDragDropListEx* l);
-	CUIDragDropListEx*			GetListByType				(EDDListType t);
 	CUIDragDropListEx*			GetSlotList					(u16 slot_idx);
 	bool						CanSetItemToList			(PIItem item, CUIDragDropListEx* l, u16& ret_slot);
 	
@@ -338,5 +346,8 @@ public:
 	void						UpdateConditionProgressBars	();
 
 	IC	UIHint*					get_hint_wnd				() { return m_hint_wnd; }
-
+	CUIDragDropListEx*			GetListByType				(EDDListType t);
+	CUICellItem* GetCurrentConsumable() { return m_pCurrentConsumable; };
+	void SetCurrentConsumable(CUICellItem* ci) { m_pCurrentConsumable = ci; };
+	void RefreshConsumableCells();
 }; // class CUIActorMenu

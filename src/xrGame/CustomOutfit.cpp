@@ -1,5 +1,9 @@
-#include "stdafx.h"
+////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "customoutfit.h"
 #include "../xrphysics/PhysicsShell.h"
 #include "inventory_space.h"
@@ -97,13 +101,15 @@ void CCustomOutfit::Load(LPCSTR section)
 	m_fPowerRestoreSpeed		= READ_IF_EXISTS(pSettings, r_float, section, "power_restore_speed",     0.0f );
 	m_fBleedingRestoreSpeed		= READ_IF_EXISTS(pSettings, r_float, section, "bleeding_restore_speed",  0.0f );
 
-
 	m_full_icon_name		= pSettings->r_string( section, "full_icon_name" );
 	m_artefact_count 		= READ_IF_EXISTS( pSettings, r_u32, section, "artefact_count", 0 );
 	clamp( m_artefact_count, (u32)0, (u32)5 );
 
 	m_BonesProtectionSect	= READ_IF_EXISTS(pSettings, r_string, section, "bones_koeff_protection",  "" );
 	bIsHelmetAvaliable		= !!READ_IF_EXISTS(pSettings, r_bool, section, "helmet_avaliable", true);
+	
+	// Added by Axel, to enable optional condition use on any item
+	m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", TRUE));
 }
 
 void CCustomOutfit::ReloadBonesProtection()

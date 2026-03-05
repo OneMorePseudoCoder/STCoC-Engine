@@ -1,3 +1,8 @@
+////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
 #include "Weapon.h"
 #include "ParticlesObject.h"
@@ -393,10 +398,8 @@ void CWeapon::Load(LPCSTR section)
 	zoom_cam_recoil.MaxAngleVert = cam_recoil.MaxAngleVert;
 	zoom_cam_recoil.MaxAngleHorz = cam_recoil.MaxAngleHorz;
 	zoom_cam_recoil.StepAngleHorz = cam_recoil.StepAngleHorz;
-
 	zoom_cam_recoil.ReturnMode = cam_recoil.ReturnMode;
 	zoom_cam_recoil.StopReturn = cam_recoil.StopReturn;
-
 
 	if (pSettings->line_exist(section, "zoom_cam_relax_speed"))
 	{
@@ -407,6 +410,7 @@ void CWeapon::Load(LPCSTR section)
 			zoom_cam_recoil.RelaxSpeed = EPS_L;
 		}
 	}
+
 	if (pSettings->line_exist(section, "zoom_cam_relax_speed_ai"))
 	{
 		zoom_cam_recoil.RelaxSpeed_AI = _abs(deg2rad(pSettings->r_float(section, "zoom_cam_relax_speed_ai")));
@@ -416,6 +420,7 @@ void CWeapon::Load(LPCSTR section)
 			zoom_cam_recoil.RelaxSpeed_AI = EPS_L;
 		}
 	}
+
 	if (pSettings->line_exist(section, "zoom_cam_max_angle"))
 	{
 		zoom_cam_recoil.MaxAngleVert = _abs(deg2rad(pSettings->r_float(section, "zoom_cam_max_angle")));
@@ -434,10 +439,14 @@ void CWeapon::Load(LPCSTR section)
 			zoom_cam_recoil.MaxAngleHorz = EPS;
 		}
 	}
-	if (pSettings->line_exist(section, "zoom_cam_step_angle_horz")) {
+
+	if (pSettings->line_exist(section, "zoom_cam_step_angle_horz")) 
+	{
 		zoom_cam_recoil.StepAngleHorz = deg2rad(pSettings->r_float(section, "zoom_cam_step_angle_horz"));
 	}
-	if (pSettings->line_exist(section, "zoom_cam_dispersion_frac")) {
+
+	if (pSettings->line_exist(section, "zoom_cam_dispersion_frac")) 
+	{
 		zoom_cam_recoil.DispersionFrac = _abs(pSettings->r_float(section, "zoom_cam_dispersion_frac"));
 	}
 
@@ -469,10 +478,9 @@ void CWeapon::Load(LPCSTR section)
 	m_bIsSingleHanded = true;
 	if (pSettings->line_exist(section, "single_handed"))
 		m_bIsSingleHanded = !!pSettings->r_bool(section, "single_handed");
-	// 
+
 	m_fMinRadius = pSettings->r_float(section, "min_radius");
 	m_fMaxRadius = pSettings->r_float(section, "max_radius");
-
 
 	// информация о возможных апгрейдах и их визуализации в инвентаре
 	m_eScopeStatus = (ALife::EWeaponAddonStatus)pSettings->r_s32(section, "scope_status");
@@ -485,6 +493,9 @@ void CWeapon::Load(LPCSTR section)
 	m_zoom_params.m_bUseDynamicZoom = FALSE;
 	m_zoom_params.m_sUseZoomPostprocess = 0;
 	m_zoom_params.m_sUseBinocularVision = 0;
+
+	// Added by Axel, to enable optional condition use on any item
+	m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", TRUE));
 
 	LoadModParams(section);
 
@@ -506,8 +517,10 @@ void CWeapon::Load(LPCSTR section)
 		m_iGrenadeLauncherX = pSettings->r_s32(section, "grenade_launcher_x");
 		m_iGrenadeLauncherY = pSettings->r_s32(section, "grenade_launcher_y");
 	}
+
 	UpdateAltScope();
 	InitAddons();
+
 	if (pSettings->line_exist(section, "weapon_remove_time"))
 		m_dwWeaponRemoveTime = pSettings->r_u32(section, "weapon_remove_time");
 	else
@@ -529,7 +542,7 @@ void CWeapon::Load(LPCSTR section)
 	m_bHasTracers = !!READ_IF_EXISTS(pSettings, r_bool, section, "tracers", true);
 	m_u8TracerColorID = READ_IF_EXISTS(pSettings, r_u8, section, "tracers_color_ID", u8(-1));
 
-	string256						temp;
+	string256 temp;
 	for (int i = egdNovice; i < egdCount; ++i)
 	{
 		strconcat(sizeof(temp), temp, "hit_probability_", get_token_name(difficulty_type_token, i));

@@ -5,13 +5,14 @@
 //	Author		: Victor Reutsky, Yuri Dobronravin
 //	Description : Inventory item
 ////////////////////////////////////////////////////////////////////////////
+//	Modified by Axel DominatoR
+//	Last updated: 13/08/2015
+////////////////////////////////////////////////////////////////////////////
 
-//#include "stdafx.h"
 #include "pch_script.h"
 #include "inventory_item.h"
 #include "inventory_item_impl.h"
 #include "inventory.h"
-//#include "Physics.h"
 #include "physicsshellholder.h"
 #include "entity_alive.h"
 #include "Level.h"
@@ -22,7 +23,6 @@
 #include "ai_object_location.h"
 #include "object_broker.h"
 #include "../xrEngine/igame_persistent.h"
-
 
 #ifdef DEBUG
 #	include "debug_renderer.h"
@@ -114,6 +114,8 @@ void CInventoryItem::Load(LPCSTR section)
 	m_flags.set(FCanTrade,		READ_IF_EXISTS(pSettings, r_bool, section, "can_trade",	TRUE));
 	m_flags.set(FIsQuestItem,	READ_IF_EXISTS(pSettings, r_bool, section, "quest_item",FALSE));
 
+	// Added by Axel, to enable optional condition use on any item
+	m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", FALSE));
 
 	if ( BaseSlot() != NO_ACTIVE_SLOT || Belt())
 	{
@@ -125,16 +127,16 @@ void CInventoryItem::Load(LPCSTR section)
 
 }
 
-void  CInventoryItem::ChangeCondition(float fDeltaCondition)
+void CInventoryItem::ChangeCondition(float fDeltaCondition)
 {
 	m_fCondition += fDeltaCondition;
 	clamp(m_fCondition, 0.f, 1.f);
 }
 
-
-void	CInventoryItem::Hit					(SHit* pHDS)
+void CInventoryItem::Hit(SHit* pHDS)
 {
-	if( !m_flags.test(FUsingCondition) ) return;
+	if (IsUsingCondition() == false)
+		return;
 
 	float hit_power = pHDS->damage();
 	hit_power *= GetHitImmunity(pHDS->hit_type);

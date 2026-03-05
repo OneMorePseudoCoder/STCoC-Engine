@@ -102,7 +102,7 @@ public:
     IC CUIPdaWnd& GetPdaMenu() const { return *PdaMenu; }
     bool ShowActorMenu();
     void HideActorMenu();
-	void UpdateActorMenu(); //Alundaio
+    void UpdateActorMenu(); //Alundaio
     bool ShowPdaMenu();
     void HidePdaMenu();
     void ShowMessagesWindow();

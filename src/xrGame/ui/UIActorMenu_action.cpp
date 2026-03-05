@@ -29,7 +29,6 @@
 #include "UIPropertiesBox.h"
 #include "UIMainIngameWnd.h"
 
-
 bool  CUIActorMenu::AllowItemDrops(EDDListType from, EDDListType to)
 {
 	xr_vector<EDDListType>& v = m_allowed_drops[to];
@@ -37,6 +36,7 @@ bool  CUIActorMenu::AllowItemDrops(EDDListType from, EDDListType to)
 
 	return(it!=v.end());
 }
+
 class CUITrashIcon :public ICustomDrawDragItem
 {
 	CUIStatic			m_icon;
@@ -61,8 +61,8 @@ public:
 //		m_icon.SetWndSize(sz);
 		m_icon.Draw		();
 	}
-
 };
+
 void CUIActorMenu::OnDragItemOnTrash(CUIDragItem* item, bool b_receive)
 {
 	if(b_receive && !CurrentIItem()->IsQuestItem())
@@ -144,10 +144,10 @@ bool CUIActorMenu::OnItemDrop(CUICellItem* itm)
 		}break;
 	};
 
-	OnItemDropped				(CurrentIItem(), new_owner, old_owner);
+	OnItemDropped(CurrentIItem(), new_owner, old_owner);
 
-	UpdateItemsPlace			();
-	UpdateConditionProgressBars	();
+	UpdateConditionProgressBars();
+	UpdateItemsPlace();
 
 	return true;
 }
@@ -236,8 +236,8 @@ bool CUIActorMenu::OnItemDbClick(CUICellItem* itm)
 
 	}; //switch 
 
-	UpdateItemsPlace();
 	UpdateConditionProgressBars();
+	UpdateItemsPlace();
 
 	return true;
 }
