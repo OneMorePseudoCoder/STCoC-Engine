@@ -882,13 +882,13 @@ void CUIActorMenu::PropertiesBoxForSlots(PIItem item, bool& b_show)
 
 	if (!pOutfit && !pHelmet && cur_slot != NO_ACTIVE_SLOT && !inv.SlotIsPersistent(cur_slot) && m_pActorInvOwner->inventory().ItemFromSlot(cur_slot) != item)
 	{
-		m_UIPropertiesBox->AddItem("st_move_to_slot",  NULL, INVENTORY_TO_SLOT_ACTION);
+		m_UIPropertiesBox->AddItem("st_move_to_slot", NULL, INVENTORY_TO_SLOT_ACTION);
 		b_show = true;
 	}
 
 	if (item->Belt() &&inv.CanPutInBelt(item))
 	{
-		m_UIPropertiesBox->AddItem("st_move_on_belt",  NULL, INVENTORY_TO_BELT_ACTION);
+		m_UIPropertiesBox->AddItem("st_move_on_belt", NULL, INVENTORY_TO_BELT_ACTION);
 		b_show = true;
 	}
 
@@ -897,12 +897,17 @@ void CUIActorMenu::PropertiesBoxForSlots(PIItem item, bool& b_show)
 		if (!pOutfit)
 		{
 			if (!pHelmet)
-				m_UIPropertiesBox->AddItem("st_move_to_bag",  NULL, INVENTORY_TO_BAG_ACTION);
+			{
+				if (m_currMenuMode == mmDeadBodySearch)
+					m_UIPropertiesBox->AddItem("st_move_to_bag", NULL, INVENTORY_TO_BAG_ACTION);
+				else 
+					m_UIPropertiesBox->AddItem("st_unequip", NULL, INVENTORY_TO_BAG_ACTION);
+			}
 			else
-				m_UIPropertiesBox->AddItem("st_undress_helmet",  NULL, INVENTORY_TO_BAG_ACTION);
+				m_UIPropertiesBox->AddItem("st_undress_helmet", NULL, INVENTORY_TO_BAG_ACTION);
 		}
 		else
-			m_UIPropertiesBox->AddItem("st_undress_outfit",  NULL, INVENTORY_TO_BAG_ACTION);
+			m_UIPropertiesBox->AddItem("st_undress_outfit", NULL, INVENTORY_TO_BAG_ACTION);
 
 		bAlreadyDressed = true;
 		b_show = true;
@@ -910,14 +915,14 @@ void CUIActorMenu::PropertiesBoxForSlots(PIItem item, bool& b_show)
 
 	if (pOutfit && !bAlreadyDressed)
 	{
-		m_UIPropertiesBox->AddItem("st_dress_outfit",  NULL, INVENTORY_TO_SLOT_ACTION);
+		m_UIPropertiesBox->AddItem("st_dress_outfit", NULL, INVENTORY_TO_SLOT_ACTION);
 		b_show = true;
 	}
 
 	CCustomOutfit* outfit_in_slot = m_pActorInvOwner->GetOutfit();
 	if (pHelmet && !bAlreadyDressed && (!outfit_in_slot || outfit_in_slot->bIsHelmetAvaliable))
 	{
-		m_UIPropertiesBox->AddItem("st_dress_helmet",  NULL, INVENTORY_TO_SLOT_ACTION);
+		m_UIPropertiesBox->AddItem("st_dress_helmet", NULL, INVENTORY_TO_SLOT_ACTION);
 		b_show = true;
 	}
 }
