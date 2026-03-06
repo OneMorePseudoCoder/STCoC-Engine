@@ -88,7 +88,6 @@ protected:
 	CUICellItem*				m_InfoCellItem;
 	u32							m_InfoCellItem_timer;
 	CUICellItem*				m_pCurrentCellItem;
-	CUICellItem* 				m_pCurrentConsumable;
 	CUICellItem*				m_upgrade_selected;
 	CUIPropertiesBox*			m_UIPropertiesBox;
 
@@ -251,8 +250,6 @@ protected:
 	void						CurModeToScript				();
 	void						RepairEffect_CurItem		();
 
-	void						SetCurrentItem				(CUICellItem* itm);
-	CUICellItem*				CurrentItem					();
 	PIItem						CurrentIItem				();
 
 	void						InfoCurItem					(CUICellItem* cell_item); //on update item
@@ -347,7 +344,9 @@ public:
 
 	IC	UIHint*					get_hint_wnd				() { return m_hint_wnd; }
 	CUIDragDropListEx*			GetListByType				(EDDListType t);
-	CUICellItem* GetCurrentConsumable() { return m_pCurrentConsumable; };
-	void SetCurrentConsumable(CUICellItem* ci) { m_pCurrentConsumable = ci; };
-	void RefreshConsumableCells();
+	//AxelDominator && Alundaio consumable use condition
+	void RefreshCurrentItemCell();
+	void SetCurrentItem(CUICellItem* itm);		//Alundaio: Made public
+	CUICellItem* CurrentItem();					//Alundaio: Made public
+	//-AxelDominator && Alundaio consumable use condition
 }; // class CUIActorMenu

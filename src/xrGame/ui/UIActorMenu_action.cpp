@@ -154,15 +154,16 @@ bool CUIActorMenu::OnItemDrop(CUICellItem* itm)
 
 bool CUIActorMenu::OnItemStartDrag(CUICellItem* itm)
 {
-	InfoCurItem( NULL );
+	InfoCurItem(NULL);
 	return false; //default behaviour
 }
 
 bool CUIActorMenu::OnItemDbClick(CUICellItem* itm)
 {
-	InfoCurItem( NULL );
-	CUIDragDropListEx*	old_owner		= itm->OwnerList();
-	EDDListType t_old					= GetListType(old_owner);
+	SetCurrentItem(itm);
+	InfoCurItem(NULL);
+	CUIDragDropListEx* old_owner = itm->OwnerList();
+	EDDListType t_old = GetListType(old_owner);
 
 	switch ( t_old )
 	{

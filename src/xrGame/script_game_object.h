@@ -622,6 +622,10 @@ public:
             void				SetArtefactSatietyRestoreSpeed			(float value);
             void				SetArtefactPowerRestoreSpeed			(float value);
             void				SetArtefactBleedingRestoreSpeed			(float value);
+			//Eatable items
+			void				SetRemainingUses						(u8 value);
+			u8					GetRemainingUses						();
+			u8					GetMaxUses								();
 			//-Alun
 	
 			// HELICOPTER

@@ -18,6 +18,8 @@
 
 #include "xrEngine/x_ray.h"
 
+#include "ui\UICellItem.h" //Alundaio
+
 struct predicate_find_stat
 {
     const char* id;
@@ -180,7 +182,28 @@ void CUIGameCustom::HideActorMenu()
 void CUIGameCustom::UpdateActorMenu()
 {
 	if (ActorMenu->IsShown())
+	{
 		ActorMenu->UpdateActor();
+		ActorMenu->RefreshCurrentItemCell();
+	}
+}
+
+CScriptGameObject* CUIGameCustom::CurrentItemAtCell()
+{
+	CUICellItem* itm = ActorMenu->CurrentItem();
+	if (!itm->m_pData)
+		return (0);
+
+	PIItem IItm = (PIItem)itm->m_pData;
+	if (!IItm)
+		return (0);
+
+	CGameObject* GO = smart_cast<CGameObject*>(IItm);
+
+	if (GO)
+		return GO->lua_game_object();
+
+	return (0);
 }
 //-Alundaio
 
