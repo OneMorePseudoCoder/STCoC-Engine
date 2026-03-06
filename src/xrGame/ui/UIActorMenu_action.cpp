@@ -29,12 +29,12 @@
 #include "UIPropertiesBox.h"
 #include "UIMainIngameWnd.h"
 
-bool  CUIActorMenu::AllowItemDrops(EDDListType from, EDDListType to)
+bool CUIActorMenu::AllowItemDrops(EDDListType from, EDDListType to)
 {
 	xr_vector<EDDListType>& v = m_allowed_drops[to];
 	xr_vector<EDDListType>::iterator it = std::find(v.begin(), v.end(), from);
 
-	return(it!=v.end());
+	return (it != v.end());
 }
 
 class CUITrashIcon :public ICustomDrawDragItem
@@ -177,30 +177,35 @@ bool CUIActorMenu::OnItemDbClick(CUICellItem* itm)
 		}
 	case iActorBag:
 		{
-			if ( m_currMenuMode == mmTrade )
+			if (m_currMenuMode == mmTrade)
 			{
-				ToActorTrade( itm, false );
+				ToActorTrade(itm, false);
 				break;
-			}else
-				if ( m_currMenuMode == mmDeadBodySearch )
+			}
+			else
+				if (m_currMenuMode == mmDeadBodySearch)
 				{
-					ToDeadBodyBag( itm, false );
+					ToDeadBodyBag(itm, false);
 					break;
 				}
-				if(m_currMenuMode!=mmUpgrade && TryUseItem( itm ))
+				if (m_currMenuMode != mmUpgrade && TryUseItem(itm))
 				{
 					break;
 				}
-				if ( TryActiveSlot( itm ) )
+				if (TryActiveSlot(itm))
 				{
 					break;
 				}
 				PIItem iitem_to_place = (PIItem)itm->m_pData;
-				if ( !ToSlot( itm, false, iitem_to_place->BaseSlot() ) )
+				if (!m_pActorInvOwner->inventory().SlotIsPersistent(iitem_to_place->BaseSlot()) && m_pActorInvOwner->inventory().ItemFromSlot(iitem_to_place->BaseSlot()) == iitem_to_place)
 				{
-					if ( !ToBelt( itm, false ) )
+					ToBag(itm, false);
+				}
+				else if (!ToSlot(itm, false, iitem_to_place->BaseSlot()))
+				{
+					if (!ToBelt(itm, false))
 					{
-						ToSlot( itm, true, iitem_to_place->BaseSlot() );
+						ToSlot(itm, true, iitem_to_place->BaseSlot());
 					}
 				}
 				break;

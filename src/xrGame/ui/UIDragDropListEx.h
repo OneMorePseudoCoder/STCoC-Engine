@@ -9,8 +9,8 @@ class CUIStatic;
 class CUICellItem;
 class CUIDragItem;
 
-
-struct CUICell{
+struct CUICell
+{
 							CUICell					()						{m_item=NULL; Clear();}
 
 		CUICellItem*		m_item;
@@ -132,7 +132,7 @@ public:
 			void			clear_select_armament();
 			Ivector2		PickCell			(const Fvector2& abs_pos);
 			CUICell&		GetCellAt			(const Ivector2& pos);
-
+			CUICellContainer* GetContainer		() { return m_container; }; //Alundaio
 public:
 	//UIWindow overriding
 	virtual		void		Draw				();
