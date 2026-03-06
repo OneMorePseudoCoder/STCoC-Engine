@@ -5,14 +5,18 @@
 #include "UICellItem.h"
 #include "UICursor.h"
 
+//Alundaio
+#include "../Inventory.h" 
+//-Alundaio
 
 CUIDragItem* CUIDragDropListEx::m_drag_item = NULL;
 
 void CUICell::Clear()
 {
 	m_bMainItem = false;
-	if(m_item)	m_item->SetOwnerList(NULL);
-	m_item		= NULL; 
+	if (m_item)
+		m_item->SetOwnerList(NULL);
+	m_item = NULL; 
 }
 
 CUIDragDropListEx::CUIDragDropListEx()
@@ -48,27 +52,30 @@ CUIDragDropListEx::CUIDragDropListEx()
 
 CUIDragDropListEx::~CUIDragDropListEx()
 {
-	DestroyDragItem		();
-
-	delete_data					(m_container);
+	DestroyDragItem();
+	delete_data(m_container);
 }
 
 void CUIDragDropListEx::SetAutoGrow(bool b)						
 {
 	m_flags.set(flAutoGrow,b);
 }
+
 bool CUIDragDropListEx::IsAutoGrow()								
 {
 	return !!m_flags.test(flAutoGrow);
 }
+
 void CUIDragDropListEx::SetGrouping(bool b)						
 {
 	m_flags.set(flGroupSimilar,b);
 }
+
 bool CUIDragDropListEx::IsGrouping()
 {
 	return !!m_flags.test(flGroupSimilar);
 }
+
 void CUIDragDropListEx::SetCustomPlacement(bool b)
 {
 	m_flags.set(flCustomPlacement,b);
@@ -78,6 +85,7 @@ bool CUIDragDropListEx::GetCustomPlacement()
 {
 	return !!m_flags.test(flCustomPlacement);
 }
+
 void CUIDragDropListEx::SetVerticalPlacement(bool b)
 {
 	m_flags.set(flVerticalPlacement,b);
@@ -110,36 +118,36 @@ void CUIDragDropListEx::SendMessage(CUIWindow* pWnd, s16 msg, void* pData)
 
 void CUIDragDropListEx::InitDragDropList(Fvector2 pos, Fvector2 size)
 {
-	inherited::SetWndPos				(pos);
-	inherited::SetWndSize				(size);
-	m_vScrollBar->InitScrollBar			(Fvector2().set(size.x, 0.0f), size.y, false);
-	m_vScrollBar->SetWndPos				(Fvector2().set(m_vScrollBar->GetWndPos().x - m_vScrollBar->GetWidth(), m_vScrollBar->GetWndPos().y));
+	inherited::SetWndPos(pos);
+	inherited::SetWndSize(size);
+	m_vScrollBar->InitScrollBar(Fvector2().set(size.x, 0.0f), size.y, false);
+	m_vScrollBar->SetWndPos(Fvector2().set(m_vScrollBar->GetWndPos().x - m_vScrollBar->GetWidth(), m_vScrollBar->GetWndPos().y));
 }
 
 void CUIDragDropListEx::OnScrollV(CUIWindow* w, void* pData)
 {
-	m_container->SetWndPos		(Fvector2().set(m_container->GetWndPos().x, float(-m_vScrollBar->GetScrollPos())));
+	m_container->SetWndPos(Fvector2().set(m_container->GetWndPos().x, float(-m_vScrollBar->GetScrollPos())));
 }
 
 void CUIDragDropListEx::CreateDragItem(CUICellItem* itm)
 {
-	R_ASSERT							(!m_drag_item);
-	m_drag_item							= itm->CreateDragItem();
+	R_ASSERT(!m_drag_item);
+	m_drag_item = itm->CreateDragItem();
 
-	if ( m_drag_item )
+	if (m_drag_item)
 	{
-		GetParent()->SetCapture			(m_drag_item, true);
+		GetParent()->SetCapture(m_drag_item, true);
 	}
 }
 
 void CUIDragDropListEx::DestroyDragItem()
 {
-	if(m_selected_item && m_drag_item && m_drag_item->ParentItem()==m_selected_item)
+	if (m_selected_item && m_drag_item && m_drag_item->ParentItem() == m_selected_item)
 	{
-		VERIFY(GetParent()->GetMouseCapturer()==m_drag_item);
-		GetParent()->SetCapture				(NULL, false);
+		VERIFY(GetParent()->GetMouseCapturer() == m_drag_item);
+		GetParent()->SetCapture(NULL, false);
 
-		delete_data							(m_drag_item);
+		delete_data(m_drag_item);
 	}
 }
 
@@ -148,60 +156,63 @@ Fvector2 CUIDragDropListEx::GetDragItemPosition()
 	return m_drag_item->GetPosition();
 }
 
-
 void CUIDragDropListEx::OnDragEvent(CUIDragItem* drag_item, bool b_receive)
 {
-	if(m_f_drag_event)
+	if (m_f_drag_event)
 		m_f_drag_event(drag_item, b_receive);
 }
 
 void CUIDragDropListEx::OnItemStartDragging(CUIWindow* w, void* pData)
 {
-	OnItemSelected						(w, pData);
-	CUICellItem* itm		= smart_cast<CUICellItem*>(w);
+	OnItemSelected(w, pData);
+	CUICellItem* itm = smart_cast<CUICellItem*>(w);
 
-	if(itm!=m_selected_item)	return;
+	if (itm!=m_selected_item)
+		return;
 	
-	if(m_f_item_start_drag && m_f_item_start_drag(itm) ) return;
+	if (m_f_item_start_drag && m_f_item_start_drag(itm))
+		return;
 
-	CreateDragItem						(itm);
+	CreateDragItem(itm);
 }
 
 void CUIDragDropListEx::OnItemDrop(CUIWindow* w, void* pData)
 {
-	OnItemSelected						(w, pData);
-	CUICellItem*		itm				= smart_cast<CUICellItem*>(w);
-	VERIFY								(itm->OwnerList() == itm->OwnerList());
+	OnItemSelected(w, pData);
+	CUICellItem* itm = smart_cast<CUICellItem*>(w);
+	VERIFY(itm->OwnerList() == itm->OwnerList());
 
-	if(m_f_item_drop && m_f_item_drop(itm) ){
-		DestroyDragItem						();
+	if (m_f_item_drop && m_f_item_drop(itm))
+	{
+		DestroyDragItem();
 		return;
 	}
 
-	CUIDragDropListEx*	old_owner		= itm->OwnerList();
-	CUIDragDropListEx*	new_owner		= m_drag_item->BackList();
+	CUIDragDropListEx* old_owner = itm->OwnerList();
+	CUIDragDropListEx* new_owner = m_drag_item->BackList();
 
-	bool b				= (old_owner==new_owner)&&!GetCustomPlacement();
+	bool b = (old_owner == new_owner) && !GetCustomPlacement();
 
 	if(old_owner&&new_owner && !b)
 	{
-		CUICellItem* i					= old_owner->RemoveItem(itm, (old_owner==new_owner) );
+		CUICellItem* i = old_owner->RemoveItem(itm, (old_owner == new_owner));
 		while(i->ChildsCount())
 		{
-			CUICellItem* _chld				= i->PopChild(NULL);
-			new_owner->SetItem				(_chld, old_owner->GetDragItemPosition());
+			CUICellItem* _chld = i->PopChild(NULL);
+			new_owner->SetItem(_chld, old_owner->GetDragItemPosition());
 		}
-		new_owner->SetItem				(i,old_owner->GetDragItemPosition());
+		new_owner->SetItem(i ,old_owner->GetDragItemPosition());
 	}
-	DestroyDragItem						();
+	DestroyDragItem();
 }
 
 void CUIDragDropListEx::OnItemDBClick(CUIWindow* w, void* pData)
 {
-	OnItemSelected						(w, pData);
-	CUICellItem*		itm				= smart_cast<CUICellItem*>(w);
+	OnItemSelected(w, pData);
+	CUICellItem* itm = smart_cast<CUICellItem*>(w);
 
-	if(m_f_item_db_click && m_f_item_db_click(itm) ){
+	if(m_f_item_db_click && m_f_item_db_click(itm) )
+	{
 		DestroyDragItem						();
 		return;
 	}
@@ -535,36 +546,46 @@ CUICellContainer::CUICellContainer(CUIDragDropListEx* parent)
 }
 
 CUICellContainer::~CUICellContainer()
-{
-}
+{}
 
 bool CUICellContainer::AddSimilar(CUICellItem* itm)
 {
-	if(!m_pParentDragDropList->IsGrouping())	return false;
+	if (!m_pParentDragDropList->IsGrouping())
+		return false;
 
-	CUICellItem* i		= FindSimilar(itm);
-	R_ASSERT			(i!=itm);
-	R_ASSERT			(0==itm->ChildsCount());
-	if(i)
+	CUICellItem* i = FindSimilar(itm);
+	if (i == NULL)
+		return false;
+	R_ASSERT(i != itm);
+	R_ASSERT(0 == itm->ChildsCount());
+	if (i)
 	{	
-		i->PushChild			(itm);
-		itm->SetOwnerList		(m_pParentDragDropList);
+		i->PushChild(itm);
+		itm->SetOwnerList(m_pParentDragDropList);
 	}
 	
-	return (i!=NULL);
+	return (i != NULL);
 }
 
 CUICellItem* CUICellContainer::FindSimilar(CUICellItem* itm)
 {
-	for(WINDOW_LIST_it it = m_ChildWndList.begin(); m_ChildWndList.end()!=it; ++it)
+	for (WINDOW_LIST_it it = m_ChildWndList.begin(); m_ChildWndList.end()!=it; ++it)
 	{
 #ifdef DEBUG
 		CUICellItem* i = smart_cast<CUICellItem*>(*it);
 #else
 		CUICellItem* i = (CUICellItem*)(*it);
 #endif
-		R_ASSERT		(i!=itm);
-		if(i->EqualTo(itm))
+		//Alundaio: Don't stack equipped items
+		PIItem	iitem = (PIItem)i->m_pData;
+		if (iitem && iitem->m_pInventory && iitem->m_pInventory->ItemFromSlot(iitem->BaseSlot()) == iitem)
+			continue;
+
+		if (i == itm)
+			continue;
+
+		//-Alundaio
+		if (i->EqualTo(itm))
 			return i;
 	}
 	return NULL;
@@ -896,68 +917,71 @@ void CUICellContainer::Draw()
 	u32 max_prim_cnt = ((tgt_cells.width()+1)*(tgt_cells.height()+1)*6);
 	UIRender->StartPrimitive	(max_prim_cnt, IUIRender::ptTriList, UI().m_currentPointType);
 
-//	u32 cell_i = 0;
-	for ( int x = 0; x <= tgt_cells.width(); ++x )
+	for (int x = 0; x <= tgt_cells.width(); ++x)
 	{
-		for ( int y = 0; y <= tgt_cells.height(); ++y/*, ++cell_i*/ )
+		for (int y = 0; y <= tgt_cells.height(); ++y)
 		{
-			Fvector2			rect_offset;
-			rect_offset.set		( (drawLT.x + f_len.x*x + sp_len.x*x), (drawLT.y + f_len.y*y + sp_len.y*y) );
+			Fvector2 rect_offset;
+			rect_offset.set((drawLT.x + f_len.x * x + sp_len.x * x), (drawLT.y + f_len.y * y + sp_len.y * y));
 
 			Ivector2 cpos;
-			cpos.set( x, y );
-			cpos.add( TopVisibleCell() );
-			CUICell& ui_cell = GetCellAt( cpos );
+			cpos.set(x, y);
+			cpos.add(TopVisibleCell());
+			CUICell& ui_cell = GetCellAt(cpos);
 			
 			u8 select_mode = 0;
-			if ( !ui_cell.Empty() )
+			if (!ui_cell.Empty())
 			{
-				if ( ui_cell.m_item->m_cur_mark )
+				if (ui_cell.m_item->m_cur_mark)
 				{
 					select_mode = 2;
 				}
-				else if ( ui_cell.m_item->m_selected )
+				else if (ui_cell.m_item->m_selected)
 				{
 					select_mode = 1;
 				}
-				else if ( ui_cell.m_item->m_select_armament )
+				else if (ui_cell.m_item->m_select_armament)
 				{
 					select_mode = 3;
 				}
+				else 
+				{
+					//Alundaio: Highlight equipped items
+					PIItem	iitem = (PIItem)ui_cell.m_item->m_pData;
+					if (iitem)
+					{
+						u16 slot = iitem->BaseSlot();
+						if (iitem->m_pInventory && iitem->m_pInventory->ItemFromSlot(slot) == iitem)
+							select_mode = 3;
+					}
+					//-Alundaio:
+				}
 			}
 			
-			Fvector2			tp;
-			GetTexUVLT			(tp, tgt_cells.x1+x, tgt_cells.y1+y, select_mode);
+			Fvector2 tp;
+			GetTexUVLT(tp, tgt_cells.x1+x, tgt_cells.y1+y, select_mode);
 
-			//for (u32 k=0; k<6; ++k,++pv)
-			for ( u32 k = 0; k < 6; ++k )
+			for (u32 k = 0; k < 6; ++k)
 			{
-				const Fvector2& p	= pts[k];
-				const Fvector2& uv	= uvs[k];
-				//pv->set			(iFloor(drawLT.x + p.x*(f_len.x) + f_len.x*x)-0.5f, 
-				//				 iFloor(drawLT.y + p.y*(f_len.y) + f_len.y*y)-0.5f, 
-				//				 0xFFFFFFFF,tp.x+uv.x,tp.y+uv.y);
-				UIRender->PushPoint(iFloor( rect_offset.x + p.x*(f_len.x) )-0.5f, 
-									iFloor( rect_offset.y + p.y*(f_len.y) )-0.5f,
-									0,
-									m_pParentDragDropList->back_color,
-									tp.x+uv.x, tp.y+uv.y);
-			}//for k
-		}//for y
-	}// for x
-	UI().PushScissor					(clientArea);
+				const Fvector2& p = pts[k];
+				const Fvector2& uv = uvs[k];
+				UIRender->PushPoint(iFloor(rect_offset.x + p.x * (f_len.x)) - 0.5f, iFloor(rect_offset.y + p.y * (f_len.y)) - 0.5f, 0, m_pParentDragDropList->back_color, tp.x + uv.x, tp.y + uv.y);
+			}
+		}
+	}
+	UI().PushScissor(clientArea);
 
-	UIRender->SetShader( *hShader );
+	UIRender->SetShader(*hShader);
 	UIRender->FlushPrimitive();
 
 	//draw shown items in range
-	if ( m_cells_to_draw.size() )
+	if (m_cells_to_draw.size())
 	{
 		UI_CELLS_VEC_IT it = m_cells_to_draw.begin();
-		for ( ; it != m_cells_to_draw.end(); ++it ) // all cells
+		for (; it != m_cells_to_draw.end(); ++it) // all cells
 		{
 			CUICell& cell = (*it);
-			if ( !cell.Empty() && (cell.m_item->m_drawn_frame != Device.dwFrame) )
+			if (!cell.Empty() && (cell.m_item->m_drawn_frame != Device.dwFrame))
 			{
 				cell.m_item->Draw();
 			}
