@@ -18,11 +18,15 @@ void CUIStatic::script_register(lua_State *L)
 		.def("SetElipsis",			&CUILines::SetEllipsis)
 		.def("SetTextColor",		&CUILines::SetTextColor),
 
-
 		class_<CUIStatic, CUIWindow>("CUIStatic")
 		.def(						constructor<>())
+		.def("SetTextureColor", 	&CUIStatic::SetTextureColor)
+		.def("GetTextureColor", 	&CUIStatic::GetTextureColor)
+		.def("AdjustHeightToText", 	&CUIStatic::AdjustHeightToText)
+		.def("AdjustWidthToText", 	&CUIStatic::AdjustWidthToText)
+		.def("GetStretchTexture", 	&CUIStatic::GetStretchTexture)
 		.def("TextControl",			&CUIStatic::TextItemControl)
-		.def("InitTexture",			&CUIStatic::InitTexture )
+		.def("InitTexture",			&CUIStatic::InitTexture)
 		.def("SetTextureRect",		&CUIStatic::SetTextureRect_script)
 		.def("SetStretchTexture",	&CUIStatic::SetStretchTexture)
 		.def("GetTextureRect",		&CUIStatic::GetTextureRect_script),

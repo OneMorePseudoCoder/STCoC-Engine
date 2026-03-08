@@ -5,10 +5,12 @@
 //	Description : UI Hint (for UIHintWindow) window class
 ////////////////////////////////////////////////////////////////////////////
 
+#pragma once
 #ifndef	UI_HINT_H_INCLUDED
 #define UI_HINT_H_INCLUDED
 
 #include "UIWindow.h"
+#include "../../xrServerEntities/script_export_space.h"
 
 class CUIStatic;
 class CUITextWnd;
@@ -45,6 +47,7 @@ protected:
 	bool			m_visible;
 	float			m_border;
 	Frect			m_rect;
+	DECLARE_SCRIPT_REGISTER_FUNCTION
 }; // class UIHint
 
 // =================================================================================================
@@ -78,6 +81,9 @@ private:
 	u32				m_hint_delay;
 	shared_str		m_hint_text;
 	bool			m_enable;
+	DECLARE_SCRIPT_REGISTER_FUNCTION
 };// class UIHintWindow
-
+add_to_type_list(UIHintWindow)
+#undef script_type_list
+#define script_type_list save_type_list(UIHintWindow)
 #endif // UI_HINT_H_INCLUDED

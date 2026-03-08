@@ -28,7 +28,6 @@ class CUIStatsPlayerList;
 class CUIDragDropListEx;
 class CUIComboBox;
 class CUITrackBar;
-class UIHintWindow;
 class CUILines;
 class CUITextWnd;
 
@@ -66,15 +65,11 @@ public:
 	static bool 	InitListBox				(CUIXml& xml_doc, LPCSTR path, int index, CUIListBox* pWnd);
 	static bool		InitComboBox			(CUIXml& xml_doc, LPCSTR path, int index, CUIComboBox* pWnd);
 	static bool		InitTrackBar			(CUIXml& xml_doc, LPCSTR path, int index, CUITrackBar* pWnd);
-	static bool 	InitHintWindow			(CUIXml& xml_doc, LPCSTR path, int index, UIHintWindow* pWnd);
 	static Frect	GetFRect				(CUIXml& xml_doc, LPCSTR path, int index);
 	static u32		GetColor				(CUIXml& xml_doc, LPCSTR path, int index, u32 def_clr);
 public:
 
-	static bool		InitAlignment(CUIXml &xml_doc, const char *path,
-											  int index, float &x, float &y,CUIWindow* pWnd);
-
-
+	static bool		InitAlignment(CUIXml &xml_doc, const char *path, int index, float &x, float &y,CUIWindow* pWnd);
 	static void		InitAutoStaticGroup(CUIXml& xml_doc, LPCSTR path, int index, CUIWindow* pParentWnd);
 	static void		InitAutoFrameLineGroup(CUIXml& xml_doc, LPCSTR path, int index, CUIWindow* pParentWnd);
 
