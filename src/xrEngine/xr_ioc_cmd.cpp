@@ -1,11 +1,8 @@
 #include "stdafx.h"
 #include "igame_level.h"
-
-//#include "xr_effgamma.h"
 #include "x_ray.h"
 #include "xr_ioconsole.h"
 #include "xr_ioc_cmd.h"
-//#include "fbasicvisual.h"
 #include "cameramanager.h"
 #include "environment.h"
 #include "xr_input.h"
@@ -61,7 +58,6 @@ public:
     CCC_Quit(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = TRUE; };
     virtual void Execute(LPCSTR args)
     {
-        // TerminateProcess(GetCurrentProcess(),0);
         Console->Hide();
         Engine.Event.Defer("KERNEL:disconnect");
         Engine.Event.Defer("KERNEL:quit");
@@ -76,11 +72,11 @@ public:
     virtual void Execute(LPCSTR args)
     {
         string_path fn;
-        if (args&&args[0]) xr_sprintf(fn, sizeof(fn), "%s.dump", args);
-        else strcpy_s_s(fn, sizeof(fn), "x:\\$memory$.dump");
+        if (args&&args[0])
+			xr_sprintf(fn, sizeof(fn), "%s.dump", args);
+        else
+			strcpy_s_s(fn, sizeof(fn), "x:\\$memory$.dump");
         Memory.mem_statistic(fn);
-        // g_pStringContainer->dump ();
-        // g_pSharedMemoryContainer->dump ();
     }
 };
 #endif // DEBUG_MEMORY_MANAGER
@@ -115,8 +111,6 @@ public:
     CCC_MotionsStat(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = TRUE; };
     virtual void Execute(LPCSTR args)
     {
-        //g_pMotionsContainer->dump();
-        // TODO: move this console commant into renderer
         VERIFY(0);
     }
 };
@@ -127,9 +121,6 @@ public:
     virtual void Execute(LPCSTR args)
     {
         Device.DumpResourcesMemoryUsage();
-        //Device.Resources->_DumpMemoryUsage();
-        // TODO: move this console commant into renderer
-        //VERIFY(0);
     }
 };
 //-----------------------------------------------------------------------
@@ -177,7 +168,8 @@ public:
 
         bool exist = Render->texture_is_exist(args);
 
-        if (!exist) { 
+        if (!exist) 
+        { 
             Msg("Warning: wrong path or texture is not exist!"); 
             override_material = false; 
             d_texture_name = NULL; 
@@ -231,7 +223,6 @@ public:
         Log("- --- Command listing: end ----");
     }
 };
-
 
 XRCORE_API void _dump_open_files(int mode);
 class CCC_DumpOpenFiles : public IConsole_Command
@@ -323,11 +314,11 @@ void CCC_LoadCFG::Execute(LPCSTR args)
     }
 }
 
-CCC_LoadCFG_custom::CCC_LoadCFG_custom(LPCSTR cmd)
-    :CCC_LoadCFG(cmd)
+CCC_LoadCFG_custom::CCC_LoadCFG_custom(LPCSTR cmd) : CCC_LoadCFG(cmd)
 {
     xr_strcpy(m_cmd, cmd);
 };
+
 bool CCC_LoadCFG_custom::allow(LPCSTR cmd)
 {
     return (cmd == strstr(cmd, m_cmd));
@@ -376,11 +367,6 @@ public:
     CCC_Start(LPCSTR N) : IConsole_Command(N) { bLowerCaseArgs = false; };
     virtual void Execute(LPCSTR args)
     {
-        /* if (g_pGameLevel) {
-         Log ("! Please disconnect/unload first");
-         return;
-         }
-         */
         string4096 op_server, op_client, op_demo;
         op_server[0] = 0;
         op_client[0] = 0;
@@ -517,13 +503,9 @@ public:
     virtual void Execute(LPCSTR args)
     {
         CCC_Float::Execute(args);
-        //Device.Gamma.Gamma (ps_gamma);
         Device.m_pRender->setGamma(ps_gamma);
-        //Device.Gamma.Brightness (ps_brightness);
         Device.m_pRender->setBrightness(ps_brightness);
-        //Device.Gamma.Contrast (ps_contrast);
         Device.m_pRender->setContrast(ps_contrast);
-        //Device.Gamma.Update ();
         Device.m_pRender->updateGamma();
     }
 };
@@ -532,8 +514,6 @@ ENGINE_API BOOL r2_sun_static = TRUE;
 ENGINE_API BOOL r2_advanced_pp = FALSE; // advanced post process and effects
 
 u32 renderer_value = 3;
-//void fill_render_mode_list();
-//void free_render_mode_list();
 
 class CCC_r2 : public CCC_Token
 {
@@ -675,12 +655,9 @@ public:
     }
 };
 
-
 ENGINE_API float psHUD_FOV_def = 0.5f; //--#SM+#--	Дефолтный HUD FOV (В % от Camera FOV) [default hud_fov (perc. of g_fov)]
 ENGINE_API float psHUD_FOV = psHUD_FOV_def; //--#SM+#-- Текущий HUD FOV (В % от Camera FOV) [current hud_fov (perc. of g_fov)]
 ENGINE_API float VIEWPORT_NEAR = 0.2f; //--#SM+#-- (Old: 0.2f)
-
-
 
 ENGINE_API float hud_adj_delta_pos = 0.0005f;
 ENGINE_API float hud_adj_delta_rot = 0.05f;
@@ -703,14 +680,12 @@ ENGINE_API bool override_material = false;
 
 ENGINE_API float fps_limit = 60.0f;
 
-//extern int psSkeletonUpdate;
 extern int rsDVB_Size;
 extern int rsDIB_Size;
 extern int psNET_ServerUpdate;
 extern int psNET_DedicatedSleep;
 extern char psNET_Name[32];
 extern Flags32 psEnvFlags;
-//extern float r__dtex_range;
 
 extern int g_ErrorLineCount;
 
@@ -758,7 +733,6 @@ void CCC_Register()
     CMD3(CCC_Mask, "rs_occlusion", &psDeviceFlags, rsOcclusion);
 
     CMD3(CCC_Mask, "rs_detail", &psDeviceFlags, rsDetails);
-    //CMD4(CCC_Float, "r__dtex_range", &r__dtex_range, 5, 175 );
 
     // CMD3(CCC_Mask, "rs_constant_fps", &psDeviceFlags, rsConstantFPS );
     CMD3(CCC_Mask, "rs_render_statics", &psDeviceFlags, rsDrawStatic);
@@ -812,8 +786,8 @@ void CCC_Register()
     CMD1(CCC_SND_Restart, "snd_restart");
     CMD3(CCC_Mask, "snd_acceleration", &psSoundFlags, ss_Hardware);
     CMD3(CCC_Mask, "snd_efx", &psSoundFlags, ss_EAX);
-    CMD4(CCC_Integer, "snd_targets", &psSoundTargets, 4, 32);
-    CMD4(CCC_Integer, "snd_cache_size", &psSoundCacheSizeMB, 4, 32);
+    CMD4(CCC_Integer, "snd_targets", &psSoundTargets, 200, 1000);
+    CMD4(CCC_Integer, "snd_cache_size", &psSoundCacheSizeMB, 4, 64);
 
 #ifdef DEBUG
     CMD3(CCC_Mask, "snd_stats", &g_stats_flags, st_sound);

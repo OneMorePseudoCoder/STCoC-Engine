@@ -19,8 +19,7 @@ CPhantom::CPhantom()
 }
 
 CPhantom::~CPhantom()
-{
-}
+{}
 
 //---------------------------------------------------------------------
 void CPhantom::Load( LPCSTR section )
@@ -28,7 +27,8 @@ void CPhantom::Load( LPCSTR section )
 	inherited::Load		(section);
 	//////////////////////////////////////////////////////////////////////////
 	ISpatial* self		= smart_cast<ISpatial*> (this);
-	if (self) {
+	if (self) 
+	{
 		self->spatial.type &=~STYPE_VISIBLEFORAI;
 		self->spatial.type &=~STYPE_REACTTOSOUND;
 	}
@@ -54,6 +54,7 @@ void CPhantom::Load( LPCSTR section )
 	snd_name						= pSettings->r_string(section,"sound_shoot");
 	if (snd_name&&snd_name[0])		m_state_data[stShoot].sound.create(snd_name,st_Effect,sg_SourceType);
 }
+
 BOOL CPhantom::net_Spawn(CSE_Abstract* DC)
 {
 	CSE_ALifeCreaturePhantom*	OBJ	= smart_cast<CSE_ALifeCreaturePhantom*>(DC); VERIFY(OBJ);
@@ -77,6 +78,8 @@ BOOL CPhantom::net_Spawn(CSE_Abstract* DC)
 	// inherited
 	if (!inherited::net_Spawn(DC)) return FALSE;
 	
+	OBJ->set_killer_id(u16(-1)); // Alundaio: Hack to prevent strange crash with dynamic phantoms
+
 	m_enemy			= Level().CurrentEntity();
 	VERIFY			(m_enemy);
 
@@ -109,6 +112,7 @@ BOOL CPhantom::net_Spawn(CSE_Abstract* DC)
 
 	return			TRUE;
 }
+
 void CPhantom::net_Destroy	()
 {
 	inherited::net_Destroy	();
@@ -133,7 +137,11 @@ void CPhantom::animation_end_callback(CBlend* B)
 //---------------------------------------------------------------------
 void CPhantom::SwitchToState_internal(EState new_state)
 {
-	if (new_state!=m_CurState){
+	if (!m_enemy)
+		m_enemy = Level().CurrentEntity();
+
+	if (new_state!=m_CurState)
+	{
 		IKinematicsAnimated *K	= smart_cast<IKinematicsAnimated*>(Visual());
 		Fmatrix	xform			= XFORM_center	();
 		UpdateEvent				= 0;
@@ -199,18 +207,20 @@ void CPhantom::SwitchToState_internal(EState new_state)
 
 void CPhantom::OnIdleState()
 {
-		DestroyObject		();
+	DestroyObject();
 }
 
 void CPhantom::OnFlyState()
 {
-	UpdateFlyMedia			();
-	if (g_Alive()){
+	UpdateFlyMedia();
+	if (g_Alive())
+	{
 		Fvector vE,vP;
-		m_enemy->Center		(vE);
-		Center				(vP);
-		if (vP.distance_to_sqr(vE)<_sqr(Radius()+m_enemy->Radius())){
-			SwitchToState	(stContact);
+		m_enemy->Center(vE);
+		Center(vP);
+		if (vP.distance_to_sqr(vE) < _sqr(Radius()+m_enemy->Radius()))
+		{
+			SwitchToState(stContact);
 			float power = 1000.0f;
 			float impulse = 100.0f;
 			SHit HDS(power,Fvector().set(0,0,1),this,BI_NONE,Fvector().set(0,0,0),impulse,ALife::eHitTypeFireWound,0.0f, false);
@@ -218,25 +228,31 @@ void CPhantom::OnFlyState()
 		}
 	}
 }
+
 void CPhantom::OnDeadState() 
 {
-	UpdateFlyMedia	();
+	UpdateFlyMedia();
 }
+
 void CPhantom::UpdateFlyMedia()
 {
-	UpdatePosition	(m_enemy->Position());
-	Fmatrix	xform			= XFORM_center();
+	if (!m_enemy)
+		m_enemy = Level().CurrentEntity();
+
+	UpdatePosition(m_enemy->Position());
+	Fmatrix	xform = XFORM_center();
 	// update particles
-	if (m_fly_particles){		
-		Fvector		vel;
-		vel.sub		(m_enemy->Position(),Position()).normalize_safe().mul(fSpeed);
+	if (m_fly_particles)
+	{		
+		Fvector vel;
+		vel.sub(m_enemy->Position(),Position()).normalize_safe().mul(fSpeed);
 		m_fly_particles->UpdateParent(xform,vel);
 	}
 	// update sound
-	if (m_state_data[stFly].sound._feedback()) m_state_data[stFly].sound.set_position(xform.c);
+	if (m_state_data[stFly].sound._feedback())
+		m_state_data[stFly].sound.set_position(xform.c);
 }
 //---------------------------------------------------------------------
-
 
 void CPhantom::shedule_Update(u32 DT)
 {
@@ -245,25 +261,27 @@ void CPhantom::shedule_Update(u32 DT)
 	inherited::shedule_Update(DT);
 
 	IKinematicsAnimated *K	= smart_cast<IKinematicsAnimated*>(Visual());
-	K->UpdateTracks			();
+	K->UpdateTracks();
 }
 
 void CPhantom::UpdateCL()
 {
 	inherited::UpdateCL();
 
-	if (!UpdateEvent.empty())	UpdateEvent();
-	if (m_TgtState!=m_CurState)	SwitchToState_internal(m_TgtState);
+	if (!UpdateEvent.empty())
+		UpdateEvent();
+	if (m_TgtState!=m_CurState)
+		SwitchToState_internal(m_TgtState);
 }
 //---------------------------------------------------------------------
-//void CPhantom::Hit	(float P, Fvector &dir, CObject* who, s16 element,Fvector p_in_object_space, float impulse, ALife::EHitType hit_type)
-void	CPhantom::Hit							(SHit* pHDS)
+void CPhantom::Hit(SHit* pHDS)
 {
-	if (m_TgtState==stFly)	SwitchToState(stShoot);
-	if (g_Alive()){
-		SetfHealth		(-1.f);
-//		inherited::Hit	(P,dir,who,element,p_in_object_space,impulse/100.f, hit_type);
-		inherited::Hit	(pHDS);
+	if (m_TgtState == stFly)
+		SwitchToState(stShoot);
+	if (g_Alive())
+	{
+		SetfHealth(-1.f);
+		inherited::Hit(pHDS);
 	}
 }
 //---------------------------------------------------------------------

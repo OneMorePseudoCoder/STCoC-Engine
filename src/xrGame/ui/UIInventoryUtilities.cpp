@@ -365,19 +365,21 @@ LPCSTR InventoryUtilities::GetTimePeriodAsString(LPSTR _buff, u32 buff_sz, ALife
 	int cnt		= 0;
 	_buff[0]	= 0;
 
-	if(month1!=month2)
-		cnt = xr_sprintf(_buff+cnt,buff_sz-cnt,"%d %s ",month2-month1, *CStringTable().translate("ui_st_months"));
+	u8 yrdiff = ((year2 - year1) * 12);
 
-	if(!cnt && day1!=day2)
+	if (month1 != month2 || yrdiff > 0)
+		cnt = xr_sprintf(_buff + cnt, buff_sz - cnt, "%d %s", month2 + (yrdiff - month1), *CStringTable().translate("ui_st_months"));
+
+	if (!cnt && day1 != day2)
 		cnt = xr_sprintf(_buff+cnt,buff_sz-cnt,"%d %s",day2-day1, *CStringTable().translate("ui_st_days"));
 
-	if(!cnt && hours1!=hours2)
+	if (!cnt && hours1 != hours2)
 		cnt = xr_sprintf(_buff+cnt,buff_sz-cnt,"%d %s",hours2-hours1, *CStringTable().translate("ui_st_hours"));
 
-	if(!cnt && mins1!=mins2)
+	if (!cnt && mins1 != mins2)
 		cnt = xr_sprintf(_buff+cnt,buff_sz-cnt,"%d %s",mins2-mins1, *CStringTable().translate("ui_st_mins"));
 
-	if(!cnt && secs1!=secs2)
+	if (!cnt && secs1 != secs2)
 		cnt = xr_sprintf(_buff+cnt,buff_sz-cnt,"%d %s",secs2-secs1, *CStringTable().translate("ui_st_secs"));
 
 	return _buff;
@@ -436,7 +438,8 @@ void LoadStrings(CharInfoStrings *container, LPCSTR section, LPCSTR field)
 
 void InitCharacterInfoStrings()
 {
-	if (charInfoReputationStrings && charInfoRankStrings) return;
+	if (charInfoReputationStrings && charInfoRankStrings)
+		return;
 
 	if (!charInfoReputationStrings)
 	{
@@ -479,7 +482,7 @@ LPCSTR InventoryUtilities::GetRankAsText(CHARACTER_RANK_VALUE rankID)
 {
 	InitCharacterInfoStrings();
 	CharInfoStrings::const_iterator cit = charInfoRankStrings->upper_bound(rankID);
-	if(charInfoRankStrings->end() == cit)
+	if (charInfoRankStrings->end() == cit)
 		return charInfoRankStrings->rbegin()->second.c_str();
 	return cit->second.c_str();
 }
@@ -491,7 +494,7 @@ LPCSTR InventoryUtilities::GetReputationAsText(CHARACTER_REPUTATION_VALUE rankID
 	InitCharacterInfoStrings();
 
 	CharInfoStrings::const_iterator cit = charInfoReputationStrings->upper_bound(rankID);
-	if(charInfoReputationStrings->end() == cit)
+	if (charInfoReputationStrings->end() == cit)
 		return charInfoReputationStrings->rbegin()->second.c_str();
 
 	return cit->second.c_str();
@@ -504,12 +507,11 @@ LPCSTR InventoryUtilities::GetGoodwillAsText(CHARACTER_GOODWILL goodwill)
 	InitCharacterInfoStrings();
 
 	CharInfoStrings::const_iterator cit = charInfoGoodwillStrings->upper_bound(goodwill);
-	if(charInfoGoodwillStrings->end() == cit)
+	if (charInfoGoodwillStrings->end() == cit)
 		return charInfoGoodwillStrings->rbegin()->second.c_str();
 
 	return cit->second.c_str();
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // специальная функция для передачи info_portions при нажатии кнопок UI 
@@ -517,7 +519,7 @@ LPCSTR InventoryUtilities::GetGoodwillAsText(CHARACTER_GOODWILL goodwill)
 void InventoryUtilities::SendInfoToActor(LPCSTR info_id)
 {
 	CActor* actor = smart_cast<CActor*>(Level().CurrentEntity());
-	if(actor)
+	if (actor)
 	{
 		actor->TransferInfo(info_id, true);
 	}
@@ -525,32 +527,35 @@ void InventoryUtilities::SendInfoToActor(LPCSTR info_id)
 
 void InventoryUtilities::SendInfoToLuaScripts(shared_str info)
 {
-	if ( info == shared_str("ui_talk_show") )
+	if (info == shared_str("ui_talk_show"))
 	{
 		int mode = 10; // now Menu is Talk Dialog (show)
 		luabind::functor<void>	funct;
-		R_ASSERT( ai().script_engine().functor( "pda.actor_menu_mode", funct ) );
-		funct( mode );
+		R_ASSERT(ai().script_engine().functor("pda.actor_menu_mode", funct));
+		funct(mode);
 	}
-	if ( info == shared_str("ui_talk_hide") )
+	if (info == shared_str("ui_talk_hide"))
 	{
 		int mode = 11; // Talk Dialog hide
 		luabind::functor<void>	funct;
-		R_ASSERT( ai().script_engine().functor( "pda.actor_menu_mode", funct ) );
-		funct( mode );
+		R_ASSERT( ai().script_engine().functor("pda.actor_menu_mode", funct));
+		funct(mode);
 	}
 }
 
 u32 InventoryUtilities::GetGoodwillColor(CHARACTER_GOODWILL gw)
 {
 	u32 res = 0xffc0c0c0;
-	if(gw==NEUTRAL_GOODWILL){
-		res = 0xffc0c0c0;
-	}else
-	if(gw>1000){
+	if(gw == NEUTRAL_GOODWILL)
+	{
+		res = 0xfffce80b;
+	}
+	else if(gw > 1000)
+	{
 		res = 0xff00ff00;
-	}else
-	if(gw<-1000){
+	}
+	else if(gw <- 1000)
+	{
 		res = 0xffff0000;
 	}
 	return res;
@@ -559,13 +564,16 @@ u32 InventoryUtilities::GetGoodwillColor(CHARACTER_GOODWILL gw)
 u32 InventoryUtilities::GetReputationColor(CHARACTER_REPUTATION_VALUE rv)
 {
 	u32 res = 0xffc0c0c0;
-	if(rv==NEUTAL_REPUTATION){
+	if (rv == NEUTAL_REPUTATION)
+	{
 		res = 0xffc0c0c0;
-	}else
-	if(rv>50){
+	}
+	else if (rv > 50)
+	{
 		res = 0xff00ff00;
-	}else
-	if(rv<-50){
+	}
+	else if (rv <- 50)
+	{
 		res = 0xffff0000;
 	}
 	return res;
@@ -573,12 +581,13 @@ u32 InventoryUtilities::GetReputationColor(CHARACTER_REPUTATION_VALUE rv)
 
 u32	InventoryUtilities::GetRelationColor(ALife::ERelationType relation)
 {
-	switch(relation) {
+	switch (relation) 
+	{
 	case ALife::eRelationTypeFriend:
 		return 0xff00ff00;
 		break;
 	case ALife::eRelationTypeNeutral:
-		return 0xffc0c0c0;
+		return 0xfffce80b;
 		break;
 	case ALife::eRelationTypeEnemy:
 		return  0xffff0000;

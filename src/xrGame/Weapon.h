@@ -58,8 +58,7 @@ public:
 	void Render(bool hud);
 };
 
-class CWeapon : public CHudItemObject,
-	public CShootingObject
+class CWeapon : public CHudItemObject, public CShootingObject
 {
 private:
 	typedef CHudItemObject inherited;
@@ -96,7 +95,6 @@ public:
 	void					ZoomDynamicMod(bool bIncrement, bool bForceLimit);
 	void					UpdateAltScope();
 
-
 	// Up
 	// Magazine system & etc
 	xr_vector<shared_str> bullets_bones;
@@ -105,7 +103,6 @@ public:
 	bool bHasBulletsToHide;
 
 	xr_vector<Bas_Addon*> m_BAS_addons;
-
 
 	virtual void HUD_VisualBulletUpdate(bool force = false, int force_idx = -1);
 
@@ -136,8 +133,7 @@ public:
 	float			m_fUD_InertiaFactor; // Фактор вертикальной инерции худа при движении камеры [-1; +1]
 	Fvector			m_strafe_offset[4][2]; //pos,rot,data1,data2/ normal,aim-GL --#SM+#--
 
-//Adjusting world position
-
+	//Adjusting world position
 	virtual Fvector get_angle_offset()
 	{
 		VERIFY(m_dbgItem);
@@ -316,13 +312,13 @@ public:
 	EWeaponSubStates		GetReloadState() const { return (EWeaponSubStates)m_sub_state; }
 protected:
 	bool					m_bTriStateReload;
-	u8						m_sub_state;
 	// a misfire happens, you'll need to rearm weapon
 	bool					bMisfire;
 
 	BOOL					m_bAutoSpawnAmmo;
 	virtual bool			AllowBore();
 public:
+	u8						m_sub_state;
 	bool IsGrenadeLauncherAttached() const;
 	bool IsScopeAttached() const;
 	bool IsSilencerAttached() const;
@@ -533,9 +529,7 @@ protected:
 	float					fireDispersionConditionFactor;
 	//вероятность осечки при максимальной изношености
 
-// modified by Peacemaker [17.10.08]
-//	float					misfireProbability;
-//	float					misfireConditionK;
+	// modified by Peacemaker [17.10.08]
 	float misfireStartCondition;			//изношенность, при которой появляется шанс осечки
 	float misfireEndCondition;				//изношеность при которой шанс осечки становится константным
 	float misfireStartProbability;			//шанс осечки при изношености больше чем misfireStartCondition
@@ -580,7 +574,6 @@ protected:
 	CParticlesObject* m_pFlameParticles2;
 
 protected:
-	int						GetAmmoCount_forType(shared_str const& ammo_type) const;
 	int						GetAmmoCount(u8 ammo_type) const;
 
 public:
@@ -641,6 +634,14 @@ protected:
 public:
 	virtual u32				ef_main_weapon_type() const;
 	virtual u32				ef_weapon_type() const;
+
+	//Alundaio
+	int						GetAmmoCount_forType(shared_str const& ammo_type) const;
+	virtual void			set_ef_main_weapon_type(u32 type){ m_ef_main_weapon_type = type; };
+	virtual void			set_ef_weapon_type(u32 type){ m_ef_weapon_type = type; };
+	virtual void			SetAmmoType(u8 type) { m_ammoType = type; };
+	u8						GetAmmoType() { return m_ammoType; };
+	//-Alundaio
 
 protected:
 	float					m_addon_holder_range_modifier;

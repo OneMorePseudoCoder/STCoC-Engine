@@ -15,7 +15,8 @@
 class CObjectAnimator;
 class CScriptParticles;
 
-class CScriptParticlesCustom: public CParticlesObject{
+class CScriptParticlesCustom: public CParticlesObject
+{
 	CObjectAnimator*			m_animator;
 	virtual						~CScriptParticlesCustom();
 	CScriptParticles*			m_owner;
@@ -32,7 +33,10 @@ public:
 			void				remove_owner		();
 };
 
-class CScriptParticles{
+class CScriptParticles
+{
+private:
+	Fmatrix						m_transform;
 public:
 	CScriptParticlesCustom*		m_particles;
 								CScriptParticles	(LPCSTR caParticlesName);
@@ -47,7 +51,9 @@ public:
 	bool						IsLooped			() const;
 
 	void						MoveTo				(const Fvector &pos, const Fvector& vel);
-
+	void						SetDirection		(const Fvector &dir);
+	void						SetOrientation		(float yaw, float pitch, float roll);
+	Fvector						LastPosition()		const { return m_transform.c; }
 	void						LoadPath			(LPCSTR caPathName);
 	void						StartPath			(bool looped);
 	void						StopPath			();

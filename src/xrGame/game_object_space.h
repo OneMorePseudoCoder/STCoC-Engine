@@ -55,6 +55,7 @@ namespace GameObject
 		eWeaponNoAmmoAvailable,
 
 		//AVO: custom callbacks
+		eActorHudAnimationEnd,
 		// input
 		eKeyPress,
 		eKeyRelease,
@@ -75,6 +76,7 @@ namespace GameObject
 		eOnWeaponZoomIn,
 		eOnWeaponZoomOut,
 		eOnWeaponJammed,
+		eOnWeaponMagazineEmpty,
 		//-AVO
 
 		eDummy = u32(-1),

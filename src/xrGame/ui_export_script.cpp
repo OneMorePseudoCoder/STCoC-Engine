@@ -14,6 +14,7 @@
 #include "UI/UIComboBox.h"
 #include "ui/UIOptionsManagerScript.h"
 #include "ScriptXmlInit.h"
+#include "ui/UIActorMenu.h"
 
 using namespace luabind;
 
@@ -36,6 +37,7 @@ void UIRegistrator::script_register(lua_State *L)
 	CUIOptionsManagerScript::script_register(L);
 	CScriptXmlInit::script_register(L);
 	CUIGameCustom::script_register(L);
+	CUIActorMenu::script_register(L);
 
 	module(L)
 	[

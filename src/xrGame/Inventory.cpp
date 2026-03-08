@@ -28,6 +28,11 @@
 
 using namespace InventoryUtilities;
 
+//Alundaio
+#include "../../xrServerEntities/script_engine.h" 
+using namespace luabind; 
+//-Alundaio
+
 // what to block
 u16	INV_STATE_LADDER = (1 << INV_SLOT_3 | 1 << BINOCULAR_SLOT);
 u16	INV_STATE_CAR = INV_STATE_LADDER;
@@ -69,29 +74,40 @@ CInventory::CInventory()
 	
 	InitPriorityGroupsForQSwitch();
 	m_next_item_iteration_time = 0;
-
-	for (u16 i = 0; i < LAST_SLOT + 1; ++i)
-	{
-		m_blocked_slots[i] = 0;
-	}
 }
 
 void CInventory::ReloadInv()
 {
 	m_slots.clear();
 
-	u32 sz = LAST_SLOT + 1; //pSettings->r_s32("inventory", "slots_count");
-	m_slots.resize(sz + 1); //first is [1]
-
-	string256 temp;
-	for (u16 i = FirstSlot(); i <= LastSlot(); ++i)
+	//Alundaio: Dynamically create as many slots as we may define in system.ltx
+	string256 slot_persistent;
+	string256 slot_active;
+	xr_strcpy(slot_persistent, "slot_persistent_1");
+	xr_strcpy(slot_active, "slot_active_1");
+	
+	u16 k = 1;
+	while (pSettings->line_exist("inventory", slot_persistent) && pSettings->line_exist("inventory", slot_active))
 	{
-		xr_sprintf(temp, "slot_persistent_%d", i);
-		m_slots[i].m_bPersistent = !!READ_IF_EXISTS(pSettings, r_bool, "inventory", temp, false);
-
-		xr_sprintf(temp, "slot_active_%d", i);
-		m_slots[i].m_bAct = !!READ_IF_EXISTS(pSettings, r_bool, "inventory", temp, false);
-	};
+		m_last_slot = k;
+		
+		m_slots.resize(k + 1); //slot+1 because [0] is the inactive slot
+		
+		m_slots[k].m_bPersistent = !!pSettings->r_bool("inventory", slot_persistent);
+		m_slots[k].m_bAct = !!pSettings->r_bool("inventory", slot_active);
+		
+		k++;
+		xr_sprintf(slot_persistent, "%s%d","slot_persistent_", k);
+		xr_sprintf(slot_active, "%s%d","slot_active_", k);
+	}
+	
+	m_blocked_slots.resize(k+1);
+	
+	for (u16 i = 0; i <= k; ++i)
+	{
+		m_blocked_slots[i] = 0;
+	}
+	//-Alundaio
 }
 
 CInventory::~CInventory() 
@@ -326,8 +342,6 @@ bool CInventory::Slot(u16 slot_id, PIItem pIItem, bool bNotActivate, bool strict
 	if (ItemFromSlot(slot_id) && pIItem->CurrPlace() == eItemPlaceSlot && pIItem->CurrSlot() == slot_id)
 		return false;
 
-	//Msg("To Slot %s[%d]", *pIItem->object().cName(), pIItem->object().ID());
-
 	if(!strict_placement && !CanPutInSlot(pIItem,slot_id)) 
 	{
 #ifdef _DEBUG
@@ -383,13 +397,14 @@ bool CInventory::Slot(u16 slot_id, PIItem pIItem, bool bNotActivate, bool strict
 
 bool CInventory::Belt(PIItem pIItem, bool strict_placement) 
 {
-	if(!strict_placement && !CanPutInBelt(pIItem))	return false;
+	if (!strict_placement && !CanPutInBelt(pIItem))
+		return false;
 	
 	//вещь была в слоте
 	bool in_slot = InSlot(pIItem);
-	if(in_slot) 
+	if (in_slot) 
 	{
-		if(GetActiveSlot() == pIItem->CurrSlot()) 
+		if (GetActiveSlot() == pIItem->CurrSlot()) 
 			Activate(NO_ACTIVE_SLOT);
 
 		m_slots[pIItem->CurrSlot()].m_pIItem = NULL;
@@ -397,22 +412,22 @@ bool CInventory::Belt(PIItem pIItem, bool strict_placement)
 	
 	m_belt.insert(m_belt.end(), pIItem); 
 
-	if(!in_slot)
+	if (!in_slot)
 	{
 		TIItemContainer::iterator it = std::find(m_ruck.begin(), m_ruck.end(), pIItem); 
-		if(m_ruck.end() != it) 
+		if (m_ruck.end() != it) 
 			m_ruck.erase(it);
 	}
 
-	CalcTotalWeight					();
-	InvalidateState					();
+	CalcTotalWeight();
+	InvalidateState();
 
-	SInvItemPlace p					= pIItem->m_ItemCurrPlace;
-	pIItem->m_ItemCurrPlace.type	= eItemPlaceBelt;
-	m_pOwner->OnItemBelt			(pIItem, p);
-	pIItem->OnMoveToBelt			(p);
+	SInvItemPlace p = pIItem->m_ItemCurrPlace;
+	pIItem->m_ItemCurrPlace.type = eItemPlaceBelt;
+	m_pOwner->OnItemBelt(pIItem, p);
+	pIItem->OnMoveToBelt(p);
 
-	if(in_slot)
+	if (in_slot)
 		pIItem->object().processing_deactivate();
 
 	pIItem->object().processing_activate();
@@ -427,9 +442,9 @@ bool CInventory::Ruck(PIItem pIItem, bool strict_placement)
 
 	bool in_slot = InSlot(pIItem);
 	//вещь была в слоте
-	if(in_slot) 
+	if (in_slot) 
 	{
-		if(GetActiveSlot() == pIItem->CurrSlot()) 
+		if (GetActiveSlot() == pIItem->CurrSlot()) 
 			Activate(NO_ACTIVE_SLOT);
 
 		m_slots[pIItem->CurrSlot()].m_pIItem = NULL;
@@ -438,21 +453,21 @@ bool CInventory::Ruck(PIItem pIItem, bool strict_placement)
 	{
 		//вещь была на поясе или вообще только поднята с земли
 		TIItemContainer::iterator it = std::find(m_belt.begin(), m_belt.end(), pIItem); 
-		if(m_belt.end() != it) 
+		if (m_belt.end() != it) 
 			m_belt.erase(it);
 	}
 	
-	m_ruck.insert									(m_ruck.end(), pIItem); 
+	m_ruck.insert(m_ruck.end(), pIItem); 
 	
-	CalcTotalWeight									();
-	InvalidateState									();
+	CalcTotalWeight();
+	InvalidateState();
 
-	m_pOwner->OnItemRuck							(pIItem, pIItem->m_ItemCurrPlace);
-	SInvItemPlace prev_place						= pIItem->m_ItemCurrPlace;
-	pIItem->m_ItemCurrPlace.type					= eItemPlaceRuck;
-	pIItem->OnMoveToRuck							(prev_place);
+	m_pOwner->OnItemRuck(pIItem, pIItem->m_ItemCurrPlace);
+	SInvItemPlace prev_place = pIItem->m_ItemCurrPlace;
+	pIItem->m_ItemCurrPlace.type = eItemPlaceRuck;
+	pIItem->OnMoveToRuck(prev_place);
 
-	if(in_slot)
+	if (in_slot)
 		pIItem->object().processing_deactivate();
 
 	return true;
@@ -460,7 +475,7 @@ bool CInventory::Ruck(PIItem pIItem, bool strict_placement)
 
 void CInventory::Activate(u16 slot, bool bForce) 
 {	
-	if(!OnServer())
+	if (!OnServer())
 	{
 		return;
 	}
@@ -954,6 +969,13 @@ bool CInventory::Eat(PIItem pIItem)
 	Msg( "--- Actor [%d] use or eat [%d][%s]", entity_alive->ID(), pItemToEat->object().ID(), pItemToEat->object().cNameSect().c_str() );
 #endif // MP_LOGGING
 
+	luabind::functor<bool>	funct;
+	if (ai().script_engine().functor("_G.CInventory__eat", funct))
+	{
+		if (!funct(smart_cast<CGameObject*>(pItemToEat->object().H_Parent())->lua_game_object(), (smart_cast<CGameObject*>(pIItem))->lua_game_object()))
+			return false;
+	}
+
 	if (Actor()->m_inventory == this)
 	{
 		Actor()->callback(GameObject::eUseObject)((smart_cast<CGameObject*>(pIItem))->lua_game_object());
@@ -1267,24 +1289,18 @@ void CInventory::TryDeactivateActiveSlot()
 
 void CInventory::BlockSlot(u16 slot_id)
 {
-	VERIFY(slot_id <= LAST_SLOT);
-	
 	++m_blocked_slots[slot_id];
-	
-	VERIFY2(m_blocked_slots[slot_id] < 5, make_string("blocked slot [%d] overflow").c_str());	
+	VERIFY2(m_blocked_slots[slot_id] < 5, make_string("blocked slot [%d] overflow").c_str());
 }
 
 void CInventory::UnblockSlot(u16 slot_id)
 {
-	VERIFY(slot_id <= LAST_SLOT);
-	VERIFY2(m_blocked_slots[slot_id] > 0, make_string("blocked slot [%d] underflow").c_str());	
-	
+	VERIFY2(m_blocked_slots[slot_id] > 0, make_string("blocked slot [%d] underflow").c_str());
 	--m_blocked_slots[slot_id];	
 }
 
 bool CInventory::IsSlotBlocked(u16 slot_id) const
 {
-	VERIFY(slot_id <= LAST_SLOT);
 	return m_blocked_slots[slot_id] > 0;
 }
 

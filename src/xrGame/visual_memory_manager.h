@@ -15,7 +15,8 @@ class CCustomMonster;
 class CAI_Stalker;
 class vision_client;
 
-class CVisualMemoryManager {
+class CVisualMemoryManager 
+{
 #ifdef DEBUG
 	friend class CAI_Stalker;
 #endif
@@ -27,13 +28,14 @@ public:
 	typedef xr_vector<CNotYetVisibleObject>		NOT_YET_VISIBLES;
 
 private:
-	struct CDelayedVisibleObject {
-		ALife::_OBJECT_ID	m_object_id;
-		CVisibleObject		m_visible_object;
+	struct CDelayedVisibleObject 
+	{
+		ALife::_OBJECT_ID m_object_id;
+		CVisibleObject m_visible_object;
 	};
 
 private:
-	typedef xr_vector<CDelayedVisibleObject>	DELAYED_VISIBLE_OBJECTS;
+	typedef xr_vector<CDelayedVisibleObject> DELAYED_VISIBLE_OBJECTS;
 
 private:
 	CCustomMonster		*m_object;
@@ -66,7 +68,7 @@ protected:
 			void	add_visible_object		(const CVisibleObject visible_object);
 			float	object_visible_distance	(const CGameObject *game_object, float &object_distance) const;
 			float	object_luminocity		(const CGameObject *game_object) const;
-			float	get_visible_value		(float distance, float object_distance, float time_delta, float object_velocity, float luminocity) const;
+			float	get_visible_value		(const CGameObject *game_object, float distance, float object_distance, float time_delta, float object_velocity, float luminocity) const;
 			float	get_object_velocity		(const CGameObject *game_object, const CNotYetVisibleObject &not_yet_visible_object) const;
 			u32		get_prev_time			(const CGameObject *game_object) const;
 

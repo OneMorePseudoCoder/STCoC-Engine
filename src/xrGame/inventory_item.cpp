@@ -108,22 +108,24 @@ void CInventoryItem::Load(LPCSTR section)
 
 	m_Description = CStringTable().translate( pSettings->r_string(section, "description") );
 
-	m_flags.set(Fbelt,			READ_IF_EXISTS(pSettings, r_bool, section, "belt",		FALSE));
-	m_can_trade = READ_IF_EXISTS(pSettings, r_bool, section, "can_take",	TRUE);
-	m_flags.set(FCanTake,		m_can_trade);
-	m_flags.set(FCanTrade,		READ_IF_EXISTS(pSettings, r_bool, section, "can_trade",	TRUE));
+	m_flags.set(Fbelt, READ_IF_EXISTS(pSettings, r_bool, section, "belt", FALSE));
+	m_can_trade = READ_IF_EXISTS(pSettings, r_bool, section, "can_trade", TRUE);
+	m_flags.set(FCanTake, READ_IF_EXISTS(pSettings, r_bool, section, "can_take", TRUE));
+	m_flags.set(FCanTrade, m_can_trade);
 	m_flags.set(FIsQuestItem,	READ_IF_EXISTS(pSettings, r_bool, section, "quest_item",FALSE));
 
 	// Added by Axel, to enable optional condition use on any item
 	m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", FALSE));
 
-	if ( BaseSlot() != NO_ACTIVE_SLOT || Belt())
+	m_highlight_equipped = !!READ_IF_EXISTS(pSettings, r_bool, section, "highlight_equipped", FALSE);
+
+	if (BaseSlot() != NO_ACTIVE_SLOT || Belt())
 	{
 		m_flags.set					(FRuckDefault, pSettings->r_bool(section, "default_to_ruck" ));
 		m_flags.set					(FAllowSprint, pSettings->r_bool(section, "sprint_allowed" ));
 		m_fControlInertionFactor	= pSettings->r_float(section,"control_inertion_factor");
 	}
-	m_icon_name					= READ_IF_EXISTS(pSettings, r_string,section,"icon_name",		NULL);
+	m_icon_name = READ_IF_EXISTS(pSettings, r_string,section, "icon_name", NULL);
 
 }
 

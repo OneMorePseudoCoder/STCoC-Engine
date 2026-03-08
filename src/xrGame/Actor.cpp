@@ -70,49 +70,56 @@
 #include "ActorHelmet.h"
 #include "UI/UIDragDropReferenceList.h"
 
-const u32		patch_frames	= 50;
-const float		respawn_delay	= 1.f;
-const float		respawn_auto	= 7.f;
+//Alundaio
+#include "script_hit.h"
+#include "../../xrServerEntities/script_engine.h" 
+using namespace luabind;
+//-Alundaio
+
+const u32 patch_frames = 50;
+const float respawn_delay = 1.f;
+const float respawn_auto = 7.f;
 
 static float IReceived = 0;
 static float ICoincidenced = 0;
 extern float cammera_into_collision_shift ;
 
-string32		ACTOR_DEFS::g_quick_use_slots[4]={NULL, NULL, NULL, NULL};
+string32 ACTOR_DEFS::g_quick_use_slots[4] = {NULL, NULL, NULL, NULL};
 
 //skeleton
-static Fbox		bbStandBox;
-static Fbox		bbCrouchBox;
-static Fvector	vFootCenter;
-static Fvector	vFootExt;
+static Fbox bbStandBox;
+static Fbox bbCrouchBox;
+static Fvector vFootCenter;
+static Fvector vFootExt;
 
 Flags32 psActorFlags = {AF_GODMODE_RT|AF_AUTOPICKUP|AF_RUN_BACKWARD|AF_IMPORTANT_SAVE};
 int psActorSleepTime = 1;
 
 CActor::CActor() : CEntityAlive()
 {
-	game_news_registry		= xr_new<CGameNewsRegistryWrapper		>();
+	game_news_registry = xr_new<CGameNewsRegistryWrapper>();
 	// Cameras
-	cameras[eacFirstEye]	= xr_new<CCameraFirstEye>				(this);
+	cameras[eacFirstEye] = xr_new<CCameraFirstEye>(this);
 	cameras[eacFirstEye]->Load("actor_firsteye_cam");
 
-	if(strstr(Core.Params,"-psp"))
+	if (strstr(Core.Params,"-psp"))
 		psActorFlags.set(AF_PSP, TRUE);
 	else
 		psActorFlags.set(AF_PSP, FALSE);
 
-	if( psActorFlags.test(AF_PSP) )
+	if (psActorFlags.test(AF_PSP))
 	{
-		cameras[eacLookAt]		= xr_new<CCameraLook2>				(this);
+		cameras[eacLookAt] = xr_new<CCameraLook2>(this);
 		cameras[eacLookAt]->Load("actor_look_cam_psp");
-	}else
+	}
+	else
 	{
-		cameras[eacLookAt]		= xr_new<CCameraLook>				(this);
+		cameras[eacLookAt] = xr_new<CCameraLook>(this);
 		cameras[eacLookAt]->Load("actor_look_cam");
 	}
-	cameras[eacFreeLook]	= xr_new<CCameraLook>					(this);
+	cameras[eacFreeLook] = xr_new<CCameraLook>(this);
 	cameras[eacFreeLook]->Load("actor_free_cam");
-	cameras[eacFixedLookAt]	= xr_new<CCameraFixedLook>				(this);
+	cameras[eacFixedLookAt]	= xr_new<CCameraFixedLook>(this);
 	cameras[eacFixedLookAt]->Load("actor_look_cam");
 
 	cam_active				= eacFirstEye;
@@ -534,6 +541,26 @@ void	CActor::Hit(SHit* pHDS)
 		HDS.add_wound = true;
 		if (g_Alive())
 		{
+			CScriptHit tLuaHit;
+
+			tLuaHit.m_fPower = HDS.power;
+			tLuaHit.m_fImpulse = HDS.impulse;
+			tLuaHit.m_tDirection = HDS.direction();
+			tLuaHit.m_tHitType = HDS.hit_type;
+			tLuaHit.m_tpDraftsman = smart_cast<const CGameObject*>(HDS.who)->lua_game_object();
+
+			luabind::functor<bool>	funct;
+			if (ai().script_engine().functor("_G.CActor__BeforeHitCallback", funct))
+			{
+				if (!funct(smart_cast<CGameObject*>(this->lua_game_object()), &tLuaHit, HDS.boneID))
+					return;
+			}
+
+			HDS.power = tLuaHit.m_fPower;
+			HDS.impulse = tLuaHit.m_fImpulse;
+			HDS.dir = tLuaHit.m_tDirection;
+			HDS.hit_type = (ALife::EHitType)(tLuaHit.m_tHitType);
+
 			/* AVO: send script callback*/
 			callback(GameObject::eHit)(this->lua_game_object(), HDS.damage(), HDS.direction(), smart_cast<const CGameObject*>(HDS.who)->lua_game_object(), HDS.boneID);
 		}

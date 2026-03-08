@@ -5,11 +5,12 @@
 
 class CParticlesObject;
 
-class CPhantom : public CEntity {
-	
+class CPhantom : public CEntity 
+{
 	typedef	CEntity inherited;
 private:
-	enum EState{
+	enum EState
+	{
 		stInvalid		= -2,
 		stIdle			= -1,
 		stBirth			= 0,
@@ -83,5 +84,7 @@ public:
 	virtual BOOL		UsedAI_Locations			() {return false;}
 
 	virtual CEntity*	cast_entity					() {return this;}
+	
+	void				SetEnemy					(CObject* enemy) { m_enemy = enemy; } //Alundaio
 };
 

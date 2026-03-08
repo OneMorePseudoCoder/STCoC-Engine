@@ -9,43 +9,88 @@
 #include "UIMMShniaga.h"
 #include "UITextureMaster.h"
 #include "UIScrollView.h"
+#include "UIHint.h"
+#include "../ScriptXMLInit.h"
+#include "../UICursor.h"
 
-CFontManager& mngr(){
+CFontManager& mngr()
+{
 	return UI().Font();
 }
 
 // hud font
 CGameFont* GetFontSmall()
-{return mngr().pFontStat;}
+{
+	return mngr().pFontStat;
+}
 
 CGameFont* GetFontMedium()
-{return mngr().pFontMedium;}
+{
+	return mngr().pFontMedium;
+}
+
 CGameFont* GetFontDI()
-{return mngr().pFontDI;}
+{
+	return mngr().pFontDI;
+}
+
 //шрифты для интерфейса
 CGameFont* GetFontGraffiti19Russian()
-{return mngr().pFontGraffiti19Russian;}
-CGameFont* GetFontGraffiti22Russian()
-{return mngr().pFontGraffiti22Russian;}
-CGameFont* GetFontLetterica16Russian()
-{return mngr().pFontLetterica16Russian;}
-CGameFont* GetFontLetterica18Russian()
-{return mngr().pFontLetterica18Russian;}
-CGameFont* GetFontGraffiti32Russian()
-{return mngr().pFontGraffiti32Russian;}
-CGameFont* GetFontGraffiti50Russian()
-{return mngr().pFontGraffiti50Russian;}
-CGameFont* GetFontLetterica25()
-{return mngr().pFontLetterica25;}
+{
+	return mngr().pFontGraffiti19Russian;
+}
 
+CGameFont* GetFontGraffiti22Russian()
+{
+	return mngr().pFontGraffiti22Russian;
+}
+
+CGameFont* GetFontLetterica16Russian()
+{
+	return mngr().pFontLetterica16Russian;
+}
+
+CGameFont* GetFontLetterica18Russian()
+{
+	return mngr().pFontLetterica18Russian;
+}
+
+CGameFont* GetFontGraffiti32Russian()
+{
+	return mngr().pFontGraffiti32Russian;
+}
+
+CGameFont* GetFontGraffiti50Russian()
+{
+	return mngr().pFontGraffiti50Russian;
+}
+								 
+
+CGameFont* GetFontLetterica25()
+{
+	return mngr().pFontLetterica25;
+}
 
 int GetARGB(u16 a, u16 r, u16 g, u16 b)
-{return color_argb(a,r,g,b);}
+{
+	return color_argb(a,r,g,b);
+}
 
 const Fvector2* get_wnd_pos(CUIWindow* w)
 {
 	return &w->GetWndPos();
 }
+
+Fvector2 GetCursorPosition_script()
+{
+	return GetUICursor().GetCursorPosition();
+}
+
+void SetCursorPosition_script(Fvector2& pos)
+{
+	GetUICursor().SetUICursorPosition(pos);
+}
+
 using namespace luabind;
 #pragma optimize("s",on)
 void CUIWindow::script_register(lua_State *L)
@@ -63,6 +108,9 @@ void CUIWindow::script_register(lua_State *L)
 		def("GetFontGraffiti32Russian",	&GetFontGraffiti32Russian),
 		def("GetFontGraffiti50Russian",	&GetFontGraffiti50Russian),
 		def("GetFontLetterica25",		&GetFontLetterica25),
+		def("GetCursorPosition",		&GetCursorPosition_script),
+		def("SetCursorPosition",		&SetCursorPosition_script),
+		def("FitInRect", &fit_in_rect),				 
 
 		class_<CUIWindow>("CUIWindow")
 		.def(							constructor<>())
@@ -70,6 +118,9 @@ void CUIWindow::script_register(lua_State *L)
 		.def("DetachChild",				&CUIWindow::DetachChild)
 		.def("SetAutoDelete",			&CUIWindow::SetAutoDelete)
 		.def("IsAutoDelete",			&CUIWindow::IsAutoDelete)
+		.def("IsCursorOverWindow",		&CUIWindow::CursorOverWindow)
+		.def("FocusReceiveTime",		&CUIWindow::FocusReceiveTime)
+		.def("GetAbsoluteRect",			&CUIWindow::GetAbsoluteRect)									  
 
 		.def("SetWndRect",				(void (CUIWindow::*)(Frect))	&CUIWindow::SetWndRect_script)
 		.def("SetWndPos",				(void (CUIWindow::*)(Fvector2)) &CUIWindow::SetWndPos_script)
@@ -89,10 +140,14 @@ void CUIWindow::script_register(lua_State *L)
 		.def("ResetPPMode",				&CUIWindow::ResetPPMode),
 
 		class_<CDialogHolder>("CDialogHolder")
+		.def(constructor<>())
+		.def("TopInputReceiver", 		&CDialogHolder::TopInputReceiver)
+		.def("SetMainInputReceiver",	&CDialogHolder::SetMainInputReceiver)													
 		.def("AddDialogToRender",		&CDialogHolder::AddDialogToRender)
 		.def("RemoveDialogToRender",	&CDialogHolder::RemoveDialogToRender),
 
 		class_<CUIDialogWnd, CUIWindow>("CUIDialogWnd")
+		.def(constructor<>())					   
 		.def("ShowDialog",				&CUIDialogWnd::ShowDialog)
 		.def("HideDialog",				&CUIDialogWnd::HideDialog)
 		.def("GetHolder",				&CUIDialogWnd::GetHolder),
@@ -109,6 +164,13 @@ void CUIWindow::script_register(lua_State *L)
 		.def("SetHeight",				&CUIFrameLineWnd::SetHeight)
 		.def("SetColor",				&CUIFrameLineWnd::SetTextureColor),
 
+		class_<UIHint, CUIWindow>("UIHint")
+		.def(							constructor<>())
+		.def("SetWidth",				&UIHint::SetWidth)
+		.def("SetHeight",				&UIHint::SetHeight)
+		.def("SetHintText",				&UIHint::set_text)
+		.def("GetHintText",				&UIHint::get_text),
+		
 		class_<CUIMMShniaga, CUIWindow>("CUIMMShniaga")
 		.enum_("enum_page_id")
 		[
@@ -118,9 +180,6 @@ void CUIWindow::script_register(lua_State *L)
 		.def("SetVisibleMagnifier",			&CUIMMShniaga::SetVisibleMagnifier)
 		.def("SetPage",						&CUIMMShniaga::SetPage)
 		.def("ShowPage",					&CUIMMShniaga::ShowPage),
-		
-		
-
 
 		class_<CUIScrollView, CUIWindow>("CUIScrollView")
 		.def(							constructor<>())
@@ -132,6 +191,7 @@ void CUIWindow::script_register(lua_State *L)
 		.def("GetMinScrollPos",			&CUIScrollView::GetMinScrollPos)
 		.def("GetMaxScrollPos",			&CUIScrollView::GetMaxScrollPos)
 		.def("GetCurrentScrollPos",		&CUIScrollView::GetCurrentScrollPos)
+		.def("SetFixedScrollBar", 		&CUIScrollView::SetFixedScrollBar)																
 		.def("SetScrollPos",			&CUIScrollView::SetScrollPos),
 
 		class_<enum_exporter<EUIMessages> >("ui_events")
@@ -188,7 +248,9 @@ void CUIWindow::script_register(lua_State *L)
 
 				value("EDIT_TEXT_COMMIT",				int(EDIT_TEXT_COMMIT)),
 	// CMainMenu
-				value("MAIN_MENU_RELOADED",				int(MAIN_MENU_RELOADED))
+				value("MAIN_MENU_RELOADED",				int(MAIN_MENU_RELOADED)),
+	// CUITrackBar
+				value("TRACK_VALUE_CHANGED",			int(TRACK_VALUE_CHANGED))								
 			]
 	];
 }

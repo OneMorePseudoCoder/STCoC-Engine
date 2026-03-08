@@ -6,44 +6,43 @@
 
 void draw_rect(Fvector2 LTp, Fvector2 RBp, Fvector2 LTt, Fvector2 RBt, u32 clr, Fvector2 const& ts);
 
-CUIFrameWindow::CUIFrameWindow()
-:m_bTextureVisible(false)
+CUIFrameWindow::CUIFrameWindow() : m_bTextureVisible(false)
 {
 	m_texture_color	= color_argb(255,255,255,255);
 }
 
 void CUIFrameWindow::SetWndSize(const Fvector2& sz)
 {
-	Fvector2 size			= sz;
-	Fvector2 size_test		= sz;
+	Fvector2 size = sz;
+	Fvector2 size_test = sz;
 	UI().ClientToScreenScaled(size_test);
 
-	if(m_bTextureVisible)
+	if (m_bTextureVisible)
 	{// fit to min size
 		Fvector2 min_size;
-		min_size.x			= m_tex_rect[fmLT].width() + m_tex_rect[fmRT].width();
-		min_size.y			= m_tex_rect[fmLT].height() + m_tex_rect[fmLB].height();
+		min_size.x = m_tex_rect[fmLT].width() + m_tex_rect[fmRT].width();
+		min_size.y = m_tex_rect[fmLT].height() + m_tex_rect[fmLB].height();
 
-		if(size_test.x<min_size.x)
+		if (size_test.x<min_size.x)
 		{
 			UI().ClientToScreenScaledWidth(min_size.x);
-			size.x			= min_size.x;
+			size.x = min_size.x;
 		}
-		if(size_test.y<min_size.y)
+		if (size_test.y<min_size.y)
 		{
 			UI().ClientToScreenScaledHeight(min_size.y);
-			size.y			= min_size.y;
+			size.y = min_size.y;
 		}
 	}
 
-	inherited::SetWndSize	(size);
+	inherited::SetWndSize(size);
 }
 
 void  CUIFrameWindow::InitTextureEx(LPCSTR texture, LPCSTR  sh_name)
 {
-	dbg_tex_name				= texture;
-	m_bTextureVisible			= true;
-	string256		buf;
+	dbg_tex_name = texture;
+	m_bTextureVisible = true;
+	string256 buf;
 	CUITextureMaster::InitTexture(strconcat(sizeof(buf), buf, texture,"_back"),	sh_name, m_shader, m_tex_rect[fmBK]);
 	CUITextureMaster::InitTexture(strconcat(sizeof(buf), buf, texture,"_l"),	sh_name, m_shader, m_tex_rect[fmL]);
 	CUITextureMaster::InitTexture(strconcat(sizeof(buf), buf, texture,"_r"),	sh_name, m_shader, m_tex_rect[fmR]);
@@ -79,29 +78,28 @@ void CUIFrameWindow::InitTexture(LPCSTR texture)
 void CUIFrameWindow::Draw()
 {
 	if (m_bTextureVisible)
-		DrawElements	();
+		DrawElements();
 
 	inherited::Draw();
 }
 
 void CUIFrameWindow::DrawElements()
 {
-	UIRender->SetShader			(*m_shader);
+	UIRender->SetShader(*m_shader);
 
-	Fvector2					ts;
+	Fvector2 ts;
 	UIRender->GetActiveTextureResolution(ts);
 
-	Frect						rect;
-	GetAbsoluteRect				(rect);
-	UI().ClientToScreenScaled	(rect.lt);
-	UI().ClientToScreenScaled	(rect.rb);
+	Frect rect;
+	GetAbsoluteRect(rect);
+	UI().ClientToScreenScaled(rect.lt);
+	UI().ClientToScreenScaled(rect.rb);
 	
 	Fvector2 back_len			= {0.0f, 0.0f};
 	u32 rect_count				= 4; //lt+rt+lb+rb
 	back_len.x					= rect.width()-m_tex_rect[fmLT].width()-m_tex_rect[fmRT].width();
 	back_len.y					= rect.height()-m_tex_rect[fmLT].height()-m_tex_rect[fmRB].height();
-	R_ASSERT					(back_len.x+EPS_L>=0.0f && back_len.y+EPS_L>=0.0f);
-	
+
 	u32 cnt =0;
 	if(back_len.x>0.0f)//top+bottom
 		cnt						= 2* iCeil(back_len.x/m_tex_rect[fmT].width());
@@ -223,7 +221,8 @@ void CUIFrameWindow::draw_tile_line(Frect rect, int i, bool b_horz, Fvector2 con
 			rect.lt.x			= RBp.x;
 			draw_rect			(LTp, RBp, LTt, RBt, m_texture_color, ts);
 		}
-	}else
+	}
+	else
 	{
 		while(rect.lt.y+EPS_L<rect.rb.y)
 		{

@@ -22,12 +22,6 @@ namespace inventory
 namespace upgrade
 {
 
-//using inventory::upgrade::Manager;
-//using inventory::upgrade::UpgradeBase;
-//using inventory::upgrade::Upgrade;
-//using inventory::upgrade::Root;
-//using inventory::upgrade::Group;
-
 Manager::Manager()
 {
 	load_all_properties(); //first
@@ -158,38 +152,23 @@ bool Manager::item_upgrades_exist( shared_str const& item_id )
 
 void Manager::load_all_inventory()
 {
-	LPCSTR items_section = "upgraded_inventory";
-	
-	VERIFY2( pSettings->section_exist( items_section ), make_string( "Section [%s] does not exist !", items_section ) );
-	VERIFY2( pSettings->line_count( items_section ),    make_string( "Section [%s] is empty !",       items_section ) );
+	//Alundaio: No longer the need to define upgradable sections in [upgraded_inventory]
+	typedef CInifile::Root sections_type;
+	sections_type sections = pSettings->sections();
 
-	if ( g_upgrades_log == 1 )
+	sections_type::const_iterator i = sections.begin();
+	sections_type::const_iterator e = sections.end();
+	for (; i != e; ++i)
 	{
-		Msg( "# Inventory upgrade manager is loaded." );
-	}
+		if (!pSettings->line_exist((*i)->Name, "upgrades") || !pSettings->r_string((*i)->Name, "upgrades"))
+			continue;
 
-	CInifile::Sect&		inv_section = pSettings->r_section( items_section );
-	CInifile::SectIt_	ib = inv_section.Data.begin();
-	CInifile::SectIt_	ie = inv_section.Data.end();
-	for ( ; ib != ie ; ++ib )
-	{
-		shared_str root_id( (*ib).first );
-//		if ( !item_upgrades_exist( root_id ) ) continue;
-		item_upgrades_exist( root_id );
-		add_root( root_id );
-	}
+		if (!pSettings->line_exist((*i)->Name, "upgrade_scheme") || !pSettings->r_string((*i)->Name, "upgrade_scheme"))
+			continue;
 
-	if ( g_upgrades_log == 1 )
-	{
-		Msg( "# Upgrades of inventory items loaded." );
+		add_root((*i)->Name);
 	}
-
-	/*
-	float low, high; ///? <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	LPCSTR param = "cost";
-	compute_range( param, low ,high );
-	Msg( "Parameter <%s> min = %.3f, max = %.3f", param, low, high );
-	*/
+	//-Alundaio
 }
 
 void Manager::load_all_properties()

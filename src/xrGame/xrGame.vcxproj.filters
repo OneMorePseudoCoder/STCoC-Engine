@@ -621,6 +621,7 @@
     <ClCompile Include="random32.cpp" />
     <ClCompile Include="rat_states.cpp" />
     <ClCompile Include="rat_state_base.cpp" />
+    <ClInclude Include="raypick.cpp" />
     <ClCompile Include="rat_state_manager.cpp" />
     <ClCompile Include="relation_registry.cpp" />
     <ClCompile Include="relation_registry_actions.cpp" />
@@ -825,6 +826,7 @@
     <ClCompile Include="ui\MMSound.cpp" />
     <ClCompile Include="ui\UI3tButton.cpp" />
     <ClCompile Include="ui\UIAchievements.cpp" />
+    <ClCompile Include="ui\UIRankingsCoC.cpp" />
     <ClCompile Include="ui\UIActorMenu.cpp" />
     <ClCompile Include="ui\UIActorMenuDeadBodySearch.cpp" />
     <ClCompile Include="ui\UIActorMenuInitialize.cpp" />
@@ -1029,7 +1031,6 @@
     <ClCompile Include="ZoneVisual.cpp" />
     <ClCompile Include="zone_effector.cpp" />
     <ClCompile Include="ZudaArtifact.cpp" />
-    <ClCompile Include="AmebaZone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\xrServerEntities\ai_sounds.h" />
@@ -2042,6 +2043,7 @@
     <ClInclude Include="rat_states.h" />
     <ClInclude Include="rat_state_base.h" />
     <ClInclude Include="rat_state_base_inline.h" />
+    <ClInclude Include="raypick.h" />
     <ClInclude Include="rat_state_manager.h" />
     <ClInclude Include="rat_state_manager_inline.h" />
     <ClInclude Include="refreshable_obstacles_query.h" />
@@ -2314,6 +2316,7 @@
     <ClInclude Include="ui\UI3tButton.h" />
     <ClInclude Include="ui\uiabstract.h" />
     <ClInclude Include="ui\UIAchievements.h" />
+    <ClInclude Include="ui\UIRankingsCoC.h" />
     <ClInclude Include="ui\UIActorMenu.h" />
     <ClInclude Include="ui\UIActorStateInfo.h" />
     <ClInclude Include="ui\UIAnimatedStatic.h" />
@@ -2476,7 +2479,6 @@
     <ClInclude Include="ZoneVisual.h" />
     <ClInclude Include="zone_effector.h" />
     <ClInclude Include="ZudaArtifact.h" />
-    <ClInclude Include="AmebaZone.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai\monsters\chimera\chimera_attack_state.h" />

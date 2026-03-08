@@ -139,14 +139,15 @@ protected:
 	float m_fOverweightJumpK;
 	float m_fAccelK;
 	float m_fSprintK;
-	
-	float	m_MaxWalkWeight;
-	float	m_zone_max_power[ALife::infl_max_count];
-	float	m_zone_danger[ALife::infl_max_count];
-	float	m_f_time_affected;
-	float	m_max_power_restore_speed;
-	float	m_max_wound_protection;
-	float	m_max_fire_wound_protection;
+public:
+	float m_MaxWalkWeight;
+protected:
+	float m_zone_max_power[ALife::infl_max_count];
+	float m_zone_danger[ALife::infl_max_count];
+	float m_f_time_affected;
+	float m_max_power_restore_speed;
+	float m_max_wound_protection;
+	float m_max_fire_wound_protection;
 
 	mutable bool m_bLimping;
 	mutable bool m_bCantWalk;
@@ -164,9 +165,6 @@ protected:
 	float m_fLimpingHealthBegin;
 	float m_fLimpingHealthEnd;
 
-	//typedef xr_vector<SMedicineInfluenceValues> BOOSTS_VECTOR;
-	//typedef xr_vector<SMedicineInfluenceValues>::iterator BOOSTS_VECTOR_ITER;
-	//BOOSTS_VECTOR m_vecBoosts;
 	ref_sound m_use_sound;
 };
 

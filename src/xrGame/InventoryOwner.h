@@ -28,7 +28,8 @@ class CPurchaseList;
 class CWeapon;
 class CCustomOutfit;
 
-class CInventoryOwner : public CAttachmentOwner {							
+class CInventoryOwner : public CAttachmentOwner 
+{							
 public:
 					CInventoryOwner				();
 	virtual			~CInventoryOwner			();
@@ -166,6 +167,7 @@ public:
 	virtual void			ChangeRank		(CHARACTER_RANK_VALUE);
 	virtual void			SetReputation	(CHARACTER_REPUTATION_VALUE);
 	virtual void			ChangeReputation(CHARACTER_REPUTATION_VALUE);
+	virtual void			SetIcon			(const shared_str& iconName) { CharacterInfo().m_SpecificCharacter.data()->m_icon_name = iconName; };
 
 	//для работы с relation system
 	u16								object_id	() const;

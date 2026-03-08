@@ -143,7 +143,7 @@ public:
 				void		OnDragEvent			(CUIDragItem* drag_item, bool b_receive);
 };
 
-class CUICellContainer :public CUIWindow
+class CUICellContainer : public CUIWindow
 {
 	friend class CUIDragDropListEx;
 	friend class CUIDragDropReferenceList;
@@ -168,6 +168,9 @@ protected:
 public:							
 								CUICellContainer	(CUIDragDropListEx* parent);
 	virtual						~CUICellContainer	();
+	Ivector2					PickCell			(const Fvector2& abs_pos); //Alundaio made public
+	bool						ValidCell			(const Ivector2& pos) const; //Alundaio made public 
+	CUICell&					GetCellAt			(const Ivector2& pos);
 protected:
 	virtual		void			Draw				();
 
@@ -178,8 +181,6 @@ protected:
 	IC const	Ivector2&		CellsSpacing		()								{return m_cellSpacing;};	
 				void			SetCellsSpacing		(const Ivector2& new_sz);
 				Ivector2		TopVisibleCell		();
-				CUICell&		GetCellAt			(const Ivector2& pos);
-				Ivector2		PickCell			(const Fvector2& abs_pos);
 				Ivector2		GetItemPos			(CUICellItem* itm);
 				Ivector2		FindFreeCell		(const Ivector2& size);
 				bool			HasFreeSpace		(const Ivector2& size);
@@ -190,7 +191,6 @@ protected:
 
 				void			PlaceItemAtPos		(CUICellItem* itm, Ivector2& cell_pos);
 				CUICellItem*	RemoveItem			(CUICellItem* itm, bool force_root);
-				bool			ValidCell			(const Ivector2& pos) const;
 
 				void			Grow				();
 				void			Shrink				();

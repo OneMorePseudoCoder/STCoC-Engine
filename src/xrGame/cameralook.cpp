@@ -6,23 +6,20 @@
 #include "xr_level_controller.h"
 #include "actor.h"
 
-CCameraLook::CCameraLook(CObject* p, u32 flags ) 
-:CCameraBase(p, flags)
-{
-}
+CCameraLook::CCameraLook(CObject* p, u32 flags) : CCameraBase(p, flags)
+{}
 
 void CCameraLook::Load(LPCSTR section)
 {
-	inherited::Load		(section);
-	style				= csLookAt;
-	lim_zoom			= pSettings->r_fvector2	(section,"lim_zoom");
-	dist				= (lim_zoom[0]+lim_zoom[1])*0.5f;
-	prev_d				= 0;
+	inherited::Load(section);
+	style = csLookAt;
+	lim_zoom = pSettings->r_fvector2(section, "lim_zoom");
+	dist = (lim_zoom[0] + lim_zoom[1]) * 0.5f;
+	prev_d = 0;
 }
 
 CCameraLook::~CCameraLook()
-{
-}
+{}
 
 void CCameraLook::Update(Fvector& point, Fvector& /**noise_dangle/**/)
 {
@@ -33,7 +30,8 @@ void CCameraLook::Update(Fvector& point, Fvector& /**noise_dangle/**/)
 	vDirection.set		(mR.k);
 	vNormal.set			(mR.j);
 
-	if (m_Flags.is(flRelativeLink)){
+	if (m_Flags.is(flRelativeLink))
+	{
 		parent->XFORM().transform_dir(vDirection);
 		parent->XFORM().transform_dir(vNormal);
 	}
@@ -86,19 +84,18 @@ void CCameraLook::OnActivate( CCameraBase* old_cam )
 #include "visual_memory_manager.h"
 #include "actor_memory.h"
 
-int cam_dik = DIK_LSHIFT;
-
 Fvector CCameraLook2::m_cam_offset;
-void CCameraLook2::OnActivate( CCameraBase* old_cam )
+void CCameraLook2::OnActivate(CCameraBase* old_cam)
 {
-	CCameraLook::OnActivate( old_cam );
+	CCameraLook::OnActivate(old_cam);
 }
 
 void CCameraLook2::Update(Fvector& point, Fvector&)
 {
-	if(!m_locked_enemy)
+	int cam_dik = get_action_dik(kCAM_AUTOAIM, 0);
+	if (!m_locked_enemy)
 	{//autoaim
-		if( pInput->iGetAsyncKeyState(cam_dik) )
+		if (pInput->iGetAsyncKeyState(cam_dik))
 		{
 			const CVisualMemoryManager::VISIBLES& vVisibles = Actor()->memory().visual().objects();
 			CVisualMemoryManager::VISIBLES::const_iterator v_it = vVisibles.begin();
@@ -106,34 +103,35 @@ void CCameraLook2::Update(Fvector& point, Fvector&)
 
 			for (; v_it!=vVisibles.end(); ++v_it)
 			{
-				const CObject*	_object_			= (*v_it).m_object;
-				if (!Actor()->memory().visual().visible_now(smart_cast<const CGameObject*>(_object_)))	continue;
+				const CObject*	_object_ = (*v_it).m_object;
+				if (!Actor()->memory().visual().visible_now(smart_cast<const CGameObject*>(_object_)))
+					continue;
 
 				CObject* object_ = const_cast<CObject*>(_object_);
 				
-
-				CEntityAlive*	EA					= smart_cast<CEntityAlive*>(object_);
-				if(!EA || !EA->g_Alive())			continue;
+				CEntityAlive* EA = smart_cast<CEntityAlive*>(object_);
+				if (!EA || !EA->g_Alive())
+					continue;
 				
 				float d = object_->Position().distance_to_xz(Actor()->Position());
-				if( !m_locked_enemy || d<_nearest_dst)
+				if (!m_locked_enemy || d<_nearest_dst)
 				{
-					m_locked_enemy	= object_;
-					_nearest_dst	= d;
+					m_locked_enemy = object_;
+					_nearest_dst = d;
 				}
 			}
-//.			if(m_locked_enemy) Msg("enemy is %s", *m_locked_enemy->cNameSect() );
 		}
-	}else
+	}
+	else
 	{
-		if( !pInput->iGetAsyncKeyState(cam_dik) ){
+		if (!pInput->iGetAsyncKeyState(cam_dik))
+		{
 			m_locked_enemy	= NULL;
-//.			Msg				("enemy is NILL");
 		}
 	}
 
-	if(m_locked_enemy)
-		UpdateAutoAim	();
+	if (m_locked_enemy)
+		UpdateAutoAim();
 
 
 	Fmatrix mR;

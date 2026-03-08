@@ -81,7 +81,6 @@ CUIListBoxItem* CUIComboBox::AddItem_(LPCSTR str, int _data)
 	return				itm;
 }
 
-
 void CUIComboBox::OnListItemSelect()
 {
 	m_text.SetText			(m_list_box.GetSelectedText());    
@@ -337,4 +336,14 @@ void CUIComboBox::ClearList()
 	m_itoken_id = 0;
 	ShowList(false);
 	m_disabled.clear();
+}
+
+void CUIComboBox::SetSelectedIDX(u32 idx)
+{
+	m_list_box.SetSelectedIDX(idx);
+}
+
+u32 CUIComboBox::GetSelectedIDX()
+{
+	return m_list_box.GetSelectedIDX();
 }

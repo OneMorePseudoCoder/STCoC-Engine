@@ -1365,6 +1365,7 @@
     <ClInclude Include="rat_states.h" />
     <ClInclude Include="rat_state_base.h" />
     <ClInclude Include="rat_state_base_inline.h" />
+    <ClInclude Include="raypick.h" />
     <ClInclude Include="rat_state_manager.h" />
     <ClInclude Include="rat_state_manager_inline.h" />
     <ClInclude Include="refreshable_obstacles_query.h" />
@@ -1637,6 +1638,7 @@
     <ClInclude Include="ui\UI3tButton.h" />
     <ClInclude Include="ui\uiabstract.h" />
     <ClInclude Include="ui\UIAchievements.h" />
+	<ClInclude Include="ui\UIRankingsCoC.h" />
     <ClInclude Include="ui\UIActorMenu.h" />
     <ClInclude Include="ui\UIActorStateInfo.h" />
     <ClInclude Include="ui\UIAnimatedStatic.h" />
@@ -2972,6 +2974,7 @@
     <ClCompile Include="rat_states.cpp" />
     <ClCompile Include="rat_state_base.cpp" />
     <ClCompile Include="rat_state_manager.cpp" />
+    <ClCompile Include="raypick.cpp" />
     <ClCompile Include="relation_registry.cpp" />
     <ClCompile Include="relation_registry_actions.cpp">
       <PrecompiledHeaderFile>pch_script.h</PrecompiledHeaderFile>
@@ -3473,6 +3476,10 @@
     <ClCompile Include="ui\MMSound.cpp" />
     <ClCompile Include="ui\UI3tButton.cpp" />
     <ClCompile Include="ui\UIAchievements.cpp">
+      <PrecompiledHeaderFile>pch_script.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName)_script.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ClCompile Include="ui\UIRankingsCoC.cpp">
       <PrecompiledHeaderFile>pch_script.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName)_script.pch</PrecompiledHeaderOutputFile>
     </ClCompile>

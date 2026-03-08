@@ -31,6 +31,12 @@
 #   include "level_debug.h"
 #endif
 
+//Alundaio
+#include "pch_script.h"
+#include "../../xrServerEntities/script_engine.h" 
+using namespace luabind; 
+//-Alundaio
+
 #ifdef DEBUG
 	extern void try_change_current_entity();
 	extern void restore_actor();
@@ -193,7 +199,14 @@ void CLevel::IR_OnKeyboardPress	(int key)
 #endif //DEBUG
 		)	return;
 
-	if ( game && game->OnKeyboardPress(get_binded_action(key)) )	return;
+	if (game && game->OnKeyboardPress(get_binded_action(key)))	return;
+
+	luabind::functor<bool> funct;
+	if (ai().script_engine().functor("level_input.on_key_press", funct))
+	{
+		if (funct(key, _curr))
+			return;
+	}
 
 	if(_curr == kQUICK_SAVE)
 	{

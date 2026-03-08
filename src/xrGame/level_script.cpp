@@ -38,11 +38,14 @@
 #include "xrServer_Objects_ALife_Monsters.h"
 #include "hudmanager.h"
 
+#include "raypick.h"
+#include "../xrcdb/xr_collide_defs.h"
+
 using namespace luabind;
 
-LPCSTR command_line	()
+LPCSTR command_line()
 {
-	return		(Core.Params);
+	return (Core.Params);
 }
 
 bool IsDynamicMusic()
@@ -667,9 +670,11 @@ int g_get_general_goodwill_between ( u16 from, u16 to)
 	return presonal_goodwill + community_to_obj_goodwill + community_to_community_goodwill;
 }
 
-u32 vertex_id	(Fvector position)
+u32 vertex_id(Fvector position)
 {
-	return	(ai().level_graph().vertex_id(position));
+	// Original luabind converts 4294967295 (which is u32(-1)) to 4294967296
+	const u32 id = ai().level_graph().vertex_id(position);
+	return id == u32(-1) ? id + 1 : id; // reproduce original behaviour
 }
 
 u32 render_get_dx_level()
@@ -773,6 +778,27 @@ void set_active_cam(u8 mode)
 	if (actor && mode <= ACTOR_DEFS::EActorCameras::eacMaxCam)
 		actor->cam_Set((ACTOR_DEFS::EActorCameras)mode);
 }
+
+// KD: raypick	
+bool ray_pick(const Fvector& start, const Fvector& dir, float range, collide::rq_target tgt, script_rq_result& script_R, CScriptGameObject* ignore_object)
+{
+	collide::rq_result R;
+	CObject *ignore = NULL;
+	if (ignore_object)
+		ignore = smart_cast<CObject*>(&(ignore_object->object())); 	
+	if (Level().ObjectSpace.RayPick(start, dir, range, tgt, R, ignore))
+	{
+		script_R.set(R);
+		return true;
+	}
+	else
+		return false;
+}
+
+xrTime get_start_time()
+{
+	return (xrTime(Level().GetStartGameTime()));
+}
 //Alundaio: END
 
 #pragma optimize("s",on)
@@ -795,6 +821,7 @@ void CLevel::script_register(lua_State *L)
 		def("spawn_item", &spawn_section),
 		def("get_active_cam", &get_active_cam),
 		def("set_active_cam", &set_active_cam),
+		def("get_start_time", &get_start_time),
 		//Alundaio: END
 		// obsolete\deprecated
 		def("object_by_id",						get_object_by_id),
@@ -882,7 +909,8 @@ void CLevel::script_register(lua_State *L)
 		
 		def("vertex_id",						&vertex_id),
 
-		def("game_id",							&GameID)
+		def("game_id",							&GameID),
+    	def("ray_pick", 						&ray_pick)
 	],
 	
 	module(L,"actor_stats")
@@ -891,6 +919,39 @@ void CLevel::script_register(lua_State *L)
 		def("add_points_str",					&add_actor_points_str),
 		def("get_points",						&get_actor_points)
 	];
+
+ 	module(L)
+	[
+		class_<CRayPick>("ray_pick")
+		.def(constructor<>())
+		.def(constructor<Fvector&, Fvector&, float, collide::rq_target, CScriptGameObject*>())
+		.def("set_position",				&CRayPick::set_position)
+		.def("set_direction",				&CRayPick::set_direction)
+		.def("set_range",					&CRayPick::set_range)
+		.def("set_flags",					&CRayPick::set_flags)
+		.def("set_ignore_object",			&CRayPick::set_ignore_object)
+		.def("query",						&CRayPick::query)
+		.def("get_result",					&CRayPick::get_result)
+		.def("get_object",					&CRayPick::get_object)
+		.def("get_distance",				&CRayPick::get_distance)
+		.def("get_element",					&CRayPick::get_element),	
+		class_<script_rq_result>("rq_result")
+		.def_readonly("object",			&script_rq_result::O)
+		.def_readonly("range",			&script_rq_result::range)
+		.def_readonly("element",		&script_rq_result::element)
+		.def(constructor<>()), 	
+		class_<enum_exporter<collide::rq_target> >("rq_target")
+		.enum_("targets")
+		[
+			value("rqtNone",						int(collide::rqtNone)),
+			value("rqtObject",						int(collide::rqtObject)),
+			value("rqtStatic",						int(collide::rqtStatic)),
+			value("rqtShape",						int(collide::rqtShape)),
+			value("rqtObstacle",					int(collide::rqtObstacle)),
+			value("rqtBoth",						int(collide::rqtBoth)),
+			value("rqtDyn",							int(collide::rqtDyn))
+		]
+	];  
 
 	module(L)
 	[

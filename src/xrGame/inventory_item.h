@@ -139,8 +139,8 @@ public:
 
 			BOOL				IsQuestItem			()	const	{return m_flags.test(FIsQuestItem);}			
 	virtual	u32					Cost				()	const	{ return m_cost; }
-//			u32					Cost				()	const	{ return m_cost; }
 	virtual float				Weight				() 	const	{ return m_weight;}		
+	void						SetWeight			(float w) 	{ m_weight = w; };
 
 public:
 	CInventory*					m_pInventory;
@@ -148,6 +148,7 @@ public:
 	shared_str					m_name;
 	shared_str					m_nameShort;
 	shared_str					m_nameComplex;
+	bool						m_highlight_equipped;
 
 	SInvItemPlace				m_ItemCurrPlace;
 

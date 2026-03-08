@@ -47,11 +47,7 @@ void CScriptGameObject::script_register(lua_State *L)
 			.def_readonly("m_vector",		&CSightParams::m_vector)
 			.def_readonly("m_sight_type",	&CSightParams::m_sight_type),
 		
-		script_register_game_object2(
-			script_register_game_object1(
-				script_register_game_object_trader(std::move(instance))
-			)
-		),
+		script_register_game_object2(script_register_game_object1(script_register_game_object_trader(std::move(instance)))),
 
 		class_<enum_exporter<GameObject::ECallbackType> >("callback")
 			.enum_("callback_types")
@@ -92,6 +88,7 @@ void CScriptGameObject::script_register(lua_State *L)
 				value("take_item_from_box",			int(GameObject::eInvBoxItemTake)),
 				value("weapon_no_ammo",				int(GameObject::eWeaponNoAmmoAvailable)),
 				
+				value("hud_animation_end", 			int(GameObject::eActorHudAnimationEnd)),
 				//AVO: custom callbacks
 				// input
 				value("key_press",                  int(GameObject::eKeyPress)),
@@ -113,6 +110,7 @@ void CScriptGameObject::script_register(lua_State *L)
 				value("weapon_jammed",				int(GameObject::eOnWeaponJammed)),
 				value("weapon_zoom_in",				int(GameObject::eOnWeaponZoomIn)),
 				value("weapon_zoom_out",			int(GameObject::eOnWeaponZoomOut)),
+				value("weapon_magazine_empty",		int(GameObject::eOnWeaponMagazineEmpty)),
 				//-AVO
 
 				value("map_location_added",			int(GameObject::eMapLocationAdded))

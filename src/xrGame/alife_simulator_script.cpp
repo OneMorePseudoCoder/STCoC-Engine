@@ -197,20 +197,45 @@ CSE_Abstract *CALifeSimulator__spawn_item2		(CALifeSimulator *self, LPCSTR secti
 	return								(self->server().Process_spawn(packet,clientID));
 }
 
-CSE_Abstract *CALifeSimulator__spawn_ammo		(CALifeSimulator *self, LPCSTR section, const Fvector &position, u32 level_vertex_id, GameGraph::_GRAPH_ID game_vertex_id, ALife::_OBJECT_ID id_parent, int ammo_to_spawn)
+//Alundaio: Allows to call alife():register(se_obj) manually afterward so that packet editing can be done safely when spawning object with a parent
+CSE_Abstract *CALifeSimulator__spawn_item3(CALifeSimulator *self, LPCSTR section, const Fvector &position, u32 level_vertex_id, GameGraph::_GRAPH_ID game_vertex_id, ALife::_OBJECT_ID id_parent, bool reg = true)
 {
-//	if (id_parent == ALife::_OBJECT_ID(-1))
-//		return							(self->spawn_item(section,position,level_vertex_id,game_vertex_id,id_parent));
+	if (reg == true)
+		return CALifeSimulator__spawn_item2(self, section, position, level_vertex_id, game_vertex_id, id_parent);
+		
+	if (id_parent == ALife::_OBJECT_ID(-1))
+		return							(self->spawn_item(section, position, level_vertex_id, game_vertex_id, id_parent));
+
+	CSE_ALifeDynamicObject				*object = ai().alife().objects().object(id_parent, true);
+	if (!object) 
+	{
+		Msg("! invalid parent id [%d] specified", id_parent);
+		return							(0);
+	}
+
+	if (!object->m_bOnline)
+		return							(self->spawn_item(section, position, level_vertex_id, game_vertex_id, id_parent));
+
+	CSE_Abstract						*item = self->spawn_item(section, position, level_vertex_id, game_vertex_id, id_parent, false);
+
+	return								(item);
+}
+
+CSE_Abstract *CALifeSimulator__spawn_ammo(CALifeSimulator *self, LPCSTR section, const Fvector &position, u32 level_vertex_id, GameGraph::_GRAPH_ID game_vertex_id, ALife::_OBJECT_ID id_parent, int ammo_to_spawn)
+{
 	CSE_ALifeDynamicObject				*object = 0;
-	if (id_parent != ALife::_OBJECT_ID(-1)) {
+	if (id_parent != ALife::_OBJECT_ID(-1)) 
+	{
 		object							= ai().alife().objects().object(id_parent,true);
-		if (!object) {
+		if (!object) 
+		{
 			Msg							("! invalid parent id [%d] specified",id_parent);
 			return						(0);
 		}
 	}
 
-	if (!object || !object->m_bOnline) {
+	if (!object || !object->m_bOnline) 
+	{
 		CSE_Abstract					*item = self->spawn_item(section,position,level_vertex_id,game_vertex_id,id_parent);
 
 		CSE_ALifeItemAmmo				*ammo = smart_cast<CSE_ALifeItemAmmo*>(item);
@@ -316,6 +341,73 @@ void teleport_object(CALifeSimulator *alife, ALife::_OBJECT_ID id, GameGraph::_G
 	alife->teleport_object(id, game_vertex_id, level_vertex_id, position);
 }
 
+void IterateInfo(const CALifeSimulator *alife, const ALife::_OBJECT_ID &id, luabind::functor<void> functor)
+{
+	const KNOWN_INFO_VECTOR	*known_info = registry(alife, id);
+	if (!known_info)
+		return;
+
+	xr_vector<shared_str>::const_iterator I = known_info->begin();
+	xr_vector<shared_str>::const_iterator E = known_info->end();
+	for (; I != E; ++I)
+		functor(id, (LPCSTR)(*I).c_str());
+}
+
+CSE_Abstract* reprocess_spawn(CALifeSimulator *self, CSE_Abstract *object)
+{
+	NET_Packet	packet;
+	packet.w_begin(M_SPAWN);
+	packet.w_stringZ(object->s_name);
+
+	object->Spawn_Write(packet, FALSE);
+	self->server().FreeID(object->ID, 0);
+	F_entity_Destroy(object);
+
+	ClientID							clientID;
+	clientID.set(0xffff);
+
+	u16									dummy;
+	packet.r_begin(dummy);
+
+	return	(self->server().Process_spawn(packet, clientID));
+}
+
+CSE_Abstract* try_to_clone_object(CALifeSimulator *self, CSE_Abstract *object, LPCSTR section, const Fvector &position, u32 level_vertex_id, GameGraph::_GRAPH_ID game_vertex_id, ALife::_OBJECT_ID id_parent, bool bRegister = true)
+{
+	CSE_ALifeItemWeaponMagazined* wpnmag = smart_cast<CSE_ALifeItemWeaponMagazined*>(object);
+	if (wpnmag)
+	{
+		CSE_Abstract *absClone = self->spawn_item(section, position, level_vertex_id, game_vertex_id, id_parent, false);
+		if (!absClone)
+			return (0);
+
+		CSE_ALifeItemWeaponMagazined *clone = smart_cast<CSE_ALifeItemWeaponMagazined*>(absClone);
+		if (!clone)
+			return (0);
+
+		clone->wpn_flags = wpnmag->wpn_flags;
+		clone->m_addon_flags = wpnmag->m_addon_flags;
+		clone->m_fCondition = wpnmag->m_fCondition;
+		clone->ammo_type = wpnmag->ammo_type;
+		clone->m_upgrades = wpnmag->m_upgrades;
+		clone->set_ammo_elapsed(wpnmag->get_ammo_elapsed());
+
+		return	bRegister ? reprocess_spawn(self, absClone) : absClone;// (self->server().Process_spawn(packet, clientID));
+	}
+
+	return (0);
+}
+
+void set_objects_per_update(CALifeSimulator *self,u32 count)
+{
+	self->objects_per_update(count);
+}
+
+void set_process_time(CALifeSimulator *self, int micro)
+{
+	self->set_process_time(micro);
+}
+
 #pragma optimize("s",on)
 void CALifeSimulator::script_register			(lua_State *L)
 {
@@ -342,6 +434,7 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("create",					&CALifeSimulator__create)
 			.def("create",					&CALifeSimulator__spawn_item2)
 			.def("create",					&CALifeSimulator__spawn_item)
+			.def("create",					&CALifeSimulator__spawn_item3)
 			.def("create_ammo",				&CALifeSimulator__spawn_ammo)
 			.def("release",					&CALifeSimulator__release)
 			.def("spawn_id",				&CALifeSimulator__spawn_id)
@@ -352,6 +445,11 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("set_switch_distance",		&CALifeSimulator::set_switch_distance)
 			//Alundaio: extend alife simulator exports
 			.def("teleport_object", 		&teleport_object)
+			.def("iterate_info", 			&IterateInfo)
+			.def("clone_weapon", &try_to_clone_object)
+			.def("register", &reprocess_spawn)
+			.def("set_objects_per_update", &set_objects_per_update)
+			.def("set_process_time", &set_process_time)
 			//Alundaio: END
 
 		,def("alife",						&alife)
@@ -359,24 +457,16 @@ void CALifeSimulator::script_register			(lua_State *L)
 
 	{
 		if (story_ids.empty())
-			generate_story_ids	(
-				story_ids,
-				INVALID_STORY_ID,
-				"story_ids",
-				"INVALID_STORY_ID",
-				"Invalid story id description (contains spaces)!",
-				"INVALID_STORY_ID redifinition!",
-				"Duplicated story id description!"
-			);
+			generate_story_ids(story_ids, INVALID_STORY_ID, "story_ids", "INVALID_STORY_ID", "Invalid story id description (contains spaces)!", "INVALID_STORY_ID redifinition!", "Duplicated story id description!");
 
 		luabind::class_<class_exporter<CALifeSimulator> >	instance("story_ids");
 
 		STORY_PAIRS::const_iterator	I = story_ids.begin();
 		STORY_PAIRS::const_iterator	E = story_ids.end();
 		for ( ; I != E; ++I)
-			instance = std::move(instance).enum_		("_story_ids")[luabind::value(*(*I).first,(*I).second)];
+			instance = std::move(instance).enum_("_story_ids")[luabind::value(*(*I).first,(*I).second)];
 
-		luabind::module			(L)[std::move(instance)];
+		luabind::module(L)[std::move(instance)];
 	}
 
 	{
@@ -403,13 +493,14 @@ void CALifeSimulator::script_register			(lua_State *L)
 }
 
 #if 0//def DEBUG
-struct dummy {
+struct dummy 
+{
     int count;
     lua_State* state;
     int ref;
 };
 
-void CALifeSimulator::validate			()
+void CALifeSimulator::validate()
 {
 	typedef CALifeSpawnRegistry::SPAWN_GRAPH::const_vertex_iterator	const_vertex_iterator;
 	const_vertex_iterator		I = spawns().spawns().vertices().begin();

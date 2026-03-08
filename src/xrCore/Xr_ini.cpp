@@ -24,12 +24,14 @@ bool sect_pred(const CInifile::Sect* x, LPCSTR val)
 
 bool item_pred(const CInifile::Item& x, LPCSTR val)
 {
-    if ((!x.first) || (!val)) return x.first < val;
-    else return xr_strcmp(*x.first, val) < 0;
+    if ((!x.first) || (!val))
+        return x.first < val;
+    else
+        return xr_strcmp(*x.first, val) < 0;
 }
 
 //------------------------------------------------------------------------------
-//Тело функций Inifile
+//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ Inifile
 //------------------------------------------------------------------------------
 XRCORE_API BOOL _parse(LPSTR dest, LPCSTR src)
 {
@@ -178,9 +180,6 @@ static void insert_item(CInifile::Sect* tgt, const CInifile::Item& I)
     if (sect_it != tgt->Data.end() && sect_it->first.equal(I.first))
     {
         sect_it->second = I.second;
-        //#ifdef DEBUG
-        // sect_it->comment= I.comment;
-        //#endif
     }
     else
     {
@@ -248,7 +247,6 @@ void CInifile::Load(IReader* F, LPCSTR path
 #endif
             }
         }
-
 
         if (str[0] && (str[0] == '#') && strstr(str, "#include")) //handle includes
         {
@@ -334,21 +332,14 @@ void CInifile::Load(IReader* F, LPCSTR path
                     ++t;
                     xr_strcpy(value_raw, sizeof(value_raw), t);
                     bInsideSTR = _parse(str2, value_raw);
-                    if (bInsideSTR)//multiline str value
+                    if (bInsideSTR) //multiline str value
                     {
                         while (bInsideSTR)
                         {
                             xr_strcat(value_raw, sizeof(value_raw), "\r\n");
                             string4096 str_add_raw;
                             F->r_string(str_add_raw, sizeof(str_add_raw));
-                            R_ASSERT2(
-                                xr_strlen(value_raw) + xr_strlen(str_add_raw) < sizeof(value_raw),
-                                make_string(
-                                    "Incorrect inifile format: section[%s], variable[%s]. Odd number of quotes (\") found, but should be even.",
-                                    Current->Name.c_str(),
-                                    name
-                                )
-                            );
+                            R_ASSERT2(xr_strlen(value_raw) + xr_strlen(str_add_raw) < sizeof(value_raw), make_string("Incorrect inifile format: section[%s], variable[%s]. Odd number of quotes (\") found, but should be even.", Current->Name.c_str(), name));
                             xr_strcat(value_raw, sizeof(value_raw), str_add_raw);
                             bInsideSTR = _parse(str2, value_raw);
                             if (bInsideSTR)
@@ -368,9 +359,6 @@ void CInifile::Load(IReader* F, LPCSTR path
                 Item I;
                 I.first = (name[0] ? name : NULL);
                 I.second = (str2[0] ? str2 : NULL);
-                //#ifdef DEBUG
-                // I.comment = m_flags.test(eReadOnly)?0:comment;
-                //#endif
 
                 if (m_flags.test(eReadOnly))
                 {
@@ -378,13 +366,7 @@ void CInifile::Load(IReader* F, LPCSTR path
                 }
                 else
                 {
-                    if (
-                        *I.first
-                        || *I.second
-                        //#ifdef DEBUG
-                        // || *I.comment
-                        //#endif
-                    )
+                    if (*I.first || *I.second)
                         insert_item(Current, I);
                 }
             }
@@ -408,9 +390,7 @@ void CInifile::save_as(IWriter& writer, bool bcheck) const
         writer.w_string(temp);
         if (bcheck)
         {
-            xr_sprintf(temp, sizeof(temp), "; %d %d %d", (*r_it)->Name._get()->dwCRC,
-                       (*r_it)->Name._get()->dwReference,
-                       (*r_it)->Name._get()->dwLength);
+            xr_sprintf(temp, sizeof(temp), "; %d %d %d", (*r_it)->Name._get()->dwCRC, (*r_it)->Name._get()->dwReference, (*r_it)->Name._get()->dwLength);
             writer.w_string(temp);
         }
 
@@ -673,15 +653,7 @@ Fvector4 CInifile::r_fvector4(LPCSTR S, LPCSTR L)const
 BOOL CInifile::r_bool(LPCSTR S, LPCSTR L)const
 {
     LPCSTR C = r_string(S, L);
-    VERIFY2(
-        xr_strlen(C) <= 5,
-        make_string(
-            "\"%s\" is not a valid bool value, section[%s], line[%s]",
-            C,
-            S,
-            L
-        )
-    );
+    VERIFY2(xr_strlen(C) <= 5, make_string("\"%s\" is not a valid bool value, section[%s], line[%s]", C, S, L));
     char B[8];
     strncpy_s(B, sizeof(B), C, 7);
     B[7] = 0;
@@ -728,7 +700,7 @@ BOOL CInifile::r_line(const shared_str& S, int L, const char** N, const char** V
 //--------------------------------------------------------------------------------------
 void CInifile::w_string(LPCSTR S, LPCSTR L, LPCSTR V, LPCSTR comment)
 {
-    R_ASSERT(!m_flags.test(eReadOnly));
+//    R_ASSERT(!m_flags.test(eReadOnly));
 
     // section
     string256 sect;
@@ -756,9 +728,6 @@ void CInifile::w_string(LPCSTR S, LPCSTR L, LPCSTR V, LPCSTR comment)
     I.first = (line[0] ? line : 0);
     I.second = (value[0] ? value : 0);
 
-    //#ifdef DEBUG
-    // I.comment = (comment?comment:0);
-    //#endif
     SectIt_ it = std::lower_bound(data.Data.begin(), data.Data.end(), *I.first, item_pred);
 
     if (it != data.Data.end())
@@ -780,18 +749,21 @@ void CInifile::w_string(LPCSTR S, LPCSTR L, LPCSTR V, LPCSTR comment)
         data.Data.insert(it, I);
     }
 }
+
 void CInifile::w_u8(LPCSTR S, LPCSTR L, u8 V, LPCSTR comment)
 {
     string128 temp;
     xr_sprintf(temp, sizeof(temp), "%d", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_u16(LPCSTR S, LPCSTR L, u16 V, LPCSTR comment)
 {
     string128 temp;
     xr_sprintf(temp, sizeof(temp), "%d", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_u32(LPCSTR S, LPCSTR L, u32 V, LPCSTR comment)
 {
     string128 temp;
@@ -827,24 +799,28 @@ void CInifile::w_s8(LPCSTR S, LPCSTR L, s8 V, LPCSTR comment)
     xr_sprintf(temp, sizeof(temp), "%d", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_s16(LPCSTR S, LPCSTR L, s16 V, LPCSTR comment)
 {
     string128 temp;
     xr_sprintf(temp, sizeof(temp), "%d", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_s32(LPCSTR S, LPCSTR L, s32 V, LPCSTR comment)
 {
     string128 temp;
     xr_sprintf(temp, sizeof(temp), "%d", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_float(LPCSTR S, LPCSTR L, float V, LPCSTR comment)
 {
     string128 temp;
     xr_sprintf(temp, sizeof(temp), "%f", V);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_fcolor(LPCSTR S, LPCSTR L, const Fcolor& V, LPCSTR comment)
 {
     string128 temp;
@@ -879,6 +855,7 @@ void CInifile::w_ivector4(LPCSTR S, LPCSTR L, const Ivector4& V, LPCSTR comment)
     xr_sprintf(temp, sizeof(temp), "%d,%d,%d,%d", V.x, V.y, V.z, V.w);
     w_string(S, L, temp, comment);
 }
+
 void CInifile::w_fvector2(LPCSTR S, LPCSTR L, const Fvector2& V, LPCSTR comment)
 {
     string128 temp;

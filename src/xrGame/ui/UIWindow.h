@@ -1,5 +1,8 @@
 #pragma once
 #include "../xr_level_controller.h"
+
+class UIHint;
+class CScriptXmlInit;		 
 class CUIWindow;
 
 struct _12b	{ DWORD _[3]; };

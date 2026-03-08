@@ -1,5 +1,4 @@
 #include "stdafx.h"
-
 #include "AmebaZone.h"
 #include "ZoneVisual.h"
 #include "CustomZone.h"
@@ -21,7 +20,7 @@ CAmebaZone::~CAmebaZone()
 void CAmebaZone::Load(LPCSTR section)
 {
 	inherited::Load(section);
-	m_fVelocityLimit = pSettings->r_float(section,"max_velocity_in_zone");
+	m_fVelocityLimit = pSettings->r_float(section, "max_velocity_in_zone");
 }
 
 bool CAmebaZone::BlowoutState()

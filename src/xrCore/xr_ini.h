@@ -7,7 +7,6 @@
 class CInifile;
 struct xr_token;
 
-
 class XRCORE_API CInifile
 {
 public:
@@ -15,14 +14,7 @@ public:
     {
         shared_str first;
         shared_str second;
-        //#ifdef DEBUG
-        // shared_str comment;
-        //#endif
-        Item() : first(0), second(0)
-            //#ifdef DEBUG
-            // , comment(0)
-            //#endif
-        {};
+        Item() : first(0), second(0) {};
     };
     typedef xr_vector<Item> Items;
     typedef Items::const_iterator SectCIt;
@@ -44,8 +36,8 @@ public:
     static CInifile* Create(LPCSTR szFileName, BOOL ReadOnly = TRUE);
     static void Destroy(CInifile*);
     static IC BOOL IsBOOL(LPCSTR B) { return (xr_strcmp(B, "on") == 0 || xr_strcmp(B, "yes") == 0 || xr_strcmp(B, "true") == 0 || xr_strcmp(B, "1") == 0); }
+    Flags8 get_flags() { return m_flags; }
 private:
-    enum { eSaveAtEnd = (1 << 0), eReadOnly = (1 << 1), eOverrideNames = (1 << 2), };
     Flags8 m_flags;
     string_path m_file_name;
     Root DATA;
@@ -56,6 +48,7 @@ private:
 #endif
              );
 public:
+    enum { eSaveAtEnd = (1 << 0), eReadOnly = (1 << 1), eOverrideNames = (1 << 2), };
     CInifile(IReader* F,
              LPCSTR path = 0
 #ifndef _EDITOR

@@ -45,6 +45,9 @@
 #include "CharacterPhysicsSupport.h"
 #include "player_hud.h"
 #include "eatable_item.h"
+#include "script_callback_ex.h"
+#include "../xrEngine/feel_touch.h"
+#include "weaponammo.h"
 //-Alundaio
 
 namespace MemorySpace 
@@ -1109,6 +1112,33 @@ bool CScriptGameObject::is_weapon_going_to_be_strapped	( CScriptGameObject const
 }
 
 //Alundaio: Taken from Radium
+u16 CScriptGameObject::AmmoGetCount()
+{
+	CWeaponAmmo* ammo = smart_cast<CWeaponAmmo*>(&object());
+	if (!ammo)
+		return 0;
+
+	return ammo->m_boxCurr;
+}
+
+void CScriptGameObject::AmmoSetCount(u16 count)
+{
+	CWeaponAmmo* ammo = smart_cast<CWeaponAmmo*>(&object());
+	if (!ammo)
+		return;
+
+	ammo->m_boxCurr = count;
+}
+
+u16 CScriptGameObject::AmmoBoxSize()
+{
+	CWeaponAmmo* ammo = smart_cast<CWeaponAmmo*>(&object());
+	if (!ammo)
+		return 0;
+
+	return ammo->m_boxSize;
+}
+
 float CScriptGameObject::GetArtefactHealthRestoreSpeed()
 {
 	CArtefact* artefact = smart_cast<CArtefact*>(&object());
@@ -1393,5 +1423,50 @@ u8 CScriptGameObject::GetMaxUses()
 		return 0;
 
 	return eItm->GetMaxUses();
+}
+
+void CScriptGameObject::IterateFeelTouch(luabind::functor<void> functor)
+{
+	Feel::Touch* touch = smart_cast<Feel::Touch*>(&object());
+	if (touch)
+	{
+		xr_vector<CObject*>::const_iterator	I = touch->feel_touch.begin();
+		xr_vector<CObject*>::const_iterator	E = touch->feel_touch.end();
+		for (; I != E; ++I) {
+			CObject* o = smart_cast<CObject*>(*I);
+			if (o)
+				functor(o->ID());
+		}
+	}
+}
+
+void CScriptGameObject::SetSpatialType(u32 sptype)
+{
+	object().spatial.type = sptype;
+}
+
+u32 CScriptGameObject::GetSpatialType()
+{
+	return object().spatial.type;
+}
+
+u8 CScriptGameObject::GetRestrictionType()
+{
+	CSpaceRestrictor* restr = smart_cast<CSpaceRestrictor*>(&object());
+	if (restr)
+		return restr->m_space_restrictor_type;
+
+	return (-1);
+}
+
+void CScriptGameObject::SetRestrictionType(u8 typ)
+{
+	CSpaceRestrictor* restr = smart_cast<CSpaceRestrictor*>(&object());
+	if (restr)
+	{
+		restr->m_space_restrictor_type = typ;
+		if (typ != RestrictionSpace::eRestrictorTypeNone)
+			Level().space_restriction_manager().register_restrictor(restr, RestrictionSpace::ERestrictorTypes(typ));
+	}
 }
 //-Alundaio
