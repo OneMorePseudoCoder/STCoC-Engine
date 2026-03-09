@@ -80,8 +80,8 @@ void CTrade::TransferItem(CInventoryItem* pItem, bool bBuying, bool bFree)
 		pPartner.inv_owner->on_before_buy(pItem);
 	}
 
-	CGameObject* O1 = smart_cast<CGameObject *>(pPartner.inv_owner);
-	CGameObject* O2 = smart_cast<CGameObject *>(pThis.inv_owner);
+	CGameObject* O1 = smart_cast<CGameObject*>(pPartner.inv_owner);
+	CGameObject* O2 = smart_cast<CGameObject*>(pThis.inv_owner);
 	
 	if (!bBuying)
 		swap(O1, O2);
@@ -192,23 +192,23 @@ u32	CTrade::GetItemPrice(PIItem pItem, bool b_buying, bool b_free)
 	else 
 	{
 		// rare case
-		_partner			= &pPartner;
+		_partner = &pPartner;
 	}
 
 	// computing action factor
-	const CTradeFactors		*p_trade_factors;
+	const CTradeFactors *p_trade_factors;
 
 	if (buying)
 	{
-		if (!pThis.inv_owner->trade_parameters().enabled(CTradeParameters::action_buy(0),pItem->object().cNameSect()))
+		if (!pThis.inv_owner->trade_parameters().enabled(CTradeParameters::action_buy(0), pItem->object().cNameSect()))
 			return 0;
-		p_trade_factors = &pThis.inv_owner->trade_parameters().factors(CTradeParameters::action_buy(0),pItem->object().cNameSect());
+		p_trade_factors = &pThis.inv_owner->trade_parameters().factors(CTradeParameters::action_buy(0), pItem->object().cNameSect());
 	}
 	else
 	{
-		if (!pThis.inv_owner->trade_parameters().enabled(CTradeParameters::action_sell(0),pItem->object().cNameSect()))
+		if (!pThis.inv_owner->trade_parameters().enabled(CTradeParameters::action_sell(0), pItem->object().cNameSect()))
 			return 0;
-		p_trade_factors = &pThis.inv_owner->trade_parameters().factors(CTradeParameters::action_sell(0),pItem->object().cNameSect());
+		p_trade_factors = &pThis.inv_owner->trade_parameters().factors(CTradeParameters::action_sell(0), pItem->object().cNameSect());
 	}
 
 	const CTradeFactors &trade_factors = *p_trade_factors;
@@ -221,6 +221,9 @@ u32	CTrade::GetItemPrice(PIItem pItem, bool b_buying, bool b_free)
 
 	clamp(action_factor, _min(trade_factors.enemy_factor(),trade_factors.friend_factor()), _max(trade_factors.enemy_factor(),trade_factors.friend_factor()));
 	
+	if (action_factor == 0)
+		return 0;
+
 	// computing deficit_factor
 #if 0
 	float deficit_factor = partner.inv_owner->deficit_factor(pItem->object().cNameSect());

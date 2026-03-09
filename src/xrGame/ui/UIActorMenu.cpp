@@ -355,81 +355,69 @@ void CUIActorMenu::SetCurrentItem(CUICellItem* itm)
 	}
 }
 
-void CUIActorMenu::InfoCurItem( CUICellItem* cell_item )
+void CUIActorMenu::InfoCurItem(CUICellItem* cell_item)
 {
-	if ( !cell_item )
+	if (!cell_item)
 	{
-		m_ItemInfo->InitItem( NULL );
+		m_ItemInfo->InitItem(NULL);
 		return;
 	}
-	PIItem current_item = (PIItem)cell_item->m_pData;
 
+	PIItem current_item = (PIItem)cell_item->m_pData;
 	PIItem compare_item = NULL;
-	u16    compare_slot = current_item->BaseSlot();
-	if ( compare_slot != NO_ACTIVE_SLOT )
+	u16 compare_slot = current_item->BaseSlot();
+	if (compare_slot != NO_ACTIVE_SLOT)
 	{
 		compare_item = m_pActorInvOwner->inventory().ItemFromSlot(compare_slot);
 	}
 
-	if(GetMenuMode()==mmTrade)
+	if (GetMenuMode() == mmTrade)
 	{
 		CInventoryOwner* item_owner = smart_cast<CInventoryOwner*>(current_item->m_pInventory->GetOwner());
 		u32 item_price = u32(-1);
-		if(item_owner && item_owner==m_pActorInvOwner)
+		if (item_owner && item_owner==m_pActorInvOwner)
 			item_price = m_partner_trade->GetItemPrice(current_item, true);
 		else
 			item_price = m_partner_trade->GetItemPrice(current_item, false);
 
-		//if(item_price>500)
-		//	item_price = iFloor(item_price/10+0.5f)*10;
-
 		CWeaponAmmo* ammo = smart_cast<CWeaponAmmo*>(current_item);
-		if(ammo)
+		if (ammo)
 		{
-			for( u32 j = 0; j < cell_item->ChildsCount(); ++j )
+			for(u32 j = 0; j < cell_item->ChildsCount(); ++j)
 			{
-				u32 tmp_price	= 0;
-				PIItem jitem	= (PIItem)cell_item->Child(j)->m_pData;
+				u32 tmp_price = 0;
+				PIItem jitem = (PIItem)cell_item->Child(j)->m_pData;
 				CInventoryOwner* ammo_owner = smart_cast<CInventoryOwner*>(jitem->m_pInventory->GetOwner());
-				if(ammo_owner && ammo_owner==m_pActorInvOwner)
+				if (ammo_owner && ammo_owner == m_pActorInvOwner)
 					tmp_price = m_partner_trade->GetItemPrice(jitem, true);
 				else
 					tmp_price = m_partner_trade->GetItemPrice(jitem, false);
 
-				//if(tmp_price>500)
-				//	tmp_price = iFloor(tmp_price/10+0.5f)*10;
-
-				item_price		+= tmp_price;
+				item_price += tmp_price;
 			}
 		}
 
-		if(	!current_item->CanTrade() || 
-			(!m_pPartnerInvOwner->trade_parameters().enabled(CTradeParameters::action_buy(0), 
-															current_item->object().cNameSect()) &&
-			item_owner && item_owner==m_pActorInvOwner)
-		)
-			m_ItemInfo->InitItem	( cell_item, compare_item, u32(-1), "st_no_trade_tip_1" );
-		else if(current_item->GetCondition()<m_pPartnerInvOwner->trade_parameters().buy_item_condition_factor)
-			m_ItemInfo->InitItem	( cell_item, compare_item, u32(-1), "st_no_trade_tip_2" );
+		if (!current_item->CanTrade() || (!m_pPartnerInvOwner->trade_parameters().enabled(CTradeParameters::action_buy(0), current_item->object().cNameSect()) && item_owner && item_owner == m_pActorInvOwner))
+			m_ItemInfo->InitItem(cell_item, compare_item, u32(-1), "st_no_trade_tip_1");
+		else if (current_item->GetCondition()<m_pPartnerInvOwner->trade_parameters().buy_item_condition_factor)
+			m_ItemInfo->InitItem(cell_item, compare_item, u32(-1), "st_no_trade_tip_2");
 		else
-			m_ItemInfo->InitItem	( cell_item, compare_item, item_price );
+			m_ItemInfo->InitItem(cell_item, compare_item, item_price);
 	}
 	else
-		m_ItemInfo->InitItem	( cell_item, compare_item, u32(-1));
+		m_ItemInfo->InitItem(cell_item, compare_item, u32(-1));
 
-//	m_ItemInfo->InitItem	( current_item, compare_item );
 	float dx_pos = GetWndRect().left;
-	fit_in_rect(m_ItemInfo, Frect().set( 0.0f, 0.0f, UI_BASE_WIDTH - dx_pos, UI_BASE_HEIGHT ), 10.0f, dx_pos );
+	fit_in_rect(m_ItemInfo, Frect().set(0.0f, 0.0f, UI_BASE_WIDTH - dx_pos, UI_BASE_HEIGHT), 10.0f, dx_pos);
 }
 
 void CUIActorMenu::UpdateItemsPlace()
 {
-	switch ( m_currMenuMode )
+	switch (m_currMenuMode)
 	{
 	case mmUndefined:
 		break;
 	case mmInventory:
-		
 		break;
 	case mmTrade:
 		UpdatePrices();
@@ -445,7 +433,7 @@ void CUIActorMenu::UpdateItemsPlace()
 		break;
 	}
 
-	if ( m_pActorInvOwner )
+	if (m_pActorInvOwner)
 	{
 		UpdateOutfit();
 		UpdateActor();
@@ -461,14 +449,14 @@ void CUIActorMenu::clear_highlight_lists()
 	m_HelmetSlotHighlight->Show(false);
 	m_OutfitSlotHighlight->Show(false);
 	m_DetectorSlotHighlight->Show(false);
-	for(u8 i=0; i<4; i++)
+	for (u8 i = 0; i < 4; i++)
 		m_QuickSlotsHighlight[i]->Show(false);
-	for(u8 i=0; i<e_af_count; i++)
+	for (u8 i = 0; i < e_af_count; i++)
 		m_ArtefactSlotsHighlight[i]->Show(false);
 
 	m_pInventoryBagList->clear_select_armament();
 
-	switch ( m_currMenuMode )
+	switch (m_currMenuMode)
 	{
 	case mmUndefined:
 		break;
@@ -488,13 +476,14 @@ void CUIActorMenu::clear_highlight_lists()
 	}
 	m_highlight_clear = true;
 }
+
 void CUIActorMenu::highlight_item_slot(CUICellItem* cell_item)
 {
 	PIItem item = (PIItem)cell_item->m_pData;
-	if(!item)
+	if (!item)
 		return;
 
-	if(CUIDragDropListEx::m_drag_item)
+	if (CUIDragDropListEx::m_drag_item)
 		return;
 
 	CWeapon* weapon = smart_cast<CWeapon*>(item);
@@ -529,20 +518,20 @@ void CUIActorMenu::highlight_item_slot(CUICellItem* cell_item)
 	}
 	if (eatable)
 	{
-		if (cell_item->OwnerList() && GetListType(cell_item->OwnerList())==iQuickSlot)
+		if (cell_item->OwnerList() && GetListType(cell_item->OwnerList()) == iQuickSlot)
 			return;
 
-		for(u8 i=0; i<4; i++)
+		for (u8 i = 0; i < 4; i++)
 			m_QuickSlotsHighlight[i]->Show(true);
 		return;
 	}
-	if(artefact)
+	if (artefact)
 	{
-		if(cell_item->OwnerList() && GetListType(cell_item->OwnerList())==iActorBelt)
+		if (cell_item->OwnerList() && GetListType(cell_item->OwnerList()) == iActorBelt)
 			return;
 
 		Ivector2 cap = m_pInventoryBeltList->CellsCapacity();
-		for(u8 i=0; i<cap.x; i++)
+		for (u8 i = 0; i < cap.x; i++)
 			m_ArtefactSlotsHighlight[i]->Show(true);
 		return;
 	}
