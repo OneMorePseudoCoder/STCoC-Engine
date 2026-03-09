@@ -16,6 +16,8 @@
 #include "ui\UIMMShniaga.h"
 #include "ui\UIScrollView.h"
 #include "ui\UIProgressBar.h"
+#include "ui\UIHint.h"
+#include "ui\UIHelper.h"
 
 using namespace luabind;
 
@@ -41,6 +43,11 @@ void CScriptXmlInit::InitWindow(LPCSTR path, int index, CUIWindow* pWnd)
 	CUIXmlInit::InitWindow(m_xml, path, index, pWnd);
 }
 
+UIHint* CScriptXmlInit::InitHint(LPCSTR path, CUIWindow* parent)
+{
+	UIHint* pWnd = UIHelper::CreateHint(m_xml, path);
+	return pWnd;
+}
 
 CUIFrameWindow*	CScriptXmlInit::InitFrame(LPCSTR path, CUIWindow* parent)
 {
@@ -50,7 +57,6 @@ CUIFrameWindow*	CScriptXmlInit::InitFrame(LPCSTR path, CUIWindow* parent)
 	return pWnd;
 }
 
-
 CUIFrameLineWnd* CScriptXmlInit::InitFrameLine(LPCSTR path, CUIWindow* parent)
 {
 	CUIFrameLineWnd* pWnd = xr_new<CUIFrameLineWnd>();
@@ -58,7 +64,6 @@ CUIFrameLineWnd* CScriptXmlInit::InitFrameLine(LPCSTR path, CUIWindow* parent)
 	_attach_child(pWnd, parent);
 	return pWnd;
 }
-
 
 CUIEditBox* CScriptXmlInit::InitEditBox(LPCSTR path, CUIWindow* parent)
 {
@@ -210,6 +215,7 @@ void CScriptXmlInit::script_register(lua_State *L){
 		.def(							constructor<>())
 		.def("ParseFile",				&CScriptXmlInit::ParseFile)
 		.def("InitWindow",				&CScriptXmlInit::InitWindow)
+		.def("InitHint",				&CScriptXmlInit::InitHint)
 		.def("InitFrame",				&CScriptXmlInit::InitFrame)
 		.def("InitFrameLine",			&CScriptXmlInit::InitFrameLine)
 		.def("InitEditBox",				&CScriptXmlInit::InitEditBox)		

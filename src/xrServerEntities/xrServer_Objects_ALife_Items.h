@@ -202,6 +202,9 @@ SERVER_ENTITY_DECLARE_BEGIN(CSE_ALifeItemWeapon,CSE_ALifeItem)
 	u16								get_ammo_magsize	();
 	void							clone_addons		(CSE_ALifeItemWeapon* parent);
 
+	Flags8&							get_addon_flags() { return m_addon_flags; }
+	//void							set_addon_flags(const Flags8 &_flags) { m_addon_flags.flags = _flags.flags; }
+
 	virtual BOOL					Net_Relevant		();
 	virtual bool                    keep_saved_data_anyway() const { return true; }
 	virtual CSE_ALifeItemWeapon		*cast_item_weapon	() {return this;}

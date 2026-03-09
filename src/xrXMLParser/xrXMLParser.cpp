@@ -19,39 +19,43 @@ void CXml::ClearInternal()
 	m_Doc.Clear();
 }
 
-void ParseFile(LPCSTR path, CMemoryWriter& W, IReader *F, CXml* xml )
+void ParseFile(LPCSTR path, CMemoryWriter& W, IReader *F, CXml* xml)
 {
 	string4096	str;
 	
-	while( !F->eof() ){
-		F->r_string		(str,sizeof(str));
+	while (!F->eof())
+	{
+		F->r_string(str, sizeof(str));
 
-		if (str[0] && (str[0]=='#') && strstr(str,"#include") ){
-			string256	inc_name;	
-			if (_GetItem	(str,1,inc_name,'"'))
+		if (str[0] && (_Trim(str)[0] == '#') && strstr(str, "#include"))
+		{
+			string256 inc_name;	
+			if (_GetItem(str, 1, inc_name, '"'))
 			{
-				IReader* I 			= NULL;
-				if(inc_name==strstr(inc_name,"ui\\"))
+				IReader* I  = NULL;
+				if (inc_name == strstr(inc_name, "ui\\"))
 				{
-					shared_str fn	= xml->correct_file_name("ui", strchr(inc_name,'\\')+1);
-					string_path		buff;
-					strconcat		(sizeof(buff),buff,"ui\\",fn.c_str());
-					I 				= FS.r_open(path, buff);
+					shared_str fn = xml->correct_file_name("ui", strchr(inc_name,'\\')+1);
+					string_path buff;
+					strconcat(sizeof(buff), buff, "ui\\", fn.c_str());
+					I = FS.r_open(path, buff);
 				}
 
-				if(!I)
-					I 	= FS.r_open(path, inc_name);
+				if (!I)
+					I = FS.r_open(path, inc_name);
 
-				if(!I){
+				if (!I)
+				{
 					string1024 str;
-					xr_sprintf(str,"XML file[%s] parsing failed. Can't find include file:[%s]",path,inc_name);
-					R_ASSERT2(false,str);
+					xr_sprintf(str, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
+					R_ASSERT2(false, str);
 				}
 				ParseFile(path, W, I, xml);
-				FS.r_close	(I);
+				FS.r_close(I);
 			}
-		}else
-			W.w_string		(str);
+		}
+		else
+			W.w_string(str);
 
 	}
 }

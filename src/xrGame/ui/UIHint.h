@@ -76,6 +76,9 @@ public:
 			void	set_hint_text_ST( shared_str const& text );
 			void	update_hint_text();
 
+			void	set_hint_text_script(LPCSTR text) { set_hint_text(text); };
+			LPCSTR	get_hint_text_script() {return m_hint_text.c_str();} ;
+
 private:
 	UIHint*			m_hint_wnd;
 	u32				m_hint_delay;

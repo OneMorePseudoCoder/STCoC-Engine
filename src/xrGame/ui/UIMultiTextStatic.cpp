@@ -12,14 +12,13 @@
 #include "../../xrEngine/CustomHUD.h"
 
 //////////////////////////////////////////////////////////////////////////
-CUIMultiTextStatic::CUIMultiTextStatic				()
+CUIMultiTextStatic::CUIMultiTextStatic()
 {
 	m_vPhrases.clear();
 };
 
-CUIMultiTextStatic::~CUIMultiTextStatic				()
-{
-}
+CUIMultiTextStatic::~CUIMultiTextStatic()
+{}
 
 CUIMultiTextStatic::SinglePhrase * CUIMultiTextStatic::AddPhrase()
 {
@@ -38,8 +37,8 @@ void CUIMultiTextStatic::RemovePhraseByIndex(u32 idx)
 
 void CUIMultiTextStatic::Draw()
 {
-	Fvector2			p;
-	GetAbsolutePos		(p);
+	Fvector2 p;
+	GetAbsolutePos(p);
 
 	for (Phrases_it it = m_vPhrases.begin(); it != m_vPhrases.end(); ++it)
 	{
@@ -47,6 +46,7 @@ void CUIMultiTextStatic::Draw()
 	}
 
 	inherited::Draw();
+	DrawHintWnd();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -70,8 +70,6 @@ CUIMultiTextStatic::SinglePhrase * CUIMultiTextStatic::GetPhraseByIndex(u32 idx)
 	return &m_vPhrases[idx];
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------------------/
@@ -80,8 +78,7 @@ CUIMultiTextStatic::SinglePhrase * CUIMultiTextStatic::GetPhraseByIndex(u32 idx)
 
 //////////////////////////////////////////////////////////////////////////
 
-CUIMultiTextStatic::SPh::SPh()
-	:maxWidth			(-1.0f)
+CUIMultiTextStatic::SPh::SPh() : maxWidth(-1.0f)
 {
 	effect.SetStyleParams(CUITextBanner::tbsNone);
 	effect.StopAnimation();
@@ -103,30 +100,12 @@ void CUIMultiTextStatic::SPh::SetText(const char *fmt, ...)
 	msg[0] = '\n';
 
 	str = buf.c_str();
-
-	/*if (maxWidth > 0 && elipsisPos != CUIStatic::eepNone)
-	{
-		STRING s;
-		CUIStatic::SetText(*str, s);
-
-		Frect r;
-		r.left		= 0;
-		r.right		= maxWidth;
-		r.top		= 0;
-		r.bottom	= 0;
-
-		CUIStatic::Elipsis(s, r, elipsisPos, effect.GetFont());
-
-		str = &s.front();
-	}*/
 }
 
 #include "../string_table.h"
 
-void CUICaption::addCustomMessage(const shared_str& msg_name, float x, float y, float font_size, 
-								  CGameFont *pFont, CGameFont::EAligment al, u32 color, LPCSTR def_str)
+void CUICaption::addCustomMessage(const shared_str& msg_name, float x, float y, float font_size, CGameFont *pFont, CGameFont::EAligment al, u32 color, LPCSTR def_str)
 {
-//	R_ASSERT2( (m_indices.find(msg_name) == m_indices.end()),"message already defined !!!" );
 	R_ASSERT2( u32(-1)==findIndexOf_(msg_name),"message already defined !!!" );
 
 	SinglePhrase * sp = AddPhrase();
@@ -139,9 +118,6 @@ void CUICaption::addCustomMessage(const shared_str& msg_name, float x, float y, 
 
 	sp->str = *CStringTable().translate(def_str);
 	sp->key = msg_name;
-
-//	m_indices[msg_name] = m_vPhrases.size()-1;
-
 }
 
 u32 CUICaption::findIndexOf_(const shared_str& key_)
@@ -162,28 +138,22 @@ u32 CUICaption::findIndexOf(const shared_str& key_)
 
 void CUICaption::removeCustomMessage(const shared_str& msg_name)
 {
-//	R_ASSERT2( (m_indices.find(msg_name) != m_indices.end()),"message not defined !!!" );
 	RemovePhraseByIndex(findIndexOf(msg_name));
-//	m_indices.erase(msg_name);
 }
 
 EffectParams* CUICaption::customizeMessage(const shared_str& msg_name, const CUITextBanner::TextBannerStyles styleName)
 {
-//	R_ASSERT2( (m_indices.find(msg_name) != m_indices.end()),"message not defined !!!" );
-	
 	SinglePhrase * sp = GetPhraseByIndex( findIndexOf(msg_name) );
 	sp->effect.PlayAnimation();
 	return sp->effect.SetStyleParams(styleName);
-	
 }
 
 void CUICaption::setCaption(const shared_str& msg_name, LPCSTR message_to_out, u32 color, bool replaceColor)
 {
-//	R_ASSERT2( (m_indices.find(msg_name) != m_indices.end()),"message not defined !!!" );
 	SinglePhrase * sp = GetPhraseByIndex(findIndexOf(msg_name));
 	sp->str = *CStringTable().translate(message_to_out);
 
-	if(replaceColor)
+	if (replaceColor)
 		sp->effect.SetTextColor(color);
 }
 
