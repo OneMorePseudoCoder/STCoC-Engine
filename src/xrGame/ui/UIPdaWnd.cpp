@@ -304,38 +304,40 @@ void CUIPdaWnd::SetCaption(LPCSTR text)
 
 void RearrangeTabButtons(CUITabControl* pTab)
 {
-	TABS_VECTOR *	btn_vec		= pTab->GetButtonsVector();
-	TABS_VECTOR::iterator it	= btn_vec->begin();
-	TABS_VECTOR::iterator it_e	= btn_vec->end();
+	TABS_VECTOR* btn_vec = pTab->GetButtonsVector();
+	TABS_VECTOR::iterator it = btn_vec->begin();
+	TABS_VECTOR::iterator it_e = btn_vec->end();
 
-	Fvector2					pos;
-	pos.set						((*it)->GetWndPos());
-	float						size_x;
+	Fvector2 pos;
+	pos.set((*it)->GetWndPos());
+	float size_x;
 
-	for ( ; it != it_e; ++it )
+	for (; it != it_e; ++it)
 	{
-		(*it)->SetWndPos		(pos);
+		(*it)->SetWndPos(pos);
 		(*it)->AdjustWidthToText();
-		size_x					= (*it)->GetWndSize().x + 30.0f;
-		(*it)->SetWidth			(size_x);
-		pos.x					+= size_x - 6.0f;
+		size_x = (*it)->GetWndSize().x + 30.0f;
+		(*it)->SetWidth(size_x);
+		pos.x += size_x - 6.0f;
 	}
 	
-	pTab->SetWidth( pos.x + 5.0f );
+	pTab->SetWidth(pos.x + 5.0f);
 	pos.x = pTab->GetWndPos().x - pos.x;
 	pos.y = pTab->GetWndPos().y;
-	pTab->SetWndPos( pos );
+	pTab->SetWndPos(pos);
 }
 
 bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 {
-	if ( is_binded(kACTIVE_JOBS, dik) )
+	if (WINDOW_KEY_PRESSED == keyboard_action && IsShown())
 	{
-		if ( WINDOW_KEY_PRESSED == keyboard_action )
+		if (is_binded(kACTIVE_JOBS, dik))
+		{
 			HideDialog();
 
-		return true;
-	}	
+			return true;
+		}
+	}
 
-	return inherited::OnKeyboardAction(dik,keyboard_action);
+	return inherited::OnKeyboardAction(dik, keyboard_action);
 }

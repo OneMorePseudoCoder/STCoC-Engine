@@ -26,12 +26,14 @@ class CUIMMShniaga;
 class CUIScrollView;
 class CUIListBox;
 class CUIProgressBar;
+class UIHint;
 
 class CScriptXmlInit 
 {
 public:
 	void ParseFile		(LPCSTR xml_file);
 	void				InitWindow(LPCSTR path, int index, CUIWindow* pWnd);
+	UIHint*				InitHint(LPCSTR path, CUIWindow* parent);
 	CUIFrameWindow*		InitFrame(LPCSTR path, CUIWindow* parent);
 	CUIFrameLineWnd*	InitFrameLine(LPCSTR path, CUIWindow* parent);
 	CUIEditBox*			InitEditBox(LPCSTR path, CUIWindow* parent);
@@ -53,6 +55,8 @@ public:
 	CUIScrollView*		InitScrollView(LPCSTR path, CUIWindow* parent);
 	CUIListBox*			InitListBox(LPCSTR path, CUIWindow* parent);
 	CUIProgressBar*		InitProgressBar(LPCSTR path, CUIWindow* parent);
+	
+	CUIXml&	GetXml() { return m_xml; };
 protected:
 	CUIXml	m_xml;
 public:
