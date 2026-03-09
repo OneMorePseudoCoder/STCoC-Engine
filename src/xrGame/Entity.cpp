@@ -245,6 +245,7 @@ void CEntity::KillEntity(u16 whoID, BOOL bypass_actor_check /*AVO: added for act
 	// this will bypass below if block and go to normal KillEntity routine.
 	if ((this->ID() == Actor()->ID()) && (bypass_actor_check != TRUE))
 	{
+		Actor()->use_HolderEx(NULL, true);
 		Actor()->callback(GameObject::eActorBeforeDeath)(whoID);
 		return;
 	}

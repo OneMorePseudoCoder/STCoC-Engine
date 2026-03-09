@@ -342,57 +342,67 @@ void CActor::IR_OnMouseMove(int dx, int dy)
 
 	CCameraBase* C = cameras[cam_active];
 	float scale = (C->f_fov / g_fov) * psMouseSens * psMouseSensScale / 50.f / LookFactor;
-	if (dx) {
+	if (dx) 
+	{
 		float d = float(dx) * scale;
 		cam_Active()->Move((d < 0) ? kLEFT : kRIGHT, _abs(d));
 	}
-	if (dy) {
+	if (dy) 
+	{
 		float d = ((psMouseInvert.test(1)) ? -1 : 1) * float(dy) * scale * 3.f / 4.f;
 		cam_Active()->Move((d > 0) ? kUP : kDOWN, _abs(d));
 	}
 }
+
 #include "HudItem.h"
 bool CActor::use_Holder(CHolderCustom* holder)
 {
-
-	if (m_holder) {
+	if (m_holder) 
+	{
 		bool b = false;
 		CGameObject* holderGO = smart_cast<CGameObject*>(m_holder);
 
 		if (smart_cast<CCar*>(holderGO))
 			b = use_Vehicle(0);
 		else
-			if (holderGO->CLS_ID == CLSID_OBJECT_W_STATMGUN)
-				b = use_MountedWeapon(0);
+			if (holderGO->CLS_ID == CLSID_OBJECT_W_STATMGUN || holderGO->CLS_ID == CLSID_OBJECT_HOLDER_ENT)
+				b = use_HolderEx(0, false);
 
-		if (inventory().ActiveItem()) {
+		if (inventory().ActiveItem()) 
+		{
 			CHudItem* hi = smart_cast<CHudItem*>(inventory().ActiveItem());
 			if (hi) hi->OnAnimationEnd(hi->GetState());
 		}
 
 		return b;
 	}
-	else {
+	else 
+	{
 		bool b = false;
 		CGameObject* holderGO = smart_cast<CGameObject*>(holder);
 		if (smart_cast<CCar*>(holder))
 			b = use_Vehicle(holder);
 
-		if (holderGO->CLS_ID == CLSID_OBJECT_W_STATMGUN)
-			b = use_MountedWeapon(holder);
+		if (holderGO->CLS_ID == CLSID_OBJECT_W_STATMGUN || holderGO->CLS_ID == CLSID_OBJECT_HOLDER_ENT)
+			b = use_HolderEx(holder, false);
 
-		if (b) {//used succesfully
+		if (b) 
+		{//used succesfully
 			// switch off torch...
 			CAttachableItem* I = CAttachmentOwner::attachedItem(CLSID_DEVICE_TORCH);
-			if (I) {
+			if (I) 
+			{
 				CTorch* torch = smart_cast<CTorch*>(I);
-				if (torch) torch->Switch(false);
+				if (torch)
+					torch->Switch(false);
 			}
 		}
 
-		if (inventory().ActiveItem()) {
+		if (inventory().ActiveItem()) 
+		{
 			CHudItem* hi = smart_cast<CHudItem*>(inventory().ActiveItem());
-			if (hi) hi->OnAnimationEnd(hi->GetState());
+			if (hi)
+				hi->OnAnimationEnd(hi->GetState());
 		}
 
 		return b;
@@ -404,7 +414,7 @@ void CActor::ActorUse()
 	if (m_holder)
 	{
 		CGameObject* GO = smart_cast<CGameObject*>(m_holder);
-		NET_Packet		P;
+		NET_Packet P;
 		CGameObject::u_EventGen(P, GEG_PLAYER_DETACH_HOLDER, ID());
 		P.w_u16(GO->ID());
 		CGameObject::u_EventSend(P);
@@ -413,8 +423,6 @@ void CActor::ActorUse()
 
 	if (character_physics_support()->movement()->PHCapture())
 		character_physics_support()->movement()->PHReleaseObject();
-
-
 
 	if (m_pUsableObject && NULL == m_pObjectWeLookingAt->cast_inventory_item())
 	{

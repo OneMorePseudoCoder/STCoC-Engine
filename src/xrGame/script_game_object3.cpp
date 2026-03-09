@@ -1202,6 +1202,7 @@ void CScriptGameObject::SetArtefactSatietyRestoreSpeed(float value)
 
 	artefact->SetSatietyPower(value);
 }
+
 void CScriptGameObject::SetArtefactPowerRestoreSpeed(float value)
 {
 	CArtefact* artefact = smart_cast<CArtefact*>(&object());
@@ -1218,24 +1219,27 @@ void CScriptGameObject::SetArtefactBleedingRestoreSpeed(float value)
 	artefact->SetBleedingPower(value);
 }
 //Alundaio
-void CScriptGameObject::AttachVehicle(CScriptGameObject* veh)
+void CScriptGameObject::AttachVehicle(CScriptGameObject* veh, bool bForce)
 {
 	CActor *actor = smart_cast<CActor*>(&object());
 	if (actor)
 	{
 		CHolderCustom* vehicle = veh->object().cast_holder_custom();
 		if (vehicle)
-			actor->attach_Vehicle(vehicle);
+		{
+			actor->use_HolderEx(vehicle, bForce);
+		}
 	}
 }
 
-void CScriptGameObject::DetachVehicle()
+void CScriptGameObject::DetachVehicle(bool bForce)
 {
 	CActor *actor = smart_cast<CActor*>(&object());
 	if (actor)
-		actor->detach_Vehicle();
+	{
+		actor->use_HolderEx(NULL, bForce);
+	}
 }
-
 
 CScriptGameObject* CScriptGameObject::GetAttachedVehicle()
 {

@@ -983,6 +983,7 @@
     <ClCompile Include="WeaponShotgun.cpp" />
     <ClCompile Include="weaponshotgun_script.cpp" />
     <ClCompile Include="WeaponStatMgun.cpp" />
+    <ClCompile Include="HolderEntityObject.cpp" />
     <ClCompile Include="WeaponStatMgunFire.cpp" />
     <ClCompile Include="WeaponStatMgunIR.cpp" />
     <ClCompile Include="WeaponSVD.cpp" />
@@ -2456,6 +2457,8 @@
     <ClInclude Include="WeaponRPG7.h" />
     <ClInclude Include="WeaponShotgun.h" />
     <ClInclude Include="WeaponStatMgun.h" />
+    <ClInclude Include="HolderEntityObject.h" />
+    <ClInclude Include="StaticHolderEntity.h" />
     <ClInclude Include="WeaponSVD.h" />
     <ClInclude Include="WeaponSVU.h" />
     <ClInclude Include="WeaponUSP45.h" />

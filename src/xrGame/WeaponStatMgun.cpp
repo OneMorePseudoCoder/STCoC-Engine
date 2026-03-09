@@ -12,25 +12,29 @@
 #include "game_object_space.h"
 #include "level.h"
 
-void 	CWeaponStatMgun::BoneCallbackX		(CBoneInstance *B)
+void CWeaponStatMgun::BoneCallbackX(CBoneInstance *B)
 {
 	CWeaponStatMgun	*P = static_cast<CWeaponStatMgun*>(B->callback_param());
-	Fmatrix rX;		rX.rotateX		(P->m_cur_x_rot);
+	Fmatrix rX;
+	rX.rotateX(P->m_cur_x_rot);
 	B->mTransform.mulB_43(rX);
 }
 
-void 	CWeaponStatMgun::BoneCallbackY		(CBoneInstance *B)
+void CWeaponStatMgun::BoneCallbackY(CBoneInstance *B)
 {
 	CWeaponStatMgun	*P = static_cast<CWeaponStatMgun*>(B->callback_param());
-	Fmatrix rY;		rY.rotateY		(P->m_cur_y_rot);
+	Fmatrix rY;
+	rY.rotateY(P->m_cur_y_rot);
 	B->mTransform.mulB_43(rY);
 }
 
 CWeaponStatMgun::CWeaponStatMgun()
 {
-	m_Ammo		= xr_new<CCartridge>();
-	camera		= xr_new<CCameraFirstEye>	(this, CCameraBase::flRelativeLink|CCameraBase::flPositionRigid|CCameraBase::flDirectionRigid); 
+	m_firing_disabled = false; 
+	m_Ammo = xr_new<CCartridge>();
+	camera = xr_new<CCameraFirstEye>(this, CCameraBase::flRelativeLink | CCameraBase::flPositionRigid | CCameraBase::flDirectionRigid); 
 	camera->Load("mounted_weapon_cam");
+	p_overheat = NULL;
 }
 
 CWeaponStatMgun::~CWeaponStatMgun()
@@ -43,18 +47,18 @@ void CWeaponStatMgun::SetBoneCallbacks()
 {
 	m_pPhysicsShell->EnabledCallbacks(FALSE);
 	
-	CBoneInstance& biX		= smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_x_bone);	
-	biX.set_callback		(bctCustom,BoneCallbackX,this);
-	CBoneInstance& biY		= smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_y_bone);	
-	biY.set_callback		(bctCustom,BoneCallbackY,this);
+	CBoneInstance& biX = smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_x_bone);	
+	biX.set_callback(bctCustom, BoneCallbackX, this);
+	CBoneInstance& biY = smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_y_bone);	
+	biY.set_callback(bctCustom, BoneCallbackY, this);
 }
 
 void CWeaponStatMgun::ResetBoneCallbacks()
 {
-	CBoneInstance& biX		= smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_x_bone);	
-	biX.reset_callback		();
-	CBoneInstance& biY		= smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_y_bone);	
-	biY.reset_callback		();
+	CBoneInstance& biX = smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_x_bone);	
+	biX.reset_callback();
+	CBoneInstance& biY = smart_cast<IKinematics*>(Visual())->LL_GetBoneInstance(m_rotate_y_bone);	
+	biY.reset_callback();
 
 	m_pPhysicsShell->EnabledCallbacks(TRUE);
 }
@@ -66,20 +70,28 @@ void CWeaponStatMgun::Load(LPCSTR section)
 
 	m_sounds.LoadSound(section,"snd_shoot", "sndShot", false, SOUND_TYPE_WEAPON_SHOOTING);
 	m_Ammo->Load(pSettings->r_string(section, "ammo_class"), 0);
-	camMaxAngle			= pSettings->r_float		(section,"cam_max_angle"	); 
-	camMaxAngle			= _abs( deg2rad				(camMaxAngle) );
-	camRelaxSpeed		= pSettings->r_float		(section,"cam_relax_speed"	); 
-	camRelaxSpeed		= _abs( deg2rad				(camRelaxSpeed) );
+	camMaxAngle = pSettings->r_float(section, "cam_max_angle"); 
+	camMaxAngle = _abs(deg2rad(camMaxAngle));
+	camRelaxSpeed = pSettings->r_float(section, "cam_relax_speed"); 
+	camRelaxSpeed = _abs(deg2rad(camRelaxSpeed));
 
-	VERIFY( !fis_zero(camMaxAngle) );
-	VERIFY( !fis_zero(camRelaxSpeed) );
+	m_overheat_enabled = pSettings->line_exist(section, "overheat_enabled") ? !!pSettings->r_bool(section, "overheat_enabled") : false;
+	m_overheat_time_quant = READ_IF_EXISTS(pSettings, r_float, section, "overheat_time_quant", 0.025f);
+	m_overheat_decr_quant = READ_IF_EXISTS(pSettings, r_float, section, "overheat_decr_quant", 0.002f);
+	m_overheat_threshold = READ_IF_EXISTS(pSettings, r_float, section, "overheat_threshold", 110.f);
+	m_overheat_particles = READ_IF_EXISTS(pSettings, r_string, section, "overheat_particles", "damage_fx\\burn_creatures00");
+	
+	m_bEnterLocked = !!READ_IF_EXISTS(pSettings, r_bool, section, "lock_enter", false);
+	m_bExitLocked = !!READ_IF_EXISTS(pSettings, r_bool, section, "lock_exit", false);
+
+	VERIFY(!fis_zero(camMaxAngle));
+	VERIFY(!fis_zero(camRelaxSpeed));
 }
 
 BOOL CWeaponStatMgun::net_Spawn(CSE_Abstract* DC)
 {
-	if(!inheritedPH::net_Spawn	(DC)) return FALSE;
-
-
+	if (!inheritedPH::net_Spawn(DC))
+		return FALSE;
 
 	IKinematics* K			= smart_cast<IKinematics*>(Visual());
 	CInifile* pUserData		= K->LL_UserData(); 
@@ -100,7 +112,6 @@ BOOL CWeaponStatMgun::net_Spawn(CSE_Abstract* DC)
 	CBoneData& bdY			= K->LL_GetData(m_rotate_y_bone); VERIFY(bdY.IK_data.type==jtJoint);
 	m_lim_y_rot.set			(bdY.IK_data.limits[1].limit.x,bdY.IK_data.limits[1].limit.y);
 	
-
 	xr_vector<Fmatrix> matrices;
 	K->LL_GetBindTransform	(matrices);
 	m_i_bind_x_xform.invert	(matrices[m_rotate_x_bone]);
@@ -125,8 +136,14 @@ BOOL CWeaponStatMgun::net_Spawn(CSE_Abstract* DC)
 
 void CWeaponStatMgun::net_Destroy()
 {
-	inheritedPH::net_Destroy	();
-	processing_deactivate		();
+	if (p_overheat)
+	{
+		if (p_overheat->IsPlaying())
+			p_overheat->Stop(FALSE);
+		CParticlesObject::Destroy(p_overheat);
+	}
+	inheritedPH::net_Destroy();
+	processing_deactivate();
 }
 
 void CWeaponStatMgun::net_Export(NET_Packet& P)	// export to server
@@ -153,7 +170,7 @@ void CWeaponStatMgun::UpdateCL()
 	UpdateBarrelDir					();
 	UpdateFire						();
 
-	if(OwnerActor() && OwnerActor()->IsMyCamera()) 
+	if (OwnerActor() && OwnerActor()->IsMyCamera()) 
 	{
 		cam_Update(Device.fTimeDelta, g_fov);
 		OwnerActor()->Cameras().UpdateFromCamera(Camera());
@@ -162,13 +179,9 @@ void CWeaponStatMgun::UpdateCL()
 
 }
 
-//void CWeaponStatMgun::Hit(	float P, Fvector &dir,	CObject* who, 
-//							s16 element,Fvector p_in_object_space, 
-//							float impulse, ALife::EHitType hit_type)
-void	CWeaponStatMgun::Hit(SHit* pHDS)
+void CWeaponStatMgun::Hit(SHit* pHDS)
 {
-	if(NULL==Owner())
-//		inheritedPH::Hit(P,dir,who,element,p_in_object_space,impulse,hit_type);
+	if (NULL == Owner())
 		inheritedPH::Hit(pHDS);
 }
 

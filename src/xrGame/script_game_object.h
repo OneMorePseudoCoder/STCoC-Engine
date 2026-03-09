@@ -416,8 +416,8 @@ public:
 			bool				WeaponInGrenadeMode();
 			//Car
 			CScriptGameObject*  GetAttachedVehicle();
-			void				AttachVehicle(CScriptGameObject* veh);
-			void				DetachVehicle();
+			void				AttachVehicle(CScriptGameObject* veh, bool bForce = false);
+			void				DetachVehicle(bool bForce = false);
 			//CAI_Stalker
 			void				ResetBoneProtections(LPCSTR imm_sect, LPCSTR bone_sect);
 			//Any class that has PPhysicsShell
