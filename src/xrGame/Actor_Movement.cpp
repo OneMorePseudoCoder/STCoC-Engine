@@ -28,9 +28,9 @@ static const float	s_fJumpGroundTime = 0.1f;	// для снятия флажка
 
 IC static void generate_orthonormal_basis1(const Fvector& dir,Fvector& updir, Fvector& right)
 {
-	right.crossproduct(dir,updir);
+	right.crossproduct(dir, updir);
 	right.normalize();
-	updir.crossproduct(right,dir);
+	updir.crossproduct(right ,dir);
 }
 
 void CActor::g_cl_ValidateMState(float dt, u32 mstate_wf)
@@ -254,7 +254,7 @@ void CActor::g_cl_CheckControls(u32 mstate_wf, Fvector &vControlAccel, float &Ju
 		else
 			mstate_real &= ~mcSprint;
 
-		if (!(mstate_real&(mcFwd|mcLStrafe|mcRStrafe))||mstate_real&(mcCrouch|mcClimb)|| !isActorAccelerated(mstate_wf, IsZoomAimingMode()))
+		if (!(mstate_real&(mcFwd|mcLStrafe|mcRStrafe))||mstate_real&(mcCrouch|mcClimb) || !isActorAccelerated(mstate_wf, IsZoomAimingMode()))
 		{
 			mstate_real&=~mcSprint;
 			mstate_wishful&=~mcSprint;
@@ -263,7 +263,7 @@ void CActor::g_cl_CheckControls(u32 mstate_wf, Fvector &vControlAccel, float &Ju
 		// check player move state
 		if (mstate_real & mcAnyMove)
 		{
-			BOOL bAccelerated = isActorAccelerated(mstate_real, IsZoomAimingMode())&&CanAccelerate();
+			BOOL bAccelerated = isActorAccelerated(mstate_real, IsZoomAimingMode()) && CanAccelerate();
 
 			// correct "mstate_real" if opposite keys pressed
 			if (_abs(vControlAccel.z) < EPS)
@@ -638,7 +638,7 @@ float CActor::get_additional_weight() const
 	{
 		CArtefact* artefact = smart_cast<CArtefact*>(*it);
 		if (artefact)
-			res += artefact->AdditionalInventoryWeight();
+			res += (artefact->AdditionalInventoryWeight() * artefact->GetCondition());
 	}
 
 	return res;
