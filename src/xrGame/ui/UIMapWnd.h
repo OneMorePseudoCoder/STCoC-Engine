@@ -20,9 +20,9 @@ class CMapSpot;
 class CGameTask;
 class CUIXml;
 class UIHint;
+class CUIPropertiesBox;
 
-DEFINE_MAP(shared_str,CUICustomMap*,GameMaps,GameMapsPairIt);
-
+DEFINE_MAP(shared_str, CUICustomMap*, GameMaps, GameMapsPairIt);
 
 class CUIMapWnd: public CUIWindow, public CUIWndCallback
 {
@@ -100,6 +100,7 @@ public:
 
 	void						MoveScrollV		( float dy );
 	void						MoveScrollH		( float dx );
+	void 						ActivatePropertiesBox(CUIWindow* w);
 
 public:
 	CUICustomMap*				m_tgtMap;
@@ -110,6 +111,7 @@ protected:
 	void						init_xml_nav			(CUIXml& xml);
 	void						ShowHint				(bool extra = false);
 	void						Activated				();
+	CUIPropertiesBox*			m_UIPropertiesBox;
 
 public:
 								CUIMapWnd				();

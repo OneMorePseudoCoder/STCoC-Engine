@@ -132,7 +132,7 @@ void CWeaponStatMgun::OnShot()
 	m_sounds.PlaySound("sndShot", m_fire_pos, Owner(), b_hud_mode);
 
 	AddShotEffector();
-	m_dAngle.set(::Random.randF(-fireDispersionBase,fireDispersionBase), ::Random.randF(-fireDispersionBase,fireDispersionBase));
+	m_dAngle.set(::Random.randF(-fireDispersionBase,fireDispersionBase), ::Random.randF(-fireDispersionBase, fireDispersionBase));
 }
 
 void CWeaponStatMgun::AddShotEffector()

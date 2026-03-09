@@ -17,6 +17,7 @@ class CUIRankingWnd;
 class CUILogsWnd;
 class CUIAnimatedStatic;
 class UIHint;
+class CMapSpot;
 
 class CUIPdaWnd: public CUIDialogWnd
 {
@@ -43,6 +44,7 @@ public:
 	CUITaskWnd*				pUITaskWnd;
 	CUIRankingWnd*			pUIRankingWnd;
 	CUILogsWnd*				pUILogsWnd;
+	CMapSpot*				pSelectedMapSpot;
 
 	virtual void			Reset				();
 

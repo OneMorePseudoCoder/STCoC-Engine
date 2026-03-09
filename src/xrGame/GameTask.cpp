@@ -19,7 +19,6 @@
 #include "object_broker.h"
 #include "ui/uitexturemaster.h"
 
-
 CGameTask::CGameTask()
 {
 	m_map_object_id			= 0;
@@ -95,30 +94,27 @@ void CGameTask::CreateMapLocation( bool on_load )
 	{
 		m_linked_map_location =	Level().MapManager().AddMapLocation(m_map_location, m_map_object_id);
 		m_linked_map_location->m_owner_task_id = m_ID;
-	}
 
-	VERIFY( m_linked_map_location );
-
-	if ( !on_load )
-	{
-		if ( m_map_hint.size() )
+		if (m_map_hint.size())
 		{
-			m_linked_map_location->SetHint( m_map_hint );
+			m_linked_map_location->SetHint(m_map_hint);
 		}
 		m_linked_map_location->DisablePointer();
-		m_linked_map_location->SetSerializable( true );
+		m_linked_map_location->SetSerializable(true);
 	}
 
-	if ( m_linked_map_location->complex_spot() )
+	VERIFY(m_linked_map_location);
+
+	if (m_linked_map_location->complex_spot())
 	{
-		m_linked_map_location->complex_spot()->SetTimerFinish( m_timer_finish );
+		m_linked_map_location->complex_spot()->SetTimerFinish(m_timer_finish);
 	}
 }
 
 void CGameTask::RemoveMapLocations(bool notify)
 {
-	if ( m_linked_map_location && !notify)
-		Level().MapManager().RemoveMapLocation( m_linked_map_location );
+	if (m_linked_map_location && !notify)
+		Level().MapManager().RemoveMapLocation(m_linked_map_location);
 
 	m_map_location			= 0;
 	m_linked_map_location	= NULL;

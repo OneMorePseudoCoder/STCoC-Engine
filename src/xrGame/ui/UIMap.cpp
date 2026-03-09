@@ -531,27 +531,33 @@ void CUILevelMap::SendMessage(CUIWindow* pWnd, s16 msg, void* pData)
 {
 	inherited::SendMessage(pWnd, msg, pData);
 
-	if(msg==MAP_SHOW_HINT)
+	if (msg == MAP_SHOW_HINT)
 	{
-		CMapSpot* sp			= smart_cast<CMapSpot*>(pWnd);
-		VERIFY					(sp);
-		if ( sp )
+		CMapSpot* sp = smart_cast<CMapSpot*>(pWnd);
+		VERIFY(sp);
+		if (sp)
 		{
-			MapWnd()->ShowHintSpot( sp );
+			MapWnd()->ShowHintSpot(sp);
 		}
-	}else
-	if(msg==MAP_HIDE_HINT)
+	}
+	else if (msg == MAP_HIDE_HINT)
 	{
-		MapWnd()->HideHint	(pWnd);
-	}else
-	if(msg==MAP_SELECT_SPOT)
-		MapWnd()->SpotSelected	(pWnd);
+		MapWnd()->HideHint(pWnd);
+	}
+	else if (msg == MAP_SELECT_SPOT)
+	{
+		MapWnd()->SpotSelected(pWnd);
+	}
+	else if (msg == MAP_SELECT_SPOT2)
+	{
+		MapWnd()->ActivatePropertiesBox(pWnd);
+	}
 }
 
 void CUILevelMap::OnFocusLost()
 {
-	inherited::OnFocusLost		();
-	MapWnd()->HideHint			(this);
+	inherited::OnFocusLost();
+	MapWnd()->HideHint(this);
 }
 
 CUIMiniMap::CUIMiniMap()

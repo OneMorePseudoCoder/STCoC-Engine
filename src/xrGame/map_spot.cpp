@@ -15,25 +15,23 @@
 #include "gametaskmanager.h"
 #include "gametask.h"
 
-CMapSpot::CMapSpot(CMapLocation* ml)
-:m_map_location(ml)
+CMapSpot::CMapSpot(CMapLocation* ml) : m_map_location(ml)
 {
-	m_bScale			= false;
-	m_location_level    = 0;
-	m_border_static		= NULL;
-	m_scale_bounds.set	(-1.0f, -1.0f);
+	m_bScale = false;
+	m_location_level = 0;
+	m_border_static = NULL;
+	m_scale_bounds.set(-1.0f, -1.0f);
 }
 
 CMapSpot::~CMapSpot()
-{
-}
+{}
 
 void CMapSpot::Load(CUIXml* xml, LPCSTR path)
 {
-	CUIXmlInit::InitStatic(*xml,path,0,this);
-	if(!Heading())
+	CUIXmlInit::InitStatic(*xml, path, 0, this);
+	if (!Heading())
 	{
-		SetWidth			(GetWidth()*UI().get_current_kx());
+		SetWidth(GetWidth() * UI().get_current_kx());
 		SetStretchTexture	(true);
 	}
 
@@ -86,17 +84,22 @@ void CMapSpot::Update()
 	}
 }
 
-bool CMapSpot::OnMouseDown( int mouse_btn )
+bool CMapSpot::OnMouseDown(int mouse_btn)
 {
-	if ( mouse_btn == MOUSE_1 )
+	if (mouse_btn == MOUSE_1)
 	{
 		CGameTask* t = Level().GameTaskManager().HasGameTask(m_map_location, true);
-		if(t)
+		if (t)
 		{
 			GetMessageTarget()->SendMessage(this, MAP_SELECT_SPOT);
 			return true;
 		}
 		return false;
+	}
+	else if (mouse_btn == MOUSE_2)
+	{
+		GetMessageTarget()->SendMessage(this, MAP_SELECT_SPOT2);
+		return true;
 	}
 	else
 	{
