@@ -47,6 +47,8 @@ void CCar::script_register(lua_State *L)
 		.def("StartEngine",		&CCar::StartEngine)
 		.def("StopEngine",		&CCar::StopEngine)
 		.def("IsActiveEngine",	&CCar::isActiveEngine)
+		.def("GetRPM", &CCar::GetRPM)
+		.def("SetRPM", &CCar::SetRPM)
 		/*************************************************** added by Ray Twitty (aka Shadows) END ***************************************************/
 		.def(constructor<>())
 	];

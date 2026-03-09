@@ -413,6 +413,7 @@ public:
 			bool				InstallUpgrade(LPCSTR upgrade);
 			bool				HasUpgrade(LPCSTR upgrade);
 			void				IterateInstalledUpgrades(luabind::functor<void> functor);
+			bool				WeaponInGrenadeMode();
 			//Car
 			CScriptGameObject*  GetAttachedVehicle();
 			void				AttachVehicle(CScriptGameObject* veh);

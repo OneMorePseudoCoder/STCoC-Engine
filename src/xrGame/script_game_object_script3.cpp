@@ -365,6 +365,7 @@ class_<CScriptGameObject> script_register_game_object2(class_<CScriptGameObject>
 		.def("add_upgrade", &CScriptGameObject::InstallUpgrade)
 		.def("has_upgrade", &CScriptGameObject::HasUpgrade)
 		.def("iterate_installed_upgrades", &CScriptGameObject::IterateInstalledUpgrades)
+		.def("weapon_in_grenade_mode", &CScriptGameObject::WeaponInGrenadeMode)
 		//For anything with PPhysicShell (ie. car, heli, npcs, player)
 		.def("bone_visible", &CScriptGameObject::IsBoneVisible)
 		.def("set_bone_visible", &CScriptGameObject::SetBoneVisible)

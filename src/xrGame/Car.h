@@ -1,14 +1,9 @@
 #pragma once
-
-//#if 0
-
 #include "entity.h"
-//#include "../xrphysics/PHDynamicData.h"
 #include "../xrphysics/PhysicsShell.h"
 #include "../xrphysics/phupdateobject.h"
 #include "script_entity.h"
 #include "CarLights.h"
-//#include "phobject.h"
 #include "holder_custom.h"
 #include "PHSkeleton.h"
 #include "DamagableItem.h"
@@ -20,6 +15,7 @@
 #include "Explosive.h"
 #include "PHDestroyable.h"
 #include "DelayedActionFuse.h"
+
 // refs
 class ENGINE_API			CBoneInstance;
 class						CActor;
@@ -28,8 +24,8 @@ class						CSE_PHSkeleton;
 class						CCarWeapon;
 struct						dxGeomUserData;
 struct						dSurfaceParameters;
-// defs
 
+// defs
 #ifdef DEBUG
 	#include "../xrEngine/StatGraph.h"
 	#include "PHDebug.h"
@@ -513,9 +509,11 @@ IC	size_t				CurrentTransmission					(){return m_current_transmission_num;}
 	void SetfFuelConsumption							(float fuel_consumption);
 	void ChangefFuel									(float fuel);
 	void ChangefHealth									(float health);
-	void PlayDamageParticles							(){m_damage_particles.Play1(this);m_damage_particles.Play2(this);}
-	void StopDamageParticles							(){m_damage_particles.Stop1(this);m_damage_particles.Stop2(this);}
+	void PlayDamageParticles							(){ m_damage_particles.Play1(this); m_damage_particles.Play2(this); }
+	void StopDamageParticles							(){ m_damage_particles.Stop1(this); m_damage_particles.Stop2(this); }
 	bool isActiveEngine									();
+	float GetRPM										() { return m_current_rpm; }
+	void SetRPM											(float val) { m_current_rpm = val; }
 	/*************************************************** added by Ray Twitty (aka Shadows) END ***************************************************/
 
 	////////////////////////////////////////////		////////
@@ -654,6 +652,3 @@ public:
 add_to_type_list(CCar)
 #undef script_type_list
 #define script_type_list save_type_list(CCar)
-
-//#endif // #if 0
-
