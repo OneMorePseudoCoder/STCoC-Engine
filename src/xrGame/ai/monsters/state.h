@@ -9,7 +9,9 @@
 #endif
 
 template<typename _Object>
-class CState {
+class CState 
+{
+protected:
 	typedef CState<_Object> CSState;
 public:
 						CState					(_Object *obj, void *data = 0);

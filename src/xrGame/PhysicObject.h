@@ -45,24 +45,22 @@ struct net_updatePhData{
 	//u32				m_dwILastUpdateTime;
 };
 
-
-class CPhysicObject : 
-	public CPhysicsShellHolder,
-	public CPHSkeleton
+class CPhysicObject : public CPhysicsShellHolder, public CPHSkeleton
 {
+protected:
 	typedef CPhysicsShellHolder inherited;
+private:
 	EPOType					m_type					;
 	float					m_mass					;
 	ICollisionHitCallback	*m_collision_hit_callback;
 	CBlend					*m_anim_blend			;
 	moving_bones_snd_player *bones_snd_player		;
 	anim_script_callback	m_anim_script_callback	;
-private:
+
 	//Creating
 			void	CreateBody			(CSE_ALifeObjectPhysic	*po)													;
 			void	CreateSkeleton		(CSE_ALifeObjectPhysic	*po)													;
 			void	AddElement			(CPhysicsElement* root_e, int id)												;
-private:
 			void						run_anim_forward				();
 			void						run_anim_back					();
 			void						stop_anim						();

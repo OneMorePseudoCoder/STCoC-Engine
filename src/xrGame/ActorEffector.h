@@ -6,13 +6,13 @@ class CObjectAnimator;
 class CEffectorController;
 class CActor;
 
-class CActorCameraManager	:public CCameraManager
+class CActorCameraManager : public CCameraManager
 {
+protected:
 	typedef CCameraManager	inherited;
 
 	SCamEffectorInfo		m_cam_info_hud;
 
-protected:
 	virtual void			UpdateCamEffectors		();
 	virtual bool			ProcessCameraEffector	(CEffectorCam* eff);
 
@@ -46,11 +46,12 @@ public:
 	virtual	float xr_stdcall	GetFactor	()								=0;
 };
 
-class CAnimatorCamEffector :public CEffectorCam
+class CAnimatorCamEffector : public CEffectorCam
 {
+protected:
 	typedef				CEffectorCam			inherited;
 	bool				m_bCyclic;
-protected:
+
 	virtual bool		Cyclic					() const		{return m_bCyclic;}
 	CObjectAnimator*							m_objectAnimator;
 public:
@@ -68,10 +69,11 @@ public:
 	virtual bool		AbsolutePositioning		()						{return m_bAbsolutePositioning;}
 };
 
-class CAnimatorCamEffectorScriptCB :public CAnimatorCamEffector 
+class CAnimatorCamEffectorScriptCB : public CAnimatorCamEffector 
 {
+protected:
 	typedef 	CAnimatorCamEffector			inherited;
-
+private:
 	shared_str			cb_name;
 public:
 	CAnimatorCamEffectorScriptCB	(LPCSTR _cb){cb_name =_cb;};
@@ -80,7 +82,7 @@ public:
 	virtual	void		ProcessIfInvalid		(SCamEffectorInfo& info);
 };
 
-class CAnimatorCamLerpEffector :public CAnimatorCamEffector
+class CAnimatorCamLerpEffector : public CAnimatorCamEffector
 {
 protected:
 	typedef				CAnimatorCamEffector		inherited;
@@ -90,7 +92,7 @@ public:
 	virtual BOOL		ProcessCam					(SCamEffectorInfo& info);
 };
 
-class CAnimatorCamLerpEffectorConst :public CAnimatorCamLerpEffector
+class CAnimatorCamLerpEffectorConst : public CAnimatorCamLerpEffector
 {
 protected:
 	float				m_factor;
@@ -100,7 +102,7 @@ public:
 	float	xr_stdcall	GetFactor						()				{return m_factor;}
 };
 
-class CCameraEffectorControlled :public CAnimatorCamLerpEffector
+class CCameraEffectorControlled : public CAnimatorCamLerpEffector
 {
 	CEffectorController*		m_controller;
 public:
@@ -109,8 +111,9 @@ public:
 	virtual BOOL		Valid							();
 };
 
-class SndShockEffector:public CEffectorController
+class SndShockEffector : public CEffectorController
 {
+protected:
 	typedef CEffectorController inherited;
 public:
 	float						m_snd_length;	//ms
@@ -132,9 +135,11 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////////
-class CControllerPsyHitCamEffector :public CEffectorCam {
+class CControllerPsyHitCamEffector : public CEffectorCam 
+{
+protected:
 	typedef CEffectorCam inherited;
-	
+private:	
 	float				m_time_total;
 	float				m_time_current;
 	Fvector				m_dangle_target;

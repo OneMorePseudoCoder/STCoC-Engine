@@ -13,8 +13,8 @@
 #include "associative_vector.h"
 #include "trajectories.h"
 
-
-namespace MonsterSpace {
+namespace MonsterSpace 
+{
 	struct SBoneRotation;
 };
 
@@ -37,7 +37,7 @@ class CCustomMonster :
 	public Feel::Sound,
 	public Feel::Touch
 {
-private:
+protected:
 	typedef	CEntityAlive	inherited;
 
 private:
