@@ -809,6 +809,11 @@ xrTime get_start_time()
 {
 	return (xrTime(Level().GetStartGameTime()));
 }
+
+void reload_language()
+{
+	CStringTable().ReloadLanguage();
+}
 //Alundaio: END
 
 #pragma optimize("s",on)
@@ -1025,10 +1030,10 @@ void CLevel::script_register(lua_State *L)
 //		def("get_surge_time",	Game::get_surge_time),
 //		def("get_object_by_name",Game::get_object_by_name),
 	
-	def("start_tutorial",		&start_tutorial),
-	def("stop_tutorial",		&stop_tutorial),
-	def("has_active_tutorial",	&has_active_tutotial),
-	def("translate_string",		&translate_string)
-
+		def("start_tutorial",		&start_tutorial),
+		def("stop_tutorial",		&stop_tutorial),
+		def("has_active_tutorial",	&has_active_tutotial),
+		def("translate_string",		&translate_string),
+		def("reload_language",		&reload_language)
 	];
 }
