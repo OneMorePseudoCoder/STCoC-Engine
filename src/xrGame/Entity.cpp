@@ -268,11 +268,6 @@ void CEntity::KillEntity(u16 whoID, BOOL bypass_actor_check /*AVO: added for act
 		}
 #endif
 	}
-	else 
-	{
-		if (m_killer_id != ALife::_OBJECT_ID(-1))
-			return;
-	}
 
 	m_killer_id = whoID;
 
