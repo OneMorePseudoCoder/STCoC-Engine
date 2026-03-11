@@ -43,26 +43,6 @@ ref_light precache_light = 0;
 BOOL CRenderDevice::Begin()
 {
 #ifndef DEDICATED_SERVER
-
-    /*
-    HW.Validate ();
-    HRESULT _hr = HW.pDevice->TestCooperativeLevel();
-    if (FAILED(_hr))
-    {
-    // If the device was lost, do not render until we get it back
-    if (D3DERR_DEVICELOST==_hr) {
-    Sleep (33);
-    return FALSE;
-    }
-
-    // Check if the device is ready to be reset
-    if (D3DERR_DEVICENOTRESET==_hr)
-    {
-    Reset ();
-    }
-    }
-    */
-
     switch (m_pRender->GetDeviceState())
     {
     case IRenderDeviceRender::dsOK:
@@ -85,14 +65,6 @@ BOOL CRenderDevice::Begin()
 
     m_pRender->Begin();
 
-    /*
-    CHK_DX (HW.pDevice->BeginScene());
-    RCache.OnFrameBegin ();
-    RCache.set_CullMode (CULL_CW);
-    RCache.set_CullMode (CULL_CCW);
-    if (HW.Caps.SceneMode) overdrawBegin ();
-    */
-
     FPU::m24r();
     g_bRendering = TRUE;
 #endif
@@ -105,7 +77,6 @@ void CRenderDevice::Clear()
 }
 
 extern void CheckPrivilegySlowdown();
-
 
 void CRenderDevice::End(void)
 {
@@ -175,7 +146,6 @@ void CRenderDevice::End(void)
 #endif
 }
 
-
 void CRenderDevice::SecondaryThreadProc(void* context)
 {
     auto& device = *static_cast<CRenderDevice*>(context);
@@ -199,7 +169,8 @@ void CRenderDevice::SecondaryThreadProc(void* context)
 #include "igame_level.h"
 void CRenderDevice::PreCache(u32 amount, bool b_draw_loadscreen, bool b_wait_user_input)
 {
-    if (m_pRender->GetForceGPU_REF()) amount = 0;
+    if (m_pRender->GetForceGPU_REF())
+		amount = 0;
 #ifdef DEDICATED_SERVER
     amount = 0;
 #endif
@@ -221,6 +192,26 @@ void CRenderDevice::PreCache(u32 amount, bool b_draw_loadscreen, bool b_wait_use
     }
 }
 
+ENGINE_API void GetMonitorResolution(u32& horizontal, u32& vertical)
+{
+	HMONITOR hMonitor = MonitorFromWindow(Device.m_hWnd, MONITOR_DEFAULTTOPRIMARY);
+
+	MONITORINFO mi;
+	mi.cbSize = sizeof(mi);
+	if (GetMonitorInfoA(hMonitor, &mi))
+	{
+		horizontal = mi.rcMonitor.right - mi.rcMonitor.left;
+		vertical = mi.rcMonitor.bottom - mi.rcMonitor.top;
+	}
+	else
+	{
+		RECT desktop;
+		const HWND hDesktop = GetDesktopWindow();
+		GetWindowRect(hDesktop, &desktop);
+		horizontal = desktop.right - desktop.left;
+		vertical = desktop.bottom - desktop.top;
+	}
+}
 
 int g_svDedicateServerUpdateReate = 100;
 
@@ -279,27 +270,6 @@ void CRenderDevice::on_idle()
         mView.build_camera_dir(vCameraPosition, vCameraDirection, vCameraTop);
     }
 
-	//if (m_bMakeLevelMap)
-	//{
-	//	// build camera matrix
-	//	Msg("DDDDFF");
-	//	Fbox bb = curr_lm_fbox;
-	//	bb.getcenter(vCameraPosition);
-
-	//	vCameraDirection.set(0.f, -1.f, EPS_S);
-	//	vCameraTop.set(0.f, 0.f, 1.f);
-	//	vCameraRight.set(1.f, 0.f, 0.f);
-	//	mView.build_camera_dir(vCameraPosition, vCameraDirection, vCameraTop);
-
-	//	bb.xform(mView);
-	//	// build project matrix
-	//	mProject.build_projection_ortho(bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.min.z, bb.max.z);
-
-	//	//Device.mFullTransform.mul(Device.mProject, Device.mView);
-	//	//D3DXMatrixInverse((D3DXMATRIX*)&Device.mInvFullTransform, 0, (D3DXMATRIX*)&Device.mFullTransform);
-	//	//m_bMakeLevelMap = false;
-	//}
-
 	// Render Viewports
 	if (Device.m_SecondViewport.IsSVPActive() && Device.m_SecondViewport.IsSVPFrame())
 	{
@@ -307,7 +277,6 @@ void CRenderDevice::on_idle()
         Render->lastViewPort = SECONDARY_WEAPON_SCOPE;
         Render->viewPortsThisFrame.push_back(MAIN_VIEWPORT);
         Render->viewPortsThisFrame.push_back(SECONDARY_WEAPON_SCOPE);
-
 	}
 	else
 	{
@@ -426,7 +395,6 @@ void CRenderDevice::on_idle()
 
 void CRenderDevice::message_loop()
 {
-
     MSG msg;
     PeekMessage(&msg, NULL, 0U, 0U, PM_NOREMOVE);
     while (msg.message != WM_QUIT)
@@ -467,7 +435,6 @@ void CRenderDevice::Run()
     // Message cycle
     seqAppStart.Process(rp_AppStart);
 
-    //CHK_DX(HW.pDevice->Clear(0,0,D3DCLEAR_TARGET,D3DCOLOR_XRGB(0,0,0),1,0));
     m_pRender->ClearTarget();
 
     message_loop();
@@ -478,9 +445,8 @@ void CRenderDevice::Run()
     mt_bMustExit = TRUE;
     syncProcessFrame.Set();
     syncThreadExit.Wait();
-    while (mt_bMustExit) Sleep(0);
-    // DeleteCriticalSection (&mt_csEnter);
-    // DeleteCriticalSection (&mt_csLeave);
+    while (mt_bMustExit)
+		Sleep(0);
 }
 
 u32 app_inactive_time = 0;
@@ -497,12 +463,6 @@ void CRenderDevice::FrameMove()
 
     if (psDeviceFlags.test(rsConstantFPS))
     {
-        // 20ms = 50fps
-        //fTimeDelta = 0.020f;
-        //fTimeGlobal += 0.020f;
-        //dwTimeDelta = 20;
-        //dwTimeGlobal += 20;
-        // 33ms = 30fps
         fTimeDelta = 0.033f;
         fTimeGlobal += 0.033f;
         dwTimeDelta = 33;
@@ -514,7 +474,7 @@ void CRenderDevice::FrameMove()
         float fPreviousFrameTime = Timer.GetElapsed_sec();
         Timer.Start(); // previous frame
         fTimeDelta = 0.1f * fTimeDelta + 0.9f*fPreviousFrameTime; // smooth random system activity - worst case ~7% error
-        //fTimeDelta = 0.7f * fTimeDelta + 0.3f*fPreviousFrameTime; // smooth random system activity
+
         if (fTimeDelta > .1f)
             fTimeDelta = .1f; // limit to 15fps minimum
 
@@ -524,8 +484,7 @@ void CRenderDevice::FrameMove()
         if (Paused())
             fTimeDelta = 0.0f;
 
-        // u64 qTime = TimerGlobal.GetElapsed_clk();
-        fTimeGlobal = TimerGlobal.GetElapsed_sec(); //float(qTime)*CPU::cycles2seconds;
+        fTimeGlobal = TimerGlobal.GetElapsed_sec();
         u32 _old_global = dwTimeGlobal;
         dwTimeGlobal = TimerGlobal.GetElapsed_ms();
         dwTimeDelta = dwTimeGlobal - _old_global;
@@ -535,10 +494,8 @@ void CRenderDevice::FrameMove()
     Statistic->EngineTOTAL.Begin();
 
     // TODO: HACK to test loading screen.
-    //if(!g_bLoaded)
     ProcessLoading(rp_Frame);
-    //else
-    // seqFrame.Process (rp_Frame);
+
     Statistic->EngineTOTAL.End();
 }
 
@@ -555,15 +512,10 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
 {
     static int snd_emitters_ = -1;
 
-    if (g_bBenchmark) return;
-
-
-#ifdef DEBUG
-    // Msg("pause [%s] timer=[%s] sound=[%s] reason=%s",bOn?"ON":"OFF", bTimer?"ON":"OFF", bSound?"ON":"OFF", reason);
-#endif // DEBUG
+    if (g_bBenchmark)
+		return;
 
 #ifndef DEDICATED_SERVER
-
     if (bOn)
     {
         if (!Paused())
@@ -585,14 +537,11 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
         if (bSound && ::Sound)
         {
             snd_emitters_ = ::Sound->pause_emitters(true);
-#ifdef DEBUG
-            // Log("snd_emitters_[true]",snd_emitters_);
-#endif // DEBUG
         }
     }
     else
     {
-        if (bTimer && /*g_pGamePersistent->CanBePaused() &&*/ g_pauseMngr.Paused())
+        if (bTimer && g_pauseMngr.Paused())
         {
             fTimeDelta = EPS_S + EPS_S;
             g_pauseMngr.Pause(FALSE);
@@ -603,9 +552,6 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
             if (snd_emitters_ > 0) //avoid crash
             {
                 snd_emitters_ = ::Sound->pause_emitters(false);
-#ifdef DEBUG
-                // Log("snd_emitters_[false]",snd_emitters_);
-#endif // DEBUG
             }
             else
             {
@@ -615,9 +561,7 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
             }
         }
     }
-
 #endif
-
 }
 
 BOOL CRenderDevice::Paused()
@@ -645,12 +589,6 @@ void CRenderDevice::OnWM_Activate(WPARAM wParam, LPARAM lParam)
             if (!editor())
 # endif // #ifdef INGAME_EDITOR
                 ShowCursor(FALSE);
-				/*if (m_hWnd)
-				{
-					RECT winRect;
-					GetWindowRect(m_hWnd, &winRect);
-					ClipCursor(&winRect);
-				}*/
 #endif // #ifndef DEDICATED_SERVER
         }
         else
@@ -658,7 +596,6 @@ void CRenderDevice::OnWM_Activate(WPARAM wParam, LPARAM lParam)
             app_inactive_time_start = TimerMM.GetElapsed_ms();
             Device.seqAppDeactivate.Process(rp_AppDeactivate);
             ShowCursor(TRUE);
-			//ClipCursor(NULL);
         }
     }
 }
@@ -669,7 +606,6 @@ void CRenderDevice::AddSeqFrame(pureFrame* f, bool mt)
         seqFrameMT.Add(f, REG_PRIORITY_HIGH);
     else
         seqFrame.Add(f, REG_PRIORITY_LOW);
-
 }
 
 void CRenderDevice::RemoveSeqFrame(pureFrame* f)
@@ -678,8 +614,7 @@ void CRenderDevice::RemoveSeqFrame(pureFrame* f)
     seqFrame.Remove(f);
 }
 
-CLoadScreenRenderer::CLoadScreenRenderer()
-    :b_registered(false)
+CLoadScreenRenderer::CLoadScreenRenderer() : b_registered(false)
 {}
 
 void CLoadScreenRenderer::start(bool b_user_input)
@@ -691,7 +626,8 @@ void CLoadScreenRenderer::start(bool b_user_input)
 
 void CLoadScreenRenderer::stop()
 {
-    if (!b_registered) return;
+    if (!b_registered)
+		return;
     Device.seqRender.Remove(this);
     pApp->destroy_loading_shaders();
     b_registered = false;
