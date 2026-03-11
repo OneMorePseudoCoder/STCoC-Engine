@@ -290,7 +290,8 @@ bool CInventory::DropItem(CGameObject *pObj, bool just_before_destroy, bool dont
 						Msg("---DropItem activating slot [-1], forced, Frame[%d]", Device.dwFrame);
 #endif // #ifdef DEBUG
 						Activate		(NO_ACTIVE_SLOT, true);
-					} else 
+					} 
+					else 
 					{
 #ifdef DEBUG
 						Msg("---DropItem activating slot [-1], Frame[%d]", Device.dwFrame);
@@ -1228,18 +1229,21 @@ void CInventory::AddAvailableItems(TIItemContainer& items_container, bool for_tr
 		for (;I <= E; ++I)
 		{
 			PIItem item = ItemFromSlot(I);
-			if (!SlotIsPersistent(I) || item->BaseSlot() == GRENADE_SLOT)
+			if (item && (!for_trade || item->CanTrade()))
 			{
-				if (m_pOwner->is_alive())
+				if (!SlotIsPersistent(I) || item->BaseSlot() == GRENADE_SLOT)
 				{
-					luabind::functor<bool> funct;
-					if (ai().script_engine().functor("actor_menu_inventory.CInventory_ItemAvailableToTrade", funct))
+					if (m_pOwner->is_alive())
 					{
-						if (!funct(m_pOwner->cast_game_object()->lua_game_object(), item->cast_game_object()->lua_game_object()))
-							continue;
+						luabind::functor<bool> funct;
+						if (ai().script_engine().functor("actor_menu_inventory.CInventory_ItemAvailableToTrade", funct))
+						{
+							if (!funct(m_pOwner->cast_game_object()->lua_game_object(), item->cast_game_object()->lua_game_object()))
+								continue;
+						}
 					}
+					items_container.push_back(item);
 				}
-				items_container.push_back(item);
 			}
 		}
 	}		
