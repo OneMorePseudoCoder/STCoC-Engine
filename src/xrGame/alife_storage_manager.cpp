@@ -113,10 +113,10 @@ void CALifeStorageManager::save(LPCSTR save_name_no_check, bool update_name)
 		xr_strcpy(m_save_name,save);
 }
 
-void CALifeStorageManager::load	(void *buffer, const u32 &buffer_size, LPCSTR file_name)
+void CALifeStorageManager::load(void *buffer, const u32 &buffer_size, LPCSTR file_name)
 {
 	//Alundaio: So we can get the fname to make our own custom save states
-	luabind::functor<void>	funct;
+	luabind::functor<void> funct;
 	if (ai().script_engine().functor("alife_storage_manager.CALifeStorageManager_load", funct))
 		funct(file_name);
 	//-Alundaio

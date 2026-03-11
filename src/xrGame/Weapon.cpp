@@ -1202,6 +1202,7 @@ void CWeapon::UpdatePosition(const Fmatrix& trans)
 	VERIFY(!fis_zero(DET(renderable.xform)));
 }
 
+BOOL g_invert_zoom = 0;
 bool CWeapon::Action(u16 cmd, u32 flags)
 {
 	if (inherited::Action(cmd, flags)) 
@@ -1218,7 +1219,7 @@ bool CWeapon::Action(u16 cmd, u32 flags)
 		//если оружие чем-то занято, то ничего не делать
 		{
 			if (IsPending())
-				return				false;
+				return false;
 
 			if (flags & CMD_START)
 				FireStart();
@@ -1274,10 +1275,22 @@ bool CWeapon::Action(u16 cmd, u32 flags)
 
 	case kWPN_ZOOM_INC:
 	case kWPN_ZOOM_DEC:
-		if (IsZoomEnabled() && IsZoomed())
+		if (IsZoomEnabled() && IsZoomed() && (flags&CMD_START))
 		{
-			if (cmd == kWPN_ZOOM_INC)  ZoomInc();
-			else					ZoomDec();
+			if (g_invert_zoom == 0)
+			{
+				if (cmd == kWPN_ZOOM_INC)  
+					ZoomInc();
+				else					
+					ZoomDec();
+			}
+			else 
+			{
+				if (cmd == kWPN_ZOOM_INC)
+					ZoomDec();
+				else
+					ZoomInc();
+			}
 			return true;
 		}
 		else
