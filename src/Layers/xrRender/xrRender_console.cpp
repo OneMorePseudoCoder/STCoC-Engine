@@ -152,6 +152,7 @@ Flags32		ps_r2_ls_flags				= { R2FLAG_SUN
 	//| R3FLAG_MSAA_OPT
 	| R3FLAG_GBUFFER_OPT
 	|R2FLAG_DETAIL_BUMP
+	|R2_ACTOR_SHADOW
 	|R2FLAG_DOF
 	|R2FLAG_SOFT_PARTICLES
 	|R2FLAG_SOFT_WATER
@@ -799,6 +800,7 @@ void		xrRender_initconsole	()
 	CMD4(CCC_Float,		"r2_ls_psm_kernel",		&ps_r2_ls_psm_kernel,		.1f,	3.f		);
 	CMD4(CCC_Float,		"r2_ls_ssm_kernel",		&ps_r2_ls_ssm_kernel,		.1f,	3.f		);
 	CMD4(CCC_Float,		"r2_ls_squality",		&ps_r2_ls_squality,			.5f,	1.f		);
+	CMD3(CCC_Mask,		"r__actor_shadow",		&ps_r2_ls_flags,			R2_ACTOR_SHADOW	);
 
 	CMD3(CCC_Mask,		"r2_zfill",				&ps_r2_ls_flags,			R2FLAG_ZFILL	);
 	CMD4(CCC_Float,		"r2_zfill_depth",		&ps_r2_zfill,				.001f,	.5f		);

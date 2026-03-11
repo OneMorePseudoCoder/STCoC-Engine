@@ -1269,15 +1269,16 @@ void CActor::shedule_Update	(u32 DT)
 };
 
 #include "debug_renderer.h"
-void CActor::renderable_Render	()
+void CActor::renderable_Render()
 {
 	VERIFY(_valid(XFORM()));
-	inherited::renderable_Render			();
-	CInventoryOwner::renderable_Render	();
-	VERIFY(_valid(XFORM()));
+	inherited::renderable_Render();
+
+	if ((cam_active == eacFirstEye && ::Render->get_generation() == ::Render->GENERATION_R2 && ::Render->active_phase() == 1) || !(IsFocused() && cam_active == eacFirstEye && (!m_holder || (m_holder && m_holder->allowWeapon() && m_holder->HUDView()))))
+		CInventoryOwner::renderable_Render();
 }
 
-BOOL CActor::renderable_ShadowGenerate	() 
+BOOL CActor::renderable_ShadowGenerate() 
 {
 	if (m_holder)
 		return FALSE;
