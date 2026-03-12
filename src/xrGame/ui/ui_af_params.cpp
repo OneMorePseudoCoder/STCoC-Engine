@@ -15,11 +15,11 @@ u32 const green_clr = color_argb(255,170,170,170);
 
 CUIArtefactParams::CUIArtefactParams()
 {
-	for ( u32 i = 0; i < ALife::infl_max_count; ++i )
+	for (u32 i = 0; i < 9; ++i )
 	{
 		m_immunity_item[i] = NULL;
 	}
-	for ( u32 i = 0; i < ALife::eRestoreTypeMax; ++i )
+	for (u32 i = 0; i < ALife::eRestoreTypeMax; ++i)
 	{
 		m_restore_item[i] = NULL;
 	}
@@ -109,7 +109,7 @@ void CUIArtefactParams::InitFromXml( CUIXml& xml )
 	xml.SetLocalRoot(base_node);
 	//-Alundaio
 
-	for ( u32 i = 0; i < ALife::infl_max_count; ++i )
+	for ( u32 i = 0; i < 9; ++i )
 	{
 		m_immunity_item[i] = xr_new<UIArtefactParamItem>();
 		m_immunity_item[i]->Init( xml, af_immunity_section_names[i] );
@@ -177,7 +177,7 @@ void CUIArtefactParams::SetInfo(CInventoryItem& pInvItem)
 	AttachChild(m_disp_condition);
 	//-Alundaio
 	
-	for (u32 i = 0; i < ALife::infl_max_count; ++i)
+	for (u32 i = 0; i < 9; ++i)
 	{
 		shared_str const& sect = pSettings->r_string(af_section, "hit_absorbation_sect");
 		val	= pSettings->r_float(sect, af_immunity_section_names[i]);
