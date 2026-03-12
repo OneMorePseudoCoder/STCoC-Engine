@@ -3,309 +3,311 @@
 #include "Physics.h"
 #include "tri-colliderknoopc/dTriList.h"
 #include "PHJointDestroyInfo.h"
-///////////////////////////////////////////////////////////////
-///#pragma warning(disable:4995)
-////#include "../xrEngine/ode/src/collision_kernel.h"
-//#include <../ode/src/joint.h>
-//#include <../ode/src/objects.h>
-
-//#pragma warning(default:4995)
-///////////////////////////////////////////////////////////////////
-
 #include "ExtendedGeom.h"
-
 #include "PHElement.h"
 #include "PHJoint.h"
 #include "PHShell.h"
 
-const float hinge2_spring=20000.f;
-const float hinge2_damping=1000.f;
+const float hinge2_spring = 20000.f;
+const float hinge2_damping = 1000.f;
 
 IC dBodyID body_for_joint(CPhysicsElement* ee)
 {
-	VERIFY(smart_cast<CPHElement *>(ee));
-	CPHElement * e = static_cast<CPHElement *> (ee);
-	return e->isFixed() ? 0 : e->get_body();//return e->get_body();//
+	VERIFY(smart_cast<CPHElement*>(ee));
+	CPHElement * e = static_cast<CPHElement*>(ee);
+	return e->isFixed() ? 0 : e->get_body();
 }
+
 IC void SwapLimits(float &lo,float &hi)
 {
 	float t=-lo;
 	lo=-hi;
 	hi=t;
 }
-CPHJoint::~CPHJoint(){
+
+CPHJoint::~CPHJoint()
+{
 	xr_delete(m_destroy_info);
 	VERIFY(!bActive);
 	axes.clear();
-	if(m_back_ref)*m_back_ref=NULL;
+	if (m_back_ref)
+		*m_back_ref = NULL;
 };
 
 void CPHJoint::SetBackRef(CPhysicsJoint** j)
 {
-	R_ASSERT2(*j==static_cast<CPhysicsJoint*>(this),"wronng reference");
-	m_back_ref=j;
+	R_ASSERT2(*j == static_cast<CPhysicsJoint*>(this), "wronng reference");
+	m_back_ref = j;
 }
+
 void CPHJoint::CreateBall()
 {
-
-	m_joint=dJointCreateBall(0,0);
+	m_joint = dJointCreateBall(0, 0);
 	Fvector pos;
 	Fmatrix first_matrix,second_matrix;
-	CPHElement* first=(pFirst_element);
-	CPHElement* second=(pSecond_element);
+	CPHElement* first = (pFirst_element);
+	CPHElement* second = (pSecond_element);
 	
 	VERIFY(first&&second);
 	first->GetGlobalTransformDynamic(&first_matrix);
 	second->GetGlobalTransformDynamic(&second_matrix);
-pos.set(0,0,0);
-	switch(vs_anchor){
-case vs_first :first_matrix.transform_tiny(pos,anchor); break;
-case vs_second:second_matrix.transform_tiny(pos,anchor); break;
-case vs_global:pShell->mXFORM.transform_tiny(pos,anchor);break;				
-default:NODEFAULT;	
+	pos.set(0, 0, 0);
+	switch (vs_anchor)
+	{
+		case vs_first:
+			first_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_second:
+			second_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_global:
+			pShell->mXFORM.transform_tiny(pos, anchor);
+			break;
+		default:
+			NODEFAULT;	
 	}
 
-
-	
-	dJointAttach(m_joint,body_for_joint(first),body_for_joint(second));
-	dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
-
+	dJointAttach(m_joint, body_for_joint(first), body_for_joint(second));
+	dJointSetBallAnchor(m_joint, pos.x, pos.y, pos.z);
 }
-
-
 
 void CPHJoint::CreateHinge()
 {
-
-	m_joint=dJointCreateHinge(0,0);
+	m_joint = dJointCreateHinge(0, 0);
 
 	Fvector pos;
 	Fmatrix first_matrix,second_matrix;
 	Fvector axis;
 	
-	
-	CPHElement* first=(pFirst_element);
-	CPHElement* second=(pSecond_element);
-	VERIFY(first&&second);
+	CPHElement* first = (pFirst_element);
+	CPHElement* second = (pSecond_element);
+	VERIFY(first && second);
 	first->GetGlobalTransformDynamic(&first_matrix);
 	second->GetGlobalTransformDynamic(&second_matrix);
 	
-pos.set(0,0,0);
-switch(vs_anchor)
-{
-case vs_first :first_matrix.transform_tiny(pos,anchor); break;
-case vs_second:second_matrix.transform_tiny(pos,anchor); break;
-case vs_global:pShell->mXFORM.transform_tiny(pos,anchor);break;			
-default:NODEFAULT;	
-}
+	pos.set(0, 0, 0);
 
+	switch(vs_anchor)
+	{
+		case vs_first:
+			first_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_second:
+			second_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_global:
+			pShell->mXFORM.transform_tiny(pos, anchor);
+			break;			
+		default:
+			NODEFAULT;	
+	}
 
-	axis.set(0,0,0);
+	axis.set(0, 0, 0);
 
 	first_matrix.invert();
 
 	Fmatrix rotate;
-	rotate.mul(first_matrix,second_matrix);
+	rotate.mul(first_matrix, second_matrix);
 
-	float hi,lo;
-	CalcAxis(0,axis,lo,hi,first_matrix,second_matrix,rotate);
-	dBodyID b1=body_for_joint(first);if(!b1)axis.invert();//SwapLimits(lo,hi);
-	dJointAttach(m_joint,b1,body_for_joint(second));
+	float hi, lo;
+	CalcAxis(0, axis, lo, hi, first_matrix, second_matrix, rotate);
+	dBodyID b1 = body_for_joint(first);
+	if (!b1)
+		axis.invert();
 
-	dJointSetHingeAnchor(m_joint,pos.x,pos.y,pos.z);
-	dJointSetHingeAxis(m_joint,axis.x,axis.y,axis.z);
+	dJointAttach(m_joint, b1, body_for_joint(second));
 
-	dJointSetHingeParam(m_joint,dParamLoStop ,lo);
-	dJointSetHingeParam(m_joint,dParamHiStop ,hi);
-	if(axes[0].force>0.f){
-		dJointSetHingeParam(m_joint,dParamFMax ,axes[0].force);
-		dJointSetHingeParam(m_joint,dParamVel ,axes[0].velocity);
+	dJointSetHingeAnchor(m_joint, pos.x, pos.y, pos.z);
+	dJointSetHingeAxis(m_joint, axis.x, axis.y, axis.z);
+
+	dJointSetHingeParam(m_joint,dParamLoStop, lo);
+	dJointSetHingeParam(m_joint,dParamHiStop, hi);
+
+	if (axes[0].force > 0.f)
+	{
+		dJointSetHingeParam(m_joint, dParamFMax, axes[0].force);
+		dJointSetHingeParam(m_joint, dParamVel, axes[0].velocity);
 	}
-	dJointSetHingeParam(m_joint,dParamStopERP ,axes[0].erp);
-	dJointSetHingeParam(m_joint,dParamStopCFM ,axes[0].cfm);
 
-	dJointSetHingeParam(m_joint,dParamCFM ,m_cfm);
+	dJointSetHingeParam(m_joint, dParamStopERP, axes[0].erp);
+	dJointSetHingeParam(m_joint, dParamStopCFM, axes[0].cfm);
+
+	dJointSetHingeParam(m_joint, dParamCFM, m_cfm);
 }
-
 
 void CPHJoint::CreateHinge2()
 {
-
-	m_joint=dJointCreateHinge2(0,0);
+	m_joint = dJointCreateHinge2(0, 0);
 
 	Fvector pos;
 	Fmatrix first_matrix,second_matrix;
 	Fvector axis;
-	CPHElement* first=(pFirst_element);
-	CPHElement* second=(pSecond_element);
-	VERIFY(first&&second);
+	CPHElement* first = (pFirst_element);
+	CPHElement* second = (pSecond_element);
+	VERIFY(first && second);
 	first->GetGlobalTransformDynamic(&first_matrix);
 	second->GetGlobalTransformDynamic(&second_matrix);
-	pos.set(0,0,0);
-	switch(vs_anchor)
+	pos.set(0, 0, 0);
+	switch (vs_anchor)
 	{
-	case vs_first :first_matrix.transform_tiny(pos,anchor); break;
-	case vs_second:second_matrix.transform_tiny(pos,anchor); break;
-	case vs_global:pShell->mXFORM.transform_tiny(pos,anchor);break;					
-	default:NODEFAULT;	
+		case vs_first:
+			first_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_second:
+			second_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_global:
+			pShell->mXFORM.transform_tiny(pos, anchor);
+			break;			
+		default:
+			NODEFAULT;	
 	}
-	//////////////////////////////////////
 
 	dBodyID b1=body_for_joint(first);
 	dJointAttach(m_joint,b1,body_for_joint(second));
 	dJointSetHinge2Anchor(m_joint,pos.x,pos.y,pos.z);
 
-	/////////////////////////////////////////////
-
 	Fmatrix first_matrix_inv;
 	first_matrix_inv.set(first_matrix);
 	first_matrix_inv.invert();
 	Fmatrix rotate;
 
-	rotate.mul(first_matrix_inv,second_matrix);
-	/////////////////////////////////////////////
+	rotate.mul(first_matrix_inv, second_matrix);
 
 	float lo;
 	float hi;
-	//////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////
-	axis.set(0,0,0);
-	CalcAxis(0,axis,lo,hi,first_matrix,second_matrix,rotate);
-	if(!b1)axis.invert();//SwapLimits(lo,hi);
-	dJointSetHinge2Axis1 (m_joint, axis.x, axis.y, axis.z);
 
+	axis.set(0, 0, 0);
+	CalcAxis(0, axis, lo, hi, first_matrix, second_matrix, rotate);
+	if (!b1)
+		axis.invert();
+	dJointSetHinge2Axis1(m_joint, axis.x, axis.y, axis.z);
+
+	dJointSetHinge2Param(m_joint, dParamLoStop, lo);
+	dJointSetHinge2Param(m_joint, dParamHiStop, hi);
 	
-	dJointSetHinge2Param(m_joint,dParamLoStop ,lo);
-	dJointSetHinge2Param(m_joint,dParamHiStop ,hi);
-	
-	if(!(axes[0].force<0.f)){
-		dJointSetHinge2Param(m_joint,dParamFMax,axes[0].force);
-		dJointSetHinge2Param(m_joint,dParamVel ,axes[0].velocity);
+	if (!(axes[0].force < 0.f))
+	{
+		dJointSetHinge2Param(m_joint, dParamFMax, axes[0].force);
+		dJointSetHinge2Param(m_joint, dParamVel, axes[0].velocity);
 	}
 
-	CalcAxis(1,axis,lo,hi,first_matrix,second_matrix,rotate);
+	CalcAxis(1, axis, lo, hi, first_matrix, second_matrix, rotate);
 
-	dJointSetHinge2Axis2 (m_joint, axis.x, axis.y, axis.z);
+	dJointSetHinge2Axis2(m_joint, axis.x, axis.y, axis.z);
 
-	dJointSetHinge2Param(m_joint,dParamLoStop2 ,lo);
-	dJointSetHinge2Param(m_joint,dParamHiStop2 ,hi);
-	if(!(axes[1].force<0.f)){
-		dJointSetHinge2Param(m_joint,dParamFMax2 ,axes[1].force);
-		dJointSetHinge2Param(m_joint,dParamVel2 ,axes[1].velocity);
+	dJointSetHinge2Param(m_joint,dParamLoStop2, lo);
+	dJointSetHinge2Param(m_joint,dParamHiStop2, hi);
+
+	if (!(axes[1].force < 0.f))
+	{
+		dJointSetHinge2Param(m_joint, dParamFMax2, axes[1].force);
+		dJointSetHinge2Param(m_joint, dParamVel2, axes[1].velocity);
 	}
-	//////////////////////////////////////////////////////////////////
-	
+
 	dJointSetHinge2Param(m_joint, dParamSuspensionERP, m_erp);
 	dJointSetHinge2Param(m_joint, dParamSuspensionCFM, m_cfm);
-	//dJointSetHinge2Param(m_joint, dParamStopERP, 1.f);
-	//dJointSetHinge2Param(m_joint, dParamStopCFM,0.f);
 	dJointSetHinge2Param(m_joint, dParamStopERP,axes[0].erp);
 	dJointSetHinge2Param(m_joint, dParamStopCFM,axes[0].cfm);
 }
+
 void CPHJoint::CreateSlider()
 {
 	Fvector pos;
-	Fmatrix first_matrix,second_matrix;
+	Fmatrix first_matrix, second_matrix;
 	Fvector axis;
-	CPHElement* first=(pFirst_element);
-	CPHElement* second=(pSecond_element);
+	CPHElement* first = (pFirst_element);
+	CPHElement* second = (pSecond_element);
 
 	VERIFY(first);
 	first->GetGlobalTransformDynamic(&first_matrix);
-	dBodyID body1=body_for_joint(first);
+	dBodyID body1 = body_for_joint(first);
 	VERIFY(second);
 	second->GetGlobalTransformDynamic(&second_matrix);
-	dBodyID body2=body_for_joint(second);
+	dBodyID body2 = body_for_joint(second);
 	
-
-	pos.set(0,0,0);
-	switch(vs_anchor){
-		case vs_first :first_matrix.transform_tiny(pos,anchor); break;
-		case vs_second:second_matrix.transform_tiny(pos,anchor); break;
-		case vs_global:pShell->mXFORM.transform_tiny(pos,anchor);break;	
+	pos.set(0, 0, 0);
+	switch (vs_anchor)
+	{
+		case vs_first:
+			first_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_second:
+			second_matrix.transform_tiny(pos, anchor);
+			break;
+		case vs_global:
+			pShell->mXFORM.transform_tiny(pos, anchor);
+			break;	
 		default:NODEFAULT;	
 	}
-	//////////////////////////////////////
 
+	m_joint = dJointCreateSlider(0, 0);
 
-	m_joint=dJointCreateSlider(0,0);
-	dJointAttach(m_joint,body1,body2);
+	dJointAttach(m_joint, body1, body2);
+
 	if (body1)
 	{
-		axes[0].vs=vs_first;
-		axes[1].vs=vs_first;
+		axes[0].vs = vs_first;
+		axes[1].vs = vs_first;
 	}
-	else
-	if (body2)
+	else if (body2)
 	{
-		axes[0].vs=vs_second;
-		axes[1].vs=vs_second;
+		axes[0].vs = vs_second;
+		axes[1].vs = vs_second;
 	}
 
+	m_joint1 = dJointCreateAMotor(0, 0);
+	dJointSetAMotorMode(m_joint1, dAMotorEuler);
+	dJointSetAMotorNumAxes(m_joint1, 1);
 
-
-	m_joint1=dJointCreateAMotor(0,0);
-	dJointSetAMotorMode (m_joint1, dAMotorEuler);
-	dJointSetAMotorNumAxes (m_joint1, 1);
-
-	dJointAttach(m_joint1,body1,body2);
-
-	/////////////////////////////////////////////
+	dJointAttach(m_joint1, body1, body2);
 
 	Fmatrix first_matrix_inv;
 	first_matrix_inv.set(first_matrix);
 	first_matrix_inv.invert();
 	Fmatrix rotate;
-	rotate.mul(first_matrix_inv,second_matrix);
-	/////////////////////////////////////////////
+	rotate.mul(first_matrix_inv, second_matrix);
 
 	float lo;
 	float hi;
-	//////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////
-	axis.set(0,0,0);
-	//axis 0
-	CalcAxis(0,axis,lo,hi,first_matrix,second_matrix,rotate);
-	//if(body1)axis.invert();//SwapLimits(lo,hi);!!!
+	axis.set(0, 0, 0);
+
+	CalcAxis(0, axis, lo, hi, first_matrix, second_matrix, rotate);
 
  	dJointSetSliderAxis(m_joint, -axis.x, -axis.y, -axis.z);
 	
-	dJointSetSliderParam( m_joint, dParamLoStop, axes[0].low );
-	dJointSetSliderParam( m_joint, dParamHiStop, axes[0].high );
+	dJointSetSliderParam(m_joint, dParamLoStop, axes[0].low);
+	dJointSetSliderParam(m_joint, dParamHiStop, axes[0].high);
 
-	if(!(axes[0].force<0.f)){
-		dJointSetSliderParam( m_joint,dParamFMax, axes[0].force );
-		dJointSetSliderParam( m_joint,dParamVel, axes[0].velocity );
+	if (!(axes[0].force < 0.f))
+	{
+		dJointSetSliderParam(m_joint,dParamFMax, axes[0].force);
+		dJointSetSliderParam(m_joint,dParamVel, axes[0].velocity);
 	}
-	dJointSetSliderParam( m_joint, dParamStopERP ,axes[0].erp );
-	dJointSetSliderParam( m_joint, dParamStopCFM ,axes[0].cfm );
 
-	//axis 1
+	dJointSetSliderParam(m_joint, dParamStopERP ,axes[0].erp);
+	dJointSetSliderParam(m_joint, dParamStopCFM ,axes[0].cfm);
 
-	CalcAxis(1,axis,lo,hi,first_matrix,second_matrix,rotate);
-	if(!body1)axis.invert();//SwapLimits(lo,hi);
+	CalcAxis(1, axis, lo, hi, first_matrix, second_matrix, rotate);
+
+	if (!body1)
+		axis.invert();
+
 	int rel = body1 ? 1 : 2;
-	dJointSetAMotorAxis (m_joint1, 0,rel, axis.x, axis.y, axis.z);
-	dJointSetAMotorParam(m_joint1,dParamLoStop ,lo);
-	dJointSetAMotorParam(m_joint1,dParamHiStop ,hi);
-	if(!(axes[1].force<0.f)){
-		dJointSetAMotorParam(m_joint1,dParamFMax ,axes[1].force);
-		dJointSetAMotorParam(m_joint1,dParamVel ,axes[1].velocity);
+	dJointSetAMotorAxis (m_joint1, 0, rel, axis.x, axis.y, axis.z);
+	dJointSetAMotorParam(m_joint1, dParamLoStop, lo);
+	dJointSetAMotorParam(m_joint1, dParamHiStop, hi);
+	if (!(axes[1].force < 0.f))
+	{
+		dJointSetAMotorParam(m_joint1,dParamFMax, axes[1].force);
+		dJointSetAMotorParam(m_joint1,dParamVel, axes[1].velocity);
 	}
 
+	dJointSetAMotorParam(m_joint1, dParamStopERP, axes[1].erp);
+	dJointSetAMotorParam(m_joint1, dParamStopCFM, axes[1].cfm);
 
-
-	dJointSetAMotorParam(m_joint1,dParamStopERP ,axes[1].erp);
-	dJointSetAMotorParam(m_joint1,dParamStopCFM ,axes[1].cfm);
-
-
-	/////////////////////////////////////////////////////////////////////
-	///dJointSetAMotorParam(m_joint1,dParamFudgeFactor ,0.1f);
-	//dJointSetAMotorParam(m_joint1,dParamFudgeFactor2 ,0.1f);
-	//dJointSetAMotorParam(m_joint1,dParamFudgeFactor3 ,0.1f);
-	/////////////////////////////////////////////////////////////////////////////
-	dJointSetAMotorParam(m_joint1,dParamCFM ,m_cfm);
-	dJointSetSliderParam(m_joint,dParamCFM,m_cfm);
+	dJointSetAMotorParam(m_joint1, dParamCFM, m_cfm);
+	dJointSetSliderParam(m_joint, dParamCFM, m_cfm);
 }
 
 #ifdef  ODE_SLOW_SOLVER
@@ -313,8 +315,6 @@ void CPHJoint::CreateSlider()
 #endif
 void CPHJoint::CreateFullControl()
 {
-
-
 	Fvector pos;
 	Fmatrix first_matrix,second_matrix;
 	Fvector axis;
@@ -945,79 +945,71 @@ void CPHJoint::SetHiLimitDynamic(int axis_num, float limit )
 	}
 }
 
-/*
-float CPHJoint::GetAxisAngle(int axis_num)
-{
-	float ret=dInfinity;
-	switch(eType){
-						case hinge2:				ret= dJointGetHinge2Angle1(m_joint);break;
-						case ball:					ret= dInfinity;break;
-						case hinge:					ret= dJointGetHingeAngle(m_joint);break;
-						case full_control:			ret= dJointGetAMotorAngle(m_joint1,axis_num);break;
-						case slider:				
-							switch (axis_num){
-								case 0:	ret= dJointGetSliderPosition(m_joint);break;
-								case 1: ret= dJointGetAMotorAngle(m_joint1,0);break;
-							};break;
-						default: R_ASSERT2( false, "type not supported" ); break;
-	
-					}
-}
-*/
 void CPHJoint::SetLimitsActive(int axis_num)
 {
-	switch(eType){
-
-						case hinge2:
-									switch(axis_num)
-											{
-											case -1:
-											case 0:
-											case 1:
-												dJointSetHinge2Param(m_joint,dParamLoStop ,axes[0].low);
-												dJointSetHinge2Param(m_joint,dParamHiStop,axes[0].high);break;
-											}
-									break;
-						case slider:switch(axis_num)
-									{
-						case -1:
-							dJointSetSliderParam(m_joint,dParamLoStop ,axes[0].low);
-							dJointSetSliderParam(m_joint,dParamHiStop ,axes[0].high);
-							dJointSetAMotorParam(m_joint1,dParamLoStop ,axes[1].low);
-							dJointSetAMotorParam(m_joint1,dParamHiStop ,axes[1].high);
-						case 0:				dJointSetSliderParam(m_joint,dParamLoStop ,axes[0].low);
-											dJointSetSliderParam(m_joint,dParamHiStop ,axes[0].high);break;
-						case 1:				dJointSetAMotorParam(m_joint1,dParamLoStop ,axes[1].low);
-											dJointSetAMotorParam(m_joint1,dParamHiStop ,axes[1].high);break;
-									}
-									break;
-						case ball:					break;
-						case hinge:					dJointSetHingeParam(m_joint,dParamLoStop ,axes[0].low);
-													dJointSetHingeParam(m_joint,dParamHiStop ,axes[0].high);
-							break;
-
-
-
-						case full_control:
-							switch(axis_num){
-						case -1:
-							dJointSetAMotorParam(m_joint1,dParamLoStop ,axes[0].low);
-							dJointSetAMotorParam(m_joint1,dParamLoStop ,axes[0].low);
-							dJointSetAMotorParam(m_joint1,dParamLoStop2 ,axes[1].low);
-							dJointSetAMotorParam(m_joint1,dParamHiStop2 ,axes[1].high);
-							dJointSetAMotorParam(m_joint1,dParamHiStop3 ,axes[2].high);
-							dJointSetAMotorParam(m_joint1,dParamHiStop3 ,axes[2].high);
-						case 0:dJointSetAMotorParam(m_joint1,dParamLoStop ,axes[0].low);
-							   dJointSetAMotorParam(m_joint1,dParamHiStop ,axes[0].high);
-								break;
-						case 1:dJointSetAMotorParam(m_joint1,dParamLoStop2 ,axes[1].low);
-								dJointSetAMotorParam(m_joint1,dParamHiStop2 ,axes[1].high);
-								break;
-						case 2:dJointSetAMotorParam(m_joint1,dParamLoStop3 ,axes[2].low);
-								dJointSetAMotorParam(m_joint1,dParamHiStop3 ,axes[2].high);
-								break;
-							}
-							break;
+	switch (eType)
+	{
+		case hinge2:
+				switch (axis_num)
+				{
+					case -1:
+					case 0:
+					case 1:
+						dJointSetHinge2Param(m_joint, dParamLoStop ,axes[0].low);
+						dJointSetHinge2Param(m_joint, dParamHiStop,axes[0].high);
+						break;
+				}
+				break;
+		case slider:
+			switch (axis_num)
+			{
+				case -1:
+					dJointSetSliderParam(m_joint, dParamLoStop, axes[0].low);
+					dJointSetSliderParam(m_joint, dParamHiStop, axes[0].high);
+					dJointSetAMotorParam(m_joint1, dParamLoStop, axes[1].low);
+					dJointSetAMotorParam(m_joint1, dParamHiStop, axes[1].high);
+					break;
+				case 0:
+					dJointSetSliderParam(m_joint, dParamLoStop, axes[0].low);
+					dJointSetSliderParam(m_joint, dParamHiStop, axes[0].high);
+					break;
+				case 1:
+					dJointSetAMotorParam(m_joint1, dParamLoStop, axes[1].low);
+					dJointSetAMotorParam(m_joint1, dParamHiStop, axes[1].high);
+					break;
+			}
+			break;
+			case ball:
+				break;
+			case hinge:
+				dJointSetHingeParam(m_joint, dParamLoStop, axes[0].low);
+				dJointSetHingeParam(m_joint, dParamHiStop, axes[0].high);
+				break;
+			case full_control:
+				switch (axis_num)
+				{
+					case -1:
+						dJointSetAMotorParam(m_joint1, dParamLoStop, axes[0].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop, axes[0].high);
+						dJointSetAMotorParam(m_joint1, dParamLoStop2, axes[1].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop2, axes[1].high);
+						dJointSetAMotorParam(m_joint1, dParamLoStop3, axes[2].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop3, axes[2].high);
+						break;
+					case 0:
+						dJointSetAMotorParam(m_joint1, dParamLoStop, axes[0].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop, axes[0].high);
+						break;
+					case 1:
+						dJointSetAMotorParam(m_joint1, dParamLoStop2, axes[1].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop2, axes[1].high);
+						break;
+					case 2:
+						dJointSetAMotorParam(m_joint1, dParamLoStop3, axes[2].low);
+						dJointSetAMotorParam(m_joint1, dParamHiStop3, axes[2].high);
+						break;
+				}
+				break;
 	}
 }
 
