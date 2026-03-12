@@ -23,8 +23,8 @@
 #include "../xrEngine/igame_persistent.h"
 #include "autosave_manager.h"
 //Alundaio
-#include "pch_script.h"
-#include "../../xrServerEntities/script_engine.h" 
+#include "ai_space.h"
+#include "script_engine.h" 
 //-Alundaio
 
 XRCORE_API string_path g_bug_report_file;
@@ -118,10 +118,10 @@ void CALifeStorageManager::load(void *buffer, const u32 &buffer_size, LPCSTR fil
 	//Alundaio: So we can get the fname to make our own custom save states
 	luabind::functor<void> funct;
 	if (ai().script_engine().functor("alife_storage_manager.CALifeStorageManager_load", funct))
-		funct(file_name);
+		funct((LPCSTR)file_name);
 	//-Alundaio
 
-	IReader source(buffer,buffer_size);
+	IReader source(buffer, buffer_size);
 	header().load(source);
 	time_manager().load(source);
 	spawns().load(source, file_name);
