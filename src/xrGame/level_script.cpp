@@ -114,34 +114,17 @@ LPCSTR get_weather	()
 
 void set_weather	(LPCSTR weather_name, bool forced)
 {
-#ifdef INGAME_EDITOR
-	if (!Device.editor())
-#endif // #ifdef INGAME_EDITOR
-		g_pGamePersistent->Environment().SetWeather(weather_name,forced);
+	g_pGamePersistent->Environment().SetWeather(weather_name,forced);
 }
 
 bool set_weather_fx	(LPCSTR weather_name)
 {
-#ifdef INGAME_EDITOR
-	if (!Device.editor())
-#endif // #ifdef INGAME_EDITOR
-		return		(g_pGamePersistent->Environment().SetWeatherFX(weather_name));
-	
-#ifdef INGAME_EDITOR
-	return			(false);
-#endif // #ifdef INGAME_EDITOR
+	return		(g_pGamePersistent->Environment().SetWeatherFX(weather_name));
 }
 
 bool start_weather_fx_from_time	(LPCSTR weather_name, float time)
 {
-#ifdef INGAME_EDITOR
-	if (!Device.editor())
-#endif // #ifdef INGAME_EDITOR
-		return		(g_pGamePersistent->Environment().StartWeatherFXFromTime(weather_name, time));
-	
-#ifdef INGAME_EDITOR
-	return			(false);
-#endif // #ifdef INGAME_EDITOR
+	return		(g_pGamePersistent->Environment().StartWeatherFXFromTime(weather_name, time));
 }
 
 bool is_wfx_playing	()
@@ -163,11 +146,6 @@ void set_time_factor(float time_factor)
 {
 	if (!OnServer())
 		return;
-
-#ifdef INGAME_EDITOR
-	if (Device.editor())
-		return;
-#endif // #ifdef INGAME_EDITOR
 
 	Level().Server->game->SetGameTimeFactor(time_factor);
 }
@@ -402,11 +380,11 @@ void remove_call(const luabind::functor<bool> &condition,const luabind::functor<
 
 void add_call(const luabind::object &lua_object, LPCSTR condition,LPCSTR action)
 {
-		luabind::functor<bool>		_condition = object_cast<luabind::functor<bool> >(lua_object[condition]);
-		luabind::functor<void>		_action = object_cast<luabind::functor<void> >(lua_object[action]);
-		CPHScriptObjectConditionN	*c=xr_new<CPHScriptObjectConditionN>(lua_object,_condition);
-		CPHScriptObjectActionN		*a=xr_new<CPHScriptObjectActionN>(lua_object,_action);
-		Level().ph_commander_scripts().add_call_unique(c,c,a,a);
+	luabind::functor<bool>		_condition = object_cast<luabind::functor<bool> >(lua_object[condition]);
+	luabind::functor<void>		_action = object_cast<luabind::functor<void> >(lua_object[action]);
+	CPHScriptObjectConditionN	*c=xr_new<CPHScriptObjectConditionN>(lua_object,_condition);
+	CPHScriptObjectActionN		*a=xr_new<CPHScriptObjectActionN>(lua_object,_action);
+	Level().ph_commander_scripts().add_call_unique(c,c,a,a);
 }
 
 void remove_call(const luabind::object &lua_object, LPCSTR condition,LPCSTR action)

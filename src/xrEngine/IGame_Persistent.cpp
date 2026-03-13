@@ -17,10 +17,6 @@
 bool g_dedicated_server = false;
 #endif
 
-#ifdef INGAME_EDITOR
-# include "editor_environment_manager.hpp"
-#endif // INGAME_EDITOR
-
 ENGINE_API IGame_Persistent* g_pGamePersistent = NULL;
 
 IGame_Persistent::IGame_Persistent()
@@ -35,16 +31,7 @@ IGame_Persistent::IGame_Persistent()
 
 	m_pGShaderConstants = new ShadersExternalData(); //--#SM+#--
 
-#ifndef INGAME_EDITOR
-#ifndef _EDITOR
     pEnvironment = xr_new<CEnvironment>();
-#endif
-#else // #ifdef INGAME_EDITOR
-    if (RDEVICE.editor())
-        pEnvironment = xr_new<editor::environment::manager>();
-    else
-        pEnvironment = xr_new<CEnvironment>();
-#endif // #ifdef INGAME_EDITOR
 }
 
 IGame_Persistent::~IGame_Persistent()

@@ -25,10 +25,9 @@
 #include "../Include/xrRender/DebugRender.h"
 
 #ifdef DEBUG
-#	include "ai/monsters/BaseMonster/base_monster.h"
-
+#include "ai/monsters/BaseMonster/base_monster.h"
 // Lain: add
-#   include "level_debug.h"
+#include "level_debug.h"
 #endif
 
 //Alundaio
@@ -38,12 +37,12 @@ using namespace luabind;
 //-Alundaio
 
 #ifdef DEBUG
-	extern void try_change_current_entity();
-	extern void restore_actor();
+extern void try_change_current_entity();
+extern void restore_actor();
 #endif
 
 bool g_bDisableAllInput = false;
-extern	float	g_fTimeFactor;
+extern float g_fTimeFactor;
 
 #define CURRENT_ENTITY()	(game ? CurrentEntity() : NULL)
 
@@ -131,11 +130,6 @@ void CLevel::IR_OnKeyboardPress	(int key)
 	if (Device.dwPrecacheFrame)
 		return;
 
-#ifdef INGAME_EDITOR
-	if (Device.editor() && (pInput->iGetAsyncKeyState(DIK_LALT) || pInput->iGetAsyncKeyState(DIK_RALT)))
-		return;
-#endif // #ifdef INGAME_EDITOR
-
 	bool b_ui_exist = (!!CurrentGameUI());
 
 	EGameActions _curr = get_binded_action(key);
@@ -146,10 +140,6 @@ void CLevel::IR_OnKeyboardPress	(int key)
 
 	if (_curr == kPAUSE)
 	{
-		#ifdef INGAME_EDITOR
-			if (Device.editor())	return;
-		#endif // INGAME_EDITOR
-
 		if (!g_block_pause)
 		{
 #ifdef DEBUG
@@ -162,31 +152,32 @@ void CLevel::IR_OnKeyboardPress	(int key)
 		return;
 	}
 
-	if (g_bDisableAllInput)	return;
+	if (g_bDisableAllInput)
+		return;
 
-	switch ( _curr ) 
+	switch (_curr) 
 	{
 	case kSCREENSHOT:
 		Render->Screenshot();
-		return;
 		break;
-
 	case kCONSOLE:
-		Console->Show				();
-		return;
+		Console->Show();
 		break;
-
 	case kQUIT: 
 		{
-			if(b_ui_exist && CurrentGameUI()->TopInputReceiver() )
+			if (b_ui_exist && CurrentGameUI()->TopInputReceiver())
 			{
-					if(CurrentGameUI()->IR_UIOnKeyboardPress(key))	return;//special case for mp and main_menu
+					if (CurrentGameUI()->IR_UIOnKeyboardPress(key))
+						return;//special case for mp and main_menu
 					CurrentGameUI()->TopInputReceiver()->HideDialog();
-			}else
+			}
+			else
 			{
 				Console->Execute("main_menu");
-			}return;
-		}break;
+			}
+			return;
+		}
+		break;
 	};
 
 	if ( !bReady || !b_ui_exist )			return;

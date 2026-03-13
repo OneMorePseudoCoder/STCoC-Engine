@@ -6,15 +6,9 @@
 // ZNear - always 0.0f
 // ZFar - always 1.0f
 
-//class ENGINE_API CResourceManager;
-//class ENGINE_API CGammaControl;
-
 #include "pure.h"
-//#include "hw.h"
 #include "../xrcore/ftimer.h"
 #include "stats.h"
-//#include "shader.h"
-//#include "R_Backend.h"
 
 extern ENGINE_API float VIEWPORT_NEAR;
 #define VIEWPORT_NEAR_HUD 0.01f
@@ -22,17 +16,11 @@ extern ENGINE_API int psSVPFrameDelay;
 
 enum ViewPort;
 
-//#define VIEWPORT_NEAR 0.05f //--#SM+#-- (Old: 0.2f)
-
 #define DEVICE_RESET_PRECACHE_FRAME_COUNT 10
 
 #include "../Include/xrRender/FactoryPtr.h"
 #include "../Include/xrRender/RenderDeviceRender.h"
 #include "xrCore/Threading/Event.hpp"
-
-#ifdef INGAME_EDITOR
-# include "../Include/editor/interfaces.hpp"
-#endif // #ifdef INGAME_EDITOR
 
 class engine_impl;
 
@@ -214,7 +202,6 @@ public:
 	CSecondVPParams m_SecondViewport;	//--#SM+#-- +SecondVP+
 
     // Dependent classes
-
     CStats* Statistic;
 
     Fmatrix mInvFullTransform;
@@ -226,18 +213,10 @@ public:
 	Fmatrix mainVPFullTrans;
 	Fmatrix mainVPViewSaved;
 	Fmatrix mainVPProjectSaved;
-	//Fmatrix	secVPTransShrinked;
 
     CRenderDevice()
         :
         m_pRender(0)
-#ifdef INGAME_EDITOR
-        , m_editor_module(0),
-        m_editor_initialize(0),
-        m_editor_finalize(0),
-        m_editor(0),
-        m_engine(0)
-#endif // #ifdef INGAME_EDITOR
 #ifdef PROFILE_CRITICAL_SECTIONS
         ,mt_csEnter(MUTEX_PROFILE_ID(CRenderDevice::mt_csEnter))
         ,mt_csLeave(MUTEX_PROFILE_ID(CRenderDevice::mt_csLeave))
@@ -279,7 +258,6 @@ public:
 
 	//void SetShrinkedFullTransform_saved(const Fmatrix& m) { secVPTransShrinked = m; };
 
-
     // Mode control
     void DumpFlags();
     IC CTimer_paused* GetTimerGlobal() { return &TimerGlobal; }
@@ -316,11 +294,7 @@ public:
 
     ICF void remove_from_seq_parallel(const fastdelegate::FastDelegate0<>& delegate)
     {
-        xr_vector<fastdelegate::FastDelegate0<> >::iterator I = std::find(
-                    seqParallel.begin(),
-                    seqParallel.end(),
-                    delegate
-                );
+        xr_vector<fastdelegate::FastDelegate0<>>::iterator I = std::find(seqParallel.begin(), seqParallel.end(), delegate);
         if (I != seqParallel.end())
             seqParallel.erase(I);
     }
@@ -334,25 +308,6 @@ private:
     virtual void _BCL AddSeqFrame(pureFrame* f, bool mt);
     virtual void _BCL RemoveSeqFrame(pureFrame* f);
     virtual CStatsPhysics* _BCL StatPhysics() { return Statistic; }
-#ifdef INGAME_EDITOR
-public:
-    IC editor::ide* editor() const { return m_editor; }
-
-private:
-    void initialize_editor();
-    void message_loop_editor();
-
-private:
-    typedef editor::initialize_function_ptr initialize_function_ptr;
-    typedef editor::finalize_function_ptr finalize_function_ptr;
-
-private:
-    HMODULE m_editor_module;
-    initialize_function_ptr m_editor_initialize;
-    finalize_function_ptr m_editor_finalize;
-    editor::ide* m_editor;
-    engine_impl* m_engine;
-#endif // #ifdef INGAME_EDITOR
 };
 
 extern ENGINE_API CRenderDevice Device;
@@ -362,7 +317,6 @@ extern ENGINE_API CRenderDevice Device;
 #else
 #define RDEVICE EDevice
 #endif
-
 
 extern ENGINE_API bool g_bBenchmark;
 

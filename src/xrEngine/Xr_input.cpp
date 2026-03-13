@@ -3,7 +3,6 @@
 
 #include "xr_input.h"
 #include "IInputReceiver.h"
-#include "../include/editor/ide.hpp"
 
 CInput* pInput = NULL;
 IInputReceiver dummyController;
@@ -21,10 +20,6 @@ float stop_vibration_time = flt_max;
 static bool g_exclusive = true;
 static void on_error_dialog(bool before)
 {
-#ifdef INGAME_EDITOR
-    if (Device.editor())
-        return;
-#endif // #ifdef INGAME_EDITOR
     if (!pInput || !g_exclusive)
         return;
 
@@ -123,8 +118,7 @@ CInput::~CInput(void)
 HRESULT CInput::CreateInputDevice(LPDIRECTINPUTDEVICE8* device, GUID guidDevice, const DIDATAFORMAT* pdidDataFormat, u32 dwFlags, u32 buf_size)
 {
     // Obtain an interface to the input device
-    //. CHK_DX( pDI->CreateDeviceEx( guidDevice, IID_IDirectInputDevice8, (void**)device, NULL ) );
-    CHK_DX(pDI->CreateDevice(guidDevice, /*IID_IDirectInputDevice8,*/ device, NULL));
+    CHK_DX(pDI->CreateDevice(guidDevice, device, NULL));
 
     // Set the device data format. Note: a data format specifies which
     // controls on a device we are interested in, and how they should be
@@ -133,14 +127,11 @@ HRESULT CInput::CreateInputDevice(LPDIRECTINPUTDEVICE8* device, GUID guidDevice,
 
     // Set the cooperativity level to let DirectInput know how this device
     // should interact with the system and with other DirectInput applications.
-#ifdef INGAME_EDITOR
-    if (!Device.editor())
-#endif // #ifdef INGAME_EDITOR
-    {
-        HRESULT _hr = (*device)->SetCooperativeLevel(RDEVICE.m_hWnd, dwFlags);
-        if (FAILED(_hr) && (_hr == E_NOTIMPL)) Msg("! INPUT: Can't set coop level. Emulation???");
-        else R_CHK(_hr);
-    }
+    HRESULT _hr = (*device)->SetCooperativeLevel(RDEVICE.m_hWnd, dwFlags);
+    if (FAILED(_hr) && (_hr == E_NOTIMPL))
+		Msg("! INPUT: Can't set coop level. Emulation???");
+    else
+		R_CHK(_hr);
 
     // setup the buffer size for the keyboard data
     DIPROPDWORD dipdw;
@@ -573,22 +564,10 @@ void CInput::unacquire()
 
 void CInput::acquire(const bool& exclusive)
 {
-    pKeyboard->SetCooperativeLevel(
-#ifdef INGAME_EDITOR
-        Device.editor() ? Device.editor()->main_handle() :
-#endif // #ifdef INGAME_EDITOR
-        RDEVICE.m_hWnd,
-        (exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND
-    );
+    pKeyboard->SetCooperativeLevel(RDEVICE.m_hWnd, (exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND);
     pKeyboard->Acquire();
 
-    pMouse->SetCooperativeLevel(
-#ifdef INGAME_EDITOR
-        Device.editor() ? Device.editor()->main_handle() :
-#endif // #ifdef INGAME_EDITOR
-        RDEVICE.m_hWnd,
-        (exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND | DISCL_NOWINKEY
-    );
+    pMouse->SetCooperativeLevel(RDEVICE.m_hWnd, (exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND | DISCL_NOWINKEY);
     pMouse->Acquire();
 }
 
