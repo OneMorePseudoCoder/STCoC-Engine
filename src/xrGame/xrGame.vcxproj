@@ -1519,8 +1519,6 @@
     <ClInclude Include="space_restriction_shape_inline.h" />
     <ClInclude Include="space_restrictor.h" />
     <ClInclude Include="space_restrictor_inline.h" />
-    <ClInclude Include="Spectator.h" />
-    <ClInclude Include="spectator_camera_first_eye.h" />
     <ClInclude Include="squad_hierarchy_holder.h" />
     <ClInclude Include="squad_hierarchy_holder_inline.h" />
     <ClInclude Include="StalkerOutfit.h" />
@@ -1717,7 +1715,6 @@
     <ClInclude Include="ui\UIScrollBox.h" />
     <ClInclude Include="ui\UIScrollView.h" />
     <ClInclude Include="ui\UISecondTaskWnd.h" />
-    <ClInclude Include="ui\UISpawnWnd.h" />
     <ClInclude Include="ui\UISpinNum.h" />
     <ClInclude Include="ui\UISpinText.h" />
     <ClInclude Include="ui\UIStatic.h" />
@@ -3300,8 +3297,6 @@
       <PrecompiledHeaderFile>pch_script.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName)_script.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="Spectator.cpp" />
-    <ClCompile Include="spectator_camera_first_eye.cpp" />
     <ClCompile Include="squad_hierarchy_holder.cpp" />
     <ClCompile Include="StalkerOutfit.cpp">
       <PrecompiledHeaderFile>pch_script.h</PrecompiledHeaderFile>
@@ -3657,7 +3652,6 @@
     <ClCompile Include="ui\UIScrollBox.cpp" />
     <ClCompile Include="ui\UIScrollView.cpp" />
     <ClCompile Include="ui\UISecondTaskWnd.cpp" />
-    <ClCompile Include="ui\UISpawnWnd.cpp" />
     <ClCompile Include="ui\UISpinNum.cpp" />
     <ClCompile Include="ui\UISpinText.cpp" />
     <ClCompile Include="ui\UIStatic.cpp" />

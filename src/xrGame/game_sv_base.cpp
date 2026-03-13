@@ -440,27 +440,7 @@ void	game_sv_GameState::assign_RP				(CSE_Abstract* E, game_PlayerState* ps_who)
 	VERIFY				(E);
 
 	u8					l_uc_team = u8(-1);
-	CSE_Spectator		*tpSpectator = smart_cast<CSE_Spectator*>(E);
-	if (tpSpectator)
-	{
-		l_uc_team = tpSpectator->g_team();
-#ifdef DEBUG
-		Msg("--- game_sv_GameState RPoint for Spectators uses team [%d]", l_uc_team);
-#endif // #ifdef DEBUG
-	} else
-	{
-		CSE_ALifeCreatureAbstract	*tpTeamed = smart_cast<CSE_ALifeCreatureAbstract*>(E);
-		if (tpTeamed)
-		{
-			l_uc_team = tpTeamed->g_team();
-#ifdef DEBUG
-		Msg("--- game_sv_GameState RPoint for AlifeCreature uses team [%d]", l_uc_team);
-#endif // #ifdef DEBUG
-		} else
-		{
-			R_ASSERT2(false/*tpTeamed*/,"Non-teamed object is assigning to respawn point!");
-		}
-	}
+
 	R_ASSERT2(l_uc_team < TEAM_COUNT, make_string("not found rpoint for team [%d]",
 		l_uc_team).c_str());
 	
@@ -476,19 +456,12 @@ void	game_sv_GameState::assign_RP				(CSE_Abstract* E, game_PlayerState* ps_who)
 			xrp.push_back(i);
 	}
 	u32 rpoint = 0;
-	if (xrp.size() && !tpSpectator)
+	if (xrp.size())
 	{
 		rpoint = xrp[::Random.randI((int)xrp.size())];
 	}
 	else
 	{
-		if (!tpSpectator)
-		{
-			for (u32 i=0; i<rp.size(); i++)
-			{
-				rp[i].TimeToUnfreeze = 0;
-			};
-		};
 		rpoint = ::Random.randI((int)rp.size());
 	}
 	//-----------------------------------------------------------
@@ -496,10 +469,9 @@ void	game_sv_GameState::assign_RP				(CSE_Abstract* E, game_PlayerState* ps_who)
 	Msg("--- Result rpoint is [%d]", rpoint);
 #endif // #ifdef DEBUG
 	RPoint&				r	= rp[rpoint];
-	if (!tpSpectator)
-	{
-		r.TimeToUnfreeze	= Level().timeServer() + g_sv_base_dwRPointFreezeTime;
-	};
+
+	r.TimeToUnfreeze	= Level().timeServer() + g_sv_base_dwRPointFreezeTime;
+
 	E->o_Position.set	(r.P);
 	E->o_Angle.set		(r.A);
 }

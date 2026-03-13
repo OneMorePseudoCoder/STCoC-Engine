@@ -221,8 +221,6 @@ BOOL CGameObject::net_Spawn		(CSE_Abstract*	DC)
 	if (E->name_replace()[0])
 		cName_set					(E->name_replace());
 
-	bool demo_spectator = false;
-	
 	R_ASSERT(Level().Objects.net_Find(E->ID) == NULL);
 
 	setID							(E->ID);
@@ -255,8 +253,8 @@ BOOL CGameObject::net_Spawn		(CSE_Abstract*	DC)
 	setLocal						(E->s_flags.is(M_SPAWN_OBJECT_LOCAL));
 
 	setReady						(TRUE);
-	if (!demo_spectator)
-		g_pGameLevel->Objects.net_Register	(this);
+
+	g_pGameLevel->Objects.net_Register	(this);
 
 	m_server_flags.one				();
 	if (O) 

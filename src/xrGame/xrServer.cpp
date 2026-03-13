@@ -145,17 +145,6 @@ void		xrServer::client_Destroy	(IClient* C)
 	if (alife_client)
 	{
 		CSE_Abstract* pOwner	= static_cast<xrClientData*>(alife_client)->owner;
-		CSE_Spectator* pS		= smart_cast<CSE_Spectator*>(pOwner);
-		if (pS)
-		{
-			NET_Packet			P;
-			P.w_begin			(M_EVENT);
-			P.w_u32				(Level().timeServer());//Device.TimerAsync());
-			P.w_u16				(GE_DESTROY);
-			P.w_u16				(pS->ID);
-			SendBroadcast		(C->ID,P,net_flags(TRUE,TRUE));
-		};
-
 		DelayedPacket pp;
 		pp.SenderID = alife_client->ID;
 		xr_deque<DelayedPacket>::iterator it;

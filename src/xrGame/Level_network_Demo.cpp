@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Level.h"
 #include "xrServer.h"
-#include "spectator.h"
 #include "actor.h"
 #include "game_cl_base.h"
 #include "../xrCore/stream_reader.h"
@@ -184,8 +183,6 @@ void CLevel::SpawnDemoSpectator()
 
 void CLevel::SetDemoSpectator(CObject* spectator)
 {
-	R_ASSERT2	(smart_cast<CSpectator*>(spectator),
-		"tried to set not an spectator object to demo spectator");
 	m_current_spectator = spectator;
 }
 
