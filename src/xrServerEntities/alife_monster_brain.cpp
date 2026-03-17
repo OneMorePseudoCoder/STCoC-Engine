@@ -146,7 +146,7 @@ void CALifeMonsterBrain::update()
 {
     if (can_choose_alife_tasks())
     {
-        select_task(forced);
+        select_task();
         if (object().m_smart_terrain_id != 0xffff)
             process_task();
         else
