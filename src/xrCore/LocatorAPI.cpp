@@ -966,11 +966,11 @@ int CLocatorAPI::file_list(FS_FileSet& dest, LPCSTR path, u32 flags, LPCSTR mask
         if ((*end_symbol) != '\\')
         {
             // file
-            if ((flags&FS_ListFiles) == 0)
-				continue;
+            if ((flags & FS_ListFiles) == 0)
+                continue;
             LPCSTR entry_begin = entry.name + base_len;
-            if ((flags&FS_RootOnly) && strstr(entry_begin, "\\"))
-				continue; // folder in folder
+            if ((flags & FS_RootOnly) && strstr(entry_begin, "\\"))
+                continue; // folder in folder
             // check extension
             if (b_mask)
             {
@@ -983,13 +983,23 @@ int CLocatorAPI::file_list(FS_FileSet& dest, LPCSTR path, u32 flags, LPCSTR mask
                         break;
                     }
                 }
-                if (!bOK) continue;
+                if (!bOK)
+                    continue;
             }
             FS_File file;
-            if (flags&FS_ClampExt)
-                file.name = EFS.ChangeFileExt(entry_begin, "");
+            if (flags & FS_FullName) //Alundaio: Ability to get a file list with full path names
+            {
+                string_path full_name;
+                strconcat(sizeof(full_name), full_name, N, entry_begin);
+                file.name = full_name;
+            }
             else
-                file.name = entry_begin;
+            {
+                if (flags & FS_ClampExt)
+                    file.name = EFS.ChangeFileExt(entry_begin, "");
+                else
+                    file.name = entry_begin;
+            }
             u32 fl = (entry.vfs != 0xffffffff ? FS_File::flVFS : 0);
             file.size = entry.size_real;
             file.time_write = entry.modif;
@@ -1115,9 +1125,11 @@ void CLocatorAPI::file_from_archive(IReader*& R, LPCSTR fname, const file& desc)
     archive& A = m_archives[desc.vfs];
     u32 start = (desc.ptr / dwAllocGranularity)*dwAllocGranularity;
     u32 end = (desc.ptr + desc.size_compressed) / dwAllocGranularity;
-    if ((desc.ptr + desc.size_compressed) % dwAllocGranularity) end += 1;
+    if ((desc.ptr + desc.size_compressed) % dwAllocGranularity)
+        end += 1;
     end *= dwAllocGranularity;
-    if (end > A.size) end = A.size;
+    if (end > A.size)
+        end = A.size;
     u32 sz = (end - start);
     u8* ptr = (u8*)MapViewOfFile(A.hSrcMap, FILE_MAP_READ, 0, start, sz);
     VERIFY3(ptr, "cannot create file mapping on file", fname);
@@ -1253,7 +1265,7 @@ bool CLocatorAPI::check_for_file(LPCSTR path, LPCSTR _fname, string_path& fname,
     // correct path
     xr_strcpy(fname, _fname);
     xr_strlwr(fname);
-    if (path&&path[0])
+    if (path && path[0])
         update_path(fname, path, fname);
 
     // Search entry
