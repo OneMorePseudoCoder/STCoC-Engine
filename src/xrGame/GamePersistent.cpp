@@ -30,12 +30,10 @@
 #include "UI/UIGameTutorial.h"
 
 #ifndef MASTER_GOLD
-#	include "custommonster.h"
+#include "custommonster.h"
 #endif // MASTER_GOLD
 
-#ifndef _EDITOR
-#	include "ai_debug.h"
-#endif // _EDITOR
+#include "ai_debug.h"
 
 CGamePersistent::CGamePersistent(void)
 {
@@ -53,7 +51,6 @@ CGamePersistent::CGamePersistent(void)
 
 	ZeroMemory					(ambient_sound_next_time, sizeof(ambient_sound_next_time));
 	
-
 	m_pUI_core					= NULL;
 	m_pMainMenu					= NULL;
 	m_intro						= NULL;
@@ -584,10 +581,6 @@ void CGamePersistent::OnFrame	()
 		}
 	}
 
-#ifdef DEBUG
-	if ((m_last_stats_frame + 1) < m_frame_counter)
-		//profiler().clear		();
-#endif
 	UpdateDof();
 }
 
@@ -599,22 +592,22 @@ void CGamePersistent::OnFrame	()
 
 void CGamePersistent::OnEvent(EVENT E, u64 P1, u64 P2)
 {
-	if(E==eQuickLoad)
+	if (E == eQuickLoad)
 	{
 		if (Device.Paused())
 			Device.Pause		(FALSE, TRUE, TRUE, "eQuickLoad");
 		
-		if(CurrentGameUI())
+		if (CurrentGameUI())
 		{
 			CurrentGameUI()->HideShownDialogs();
 			CurrentGameUI()->UIMainIngameWnd->reset_ui();
 			CurrentGameUI()->GetPdaMenu().Reset();
 		}
 
-		if(g_tutorial)
+		if (g_tutorial)
 			g_tutorial->Stop();
 
-		if(g_tutorial2)
+		if (g_tutorial2)
 			g_tutorial2->Stop();
 
 		LPSTR		saved_name	= (LPSTR)(P1);
@@ -625,8 +618,8 @@ void CGamePersistent::OnEvent(EVENT E, u64 P1, u64 P2)
 		game->restart_simulator	(saved_name);
 		xr_free					(saved_name);
 		return;
-	}else
-	if(E==eDemoStart)
+	}
+	else if (E == eDemoStart)
 	{
 		string256			cmd;
 		LPCSTR				demo	= LPCSTR(P1);
@@ -640,10 +633,7 @@ void CGamePersistent::OnEvent(EVENT E, u64 P1, u64 P2)
 void CGamePersistent::Statistics	(CGameFont* F)
 {
 #ifdef DEBUG
-#	ifndef _EDITOR
-		m_last_stats_frame		= m_frame_counter;
-		//profiler().show_stats	(F,!!psAI_Flags.test(aiStats));
-#	endif
+	m_last_stats_frame		= m_frame_counter;
 #endif
 }
 
@@ -651,6 +641,7 @@ float CGamePersistent::MtlTransparent(u32 mtl_idx)
 {
 	return GMLib.GetMaterialByIdx((u16)mtl_idx)->fVisTransparencyFactor;
 }
+
 static BOOL bRestorePause	= FALSE;
 static BOOL bEntryFlag		= TRUE;
 
@@ -698,32 +689,24 @@ void CGamePersistent::OnRenderPPUI_PP()
 void CGamePersistent::LoadTitle(bool change_tip, shared_str map_name)
 {
 	pApp->LoadStage();
-	if(change_tip)
+	if (change_tip)
 	{
-		string512				buff;
-		u8						tip_num;
-		luabind::functor<u8>	m_functor;
-		bool is_single = !xr_strcmp(m_game_params.m_game_type,"single");
-		if(is_single)
-		{
-			R_ASSERT( ai().script_engine().functor( "loadscreen.get_tip_number", m_functor ) );
-			tip_num				= m_functor(map_name.c_str());
-		}
-		else
-		{
-			R_ASSERT( ai().script_engine().functor( "loadscreen.get_mp_tip_number", m_functor ) );
-			tip_num				= m_functor(map_name.c_str());
-		}
+		LPCSTR tip_header;
+		LPCSTR tip_title;
+		LPCSTR tip_text;
 
-		xr_sprintf				(buff, "%s%d:", CStringTable().translate("ls_tip_number").c_str(), tip_num);
-		shared_str				tmp = buff;
-		
-		if(is_single)
-			xr_sprintf			(buff, "ls_tip_%d", tip_num);
-		else
-			xr_sprintf			(buff, "ls_mp_tip_%d", tip_num);
+		luabind::functor<LPCSTR> m_functor;
 
-		pApp->LoadTitleInt		(CStringTable().translate("ls_header").c_str(), tmp.c_str(), CStringTable().translate(buff).c_str());
+		R_ASSERT(ai().script_engine().functor("loadscreen.get_tip_header", m_functor));
+		tip_header = m_functor(map_name.c_str());
+
+		R_ASSERT(ai().script_engine().functor("loadscreen.get_tip_title", m_functor));
+		tip_title = m_functor(map_name.c_str());
+
+		R_ASSERT(ai().script_engine().functor("loadscreen.get_tip_text", m_functor));
+		tip_text = m_functor(map_name.c_str());
+
+		pApp->LoadTitleInt(tip_header, tip_title, tip_text);
 	}
 }
 
@@ -746,60 +729,61 @@ void CGamePersistent::GetCurrentDof(Fvector3& dof)
 
 void CGamePersistent::SetBaseDof(const Fvector3& dof)
 {
-	m_dof[0]=m_dof[1]=m_dof[2]=m_dof[3]	= dof;
+	m_dof[0] = m_dof[1] = m_dof[2] = m_dof[3] = dof;
 }
 
 void CGamePersistent::SetEffectorDOF(const Fvector& needed_dof)
 {
-	if(m_bPickableDOF)	return;
-	m_dof[0]	= needed_dof;
-	m_dof[2]	= m_dof[1]; //current
+	if (m_bPickableDOF)
+		return;
+	m_dof[0] = needed_dof;
+	m_dof[2] = m_dof[1]; //current
 }
 
 void CGamePersistent::RestoreEffectorDOF()
 {
-	SetEffectorDOF			(m_dof[3]);
+	SetEffectorDOF(m_dof[3]);
 }
 
 #include "hudmanager.h"
 
 void CGamePersistent::UpdateDof()
 {
-	static float diff_far	= pSettings->r_float("zone_pick_dof","far");//70.0f;
-	static float diff_near	= pSettings->r_float("zone_pick_dof","near");//-70.0f;
+	static float diff_far = pSettings->r_float("zone_pick_dof","far");
+	static float diff_near = pSettings->r_float("zone_pick_dof","near");
 
 	if (m_bPickableDOF)
 	{
 		Fvector pick_dof;
-		pick_dof.y	= HUD().GetCurrentRayQuery().range;
-		pick_dof.x	= pick_dof.y+diff_near;
-		pick_dof.z	= pick_dof.y+diff_far;
-		m_dof[0]	= pick_dof;
-		m_dof[2]	= m_dof[1]; //current
+		pick_dof.y = HUD().GetCurrentRayQuery().range;
+		pick_dof.x = pick_dof.y+diff_near;
+		pick_dof.z = pick_dof.y+diff_far;
+		m_dof[0] = pick_dof;
+		m_dof[2] = m_dof[1]; //current
 	}
 	
 	if (m_dof[1].similar(m_dof[0]))
 		return;
 
-	float td			= Device.fTimeDelta;
-	Fvector				diff;
-	diff.sub			(m_dof[0], m_dof[2]);
-	diff.mul			(td/0.2f); //0.2 sec
-	m_dof[1].add		(diff);
-	(m_dof[0].x<m_dof[2].x)?clamp(m_dof[1].x,m_dof[0].x,m_dof[2].x):clamp(m_dof[1].x,m_dof[2].x,m_dof[0].x);
-	(m_dof[0].y<m_dof[2].y)?clamp(m_dof[1].y,m_dof[0].y,m_dof[2].y):clamp(m_dof[1].y,m_dof[2].y,m_dof[0].y);
-	(m_dof[0].z<m_dof[2].z)?clamp(m_dof[1].z,m_dof[0].z,m_dof[2].z):clamp(m_dof[1].z,m_dof[2].z,m_dof[0].z);
+	float td = Device.fTimeDelta;
+	Fvector diff;
+	diff.sub(m_dof[0], m_dof[2]);
+	diff.mul(td / 0.2f);
+	m_dof[1].add(diff);
+	(m_dof[0].x < m_dof[2].x) ? clamp(m_dof[1].x, m_dof[0].x, m_dof[2].x) : clamp(m_dof[1].x, m_dof[2].x, m_dof[0].x);
+	(m_dof[0].y < m_dof[2].y) ? clamp(m_dof[1].y, m_dof[0].y, m_dof[2].y) : clamp(m_dof[1].y, m_dof[2].y, m_dof[0].y);
+	(m_dof[0].z < m_dof[2].z) ? clamp(m_dof[1].z, m_dof[0].z, m_dof[2].z) : clamp(m_dof[1].z, m_dof[2].z, m_dof[0].z);
 }
 
 #include "ui\uimainingamewnd.h"
 void CGamePersistent::OnSectorChanged(int sector)
 {
-	if(CurrentGameUI())
+	if (CurrentGameUI())
 		CurrentGameUI()->UIMainIngameWnd->OnSectorChanged(sector);
 }
 
 void CGamePersistent::OnAssetsChanged()
 {
-	IGame_Persistent::OnAssetsChanged	();
-	CStringTable().rescan				();
+	IGame_Persistent::OnAssetsChanged();
+	CStringTable().rescan();
 }
