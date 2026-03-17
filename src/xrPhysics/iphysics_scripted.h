@@ -2,10 +2,6 @@
 #define	_IPHYSICS_SCRIPTED_
 
 #pragma once
-//#include <boost/noncopyable.hpp>
-
-
-
 
 class iphysics_scripted;
 class iphysics_game_scripted
@@ -13,8 +9,6 @@ class iphysics_game_scripted
 public:
 	virtual						~iphysics_game_scripted	()	{};
 	virtual	iphysics_scripted	&iphysics_impl			()	=0;
-//protected:
-//	virtual						~iphysics_game_scripted ()	=0 {}
 };
 
 class iphysics_scripted
@@ -28,14 +22,9 @@ public:
 class iphysics_scripted_class
 {
 public:
-	//virtual	~iphysics_scripted_class		()	= 0;
 	virtual	iphysics_scripted &get_scripted	()	= 0;
 protected:
-#ifdef _EDITOR
-	 virtual ~iphysics_scripted_class		(){}
-#else
 	virtual ~iphysics_scripted_class		()=0{}
-#endif
 };
 
 namespace non_copy
@@ -52,9 +41,7 @@ namespace non_copy
 };
 
 template<class T>
-class cphysics_game_scripted:
-	public iphysics_game_scripted,
-	private non_copy::noncopyable
+class cphysics_game_scripted : public iphysics_game_scripted, private non_copy::noncopyable
 {
 	T	&impl;
 public:
@@ -69,16 +56,16 @@ public:
 };
 
 template< class wrap >
-wrap *get_script_wrapper( typename wrap::type_impl &E )
+wrap *get_script_wrapper(typename wrap::type_impl &E)
 {
 	wrap* e = smart_cast<wrap*>(E.get_scripted().get());
-	if( e )
+	if (e)
 		return e;
 	
-	e	= xr_new<wrap>( &E );
-	E.get_scripted().set( e );
+	e = xr_new<wrap>(&E);
+	E.get_scripted().set(e);
 
-	VERIFY( smart_cast<wrap*>(E.get_scripted().get()) == e );
+	VERIFY(smart_cast<wrap*>(E.get_scripted().get()) == e);
 
 	return e;
 }

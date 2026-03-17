@@ -1246,19 +1246,6 @@ void PARandomVelocity::Transform(const Fmatrix& m)
 }
 //-------------------------------------------------------------------------------------------------
 
-#if 0
-// Produce coefficients of a velocity function v(t)=at^2 + bt + c
-// satisfying initial x(0)=x0,v(0)=v0 and desired x(t)=xf,v(t)=vf,
-// where x = x(0) + integrate(v(T),0,t)
-static inline void _pconstrain(float x0, float v0, float xf, float vf,
-							   float t, float *a, float *b, float *c)
-{
-	*c = v0;
-	*b = 2 * (-t*vf - 2*t*v0 + 3*xf - 3*x0) / (t * t);
-	*a = 3 * (t*vf + t*v0 - 2*xf + 2*x0) / (t * t * t);
-}
-#endif
-
 // Over time, restore particles to initial positions
 // Put all particles on the surface of a statue, explode the statue,
 // and then suck the particles back to the original position. Cool!
@@ -1282,9 +1269,8 @@ void PARestore::Execute(ParticleEffect *effect, const float dt, float& tm_max)
 		float tSqrInv2dt = dt * 2.0f / (t * t);
 		float tCubInv3dtSqr = dtSqr * 3.0f / (t * t * t);
 		
-		for(u32 i = 0; i < effect->p_count; i++)
+		for (u32 i = 0; i < effect->p_count; i++)
 		{
-#if 1
 			Particle &m = effect->particles[i];
 			
 			// Solve for a desired-behavior velocity function in each axis
@@ -1310,32 +1296,6 @@ void PARestore::Execute(ParticleEffect *effect, const float dt, float& tm_max)
 			
 			// Figure new velocity at next timestep
 			m.vel.z += a + b;
-#else
-			Particle &m = effect->particles[i];
-			
-			// XXX Optimize this.
-			// Solve for a desired-behavior velocity function in each axis
-			float a, b, c; // Coefficients of velocity function needed
-			
-			_pconstrain(m.pos.x, m.vel.x, m.posB.x, 0.,
-				timeLeft, &a, &b, &c);
-			
-			// Figure new velocity at next timestep
-			m.vel.x = a * dtSqr + b * dt + c;
-			
-			_pconstrain(m.pos.y, m.vel.y, m.posB.y, 0.,
-				timeLeft, &a, &b, &c);
-			
-			// Figure new velocity at next timestep
-			m.vel.y = a * dtSqr + b * dt + c;
-			
-			_pconstrain(m.pos.z, m.vel.z, m.posB.z, 0.,
-				timeLeft, &a, &b, &c);
-			
-			// Figure new velocity at next timestep
-			m.vel.z = a * dtSqr + b * dt + c;
-			
-#endif
 		}
 	}
 	
@@ -1634,8 +1594,6 @@ void PAVortex::Transform(const Fmatrix& m)
 static int	noise_start = 1;
 extern void	noise3Init();
 
-#ifndef _EDITOR
-
 #include <xmmintrin.h>
 
 __forceinline __m128 _mm_load_fvector( const Fvector& v )
@@ -1664,7 +1622,8 @@ __forceinline void _mm_store_fvector( Fvector& v , const __m128 &R1 )
 }
 
 
-struct TES_PARAMS {
+struct TES_PARAMS 
+{
 	u32 p_from;
 	u32 p_to;
 	ParticleEffect* effect;
@@ -1684,7 +1643,6 @@ void PATurbulenceExecuteStream(LPVOID lpvParams)
 	TAL_ID rtID = TAL_MakeID(1, Core.dwFrame, 0);
 	TAL_AddRelationThis(TAL_RELATION_IS_CHILD_OF, rtID);
 #endif // _GPA_ENABLED
-
 
 	pVector pV;
 	pVector vX;
@@ -1752,9 +1710,7 @@ void PATurbulenceExecuteStream(LPVOID lpvParams)
 
 		_mm_store_fvector(m.vel, _mvel);
 	}
-
 }
-
 
 void PATurbulence::Execute(ParticleEffect* effect, const float dt, float& tm_max)
 {
@@ -1762,7 +1718,8 @@ void PATurbulence::Execute(ParticleEffect* effect, const float dt, float& tm_max
 	TAL_SCOPED_TASK_NAMED("PATurbulence::Execute()");
 #endif // _GPA_ENABLED
 
-	if (noise_start) {
+	if (noise_start) 
+	{
 		noise_start = 0;
 		noise3Init();
 	};
@@ -1781,7 +1738,8 @@ void PATurbulence::Execute(ParticleEffect* effect, const float dt, float& tm_max
 	u32 nSlice = p_cnt / 32;
 	u32 nStep = ((p_cnt - nSlice) / nWorkers);
 
-	for (u32 i = 0; i < nWorkers; ++i) {
+	for (u32 i = 0; i < nWorkers; ++i) 
+	{
 		tesParams[i].p_from = i * nStep;
 		tesParams[i].p_to = (i == (nWorkers - 1)) ? p_cnt : (tesParams[i].p_from + nStep);
 
@@ -1802,45 +1760,4 @@ void PATurbulence::Execute(ParticleEffect* effect, const float dt, float& tm_max
 	ParticleEffectTasks.wait();
 }
 
-#else
-
-void PATurbulence::Execute(ParticleEffect *effect, const float dt, float& tm_max)
-{
-	if ( noise_start ) {
-		noise_start = 0;
-		noise3Init();
-	};
-
-    pVector pV;
-    pVector vX;
-    pVector vY;
-    pVector vZ;
-    age		+= dt;
-    for(u32 i = 0; i < effect->p_count; i++)
-    {
-        Particle &m = effect->particles[i];
-
-        pV.mad(m.pos,offset,age);
-        vX.set(pV.x+epsilon,pV.y,pV.z);
-        vY.set(pV.x,pV.y+epsilon,pV.z);
-        vZ.set(pV.x,pV.y,pV.z+epsilon);
-
-        pVector D;
-        float d	=	fractalsum3(pV, frequency, octaves);
-        D.x 	= 	(fractalsum3(vX, frequency, octaves) - d)*(float)magnitude;
-        D.y 	= 	(fractalsum3(vY, frequency, octaves) - d)*(float)magnitude;
-        D.z 	= 	(fractalsum3(vZ, frequency, octaves) - d)*(float)magnitude;
-
-        float velMagOrig 	= m.vel.magnitude();
-        m.vel.add	(D);
-        float	velMagNow 	= m.vel.magnitude();
-        float	valMagScale = velMagOrig/velMagNow;
-        m.vel.mul(valMagScale);
-	}
-}
-#endif
-
-
 void PATurbulence::Transform(const Fmatrix& m){}
-//-------------------------------------------------------------------------------------------------
-

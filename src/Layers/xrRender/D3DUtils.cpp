@@ -30,26 +30,13 @@ const u32 boxcolor = D3DCOLOR_RGBA(255,255,255,0);
 static const int boxvertcount = 48;
 static Fvector boxvert[boxvertcount];
 
-#ifdef _EDITOR
-#	define DU_DRAW_RS	dxRenderDeviceRender::Instance().SetRS
-#	define DU_DRAW_SH_C(a,c){dxRenderDeviceRender::Instance().SetShader(a);dxRenderDeviceRender::Instance().SetRS(D3DRS_TEXTUREFACTOR,c);}
-#	define DU_DRAW_SH(a){dxRenderDeviceRender::Instance().SetShader(a);dxRenderDeviceRender::Instance().SetRS(D3DRS_TEXTUREFACTOR,0xFFFFFFFF);}
-#else
-#	define DU_DRAW_RS	RCache.dbg_SetRS
-#	define DU_DRAW_SH_C(sh,c){RCache.set_Shader(sh);	RCache.set_c	("tfactor",float(color_get_R(c))/255.f,float(color_get_G(c))/255.f,float(color_get_B(c))/255.f,float(color_get_A(c))/255.f);}
-#	define DU_DRAW_SH(sh){RCache.set_Shader(sh);		RCache.set_c	("tfactor",1,1,1,1);}
-#endif
+#define DU_DRAW_RS	RCache.dbg_SetRS
+#define DU_DRAW_SH_C(sh,c){RCache.set_Shader(sh);	RCache.set_c	("tfactor",float(color_get_R(c))/255.f,float(color_get_G(c))/255.f,float(color_get_B(c))/255.f,float(color_get_A(c))/255.f);}
+#define DU_DRAW_SH(sh){RCache.set_Shader(sh);		RCache.set_c	("tfactor",1,1,1,1);}
 
-#ifdef _EDITOR
-#	define FILL_MODE dxRenderDeviceRender::Instance().dwFillMode
-#	define SHADE_MODE dxRenderDeviceRender::Instance().dwShadeMode
-#	define SCREEN_QUALITY dxRenderDeviceRender::Instance().m_ScreenQuality
-#else
-#	define FILL_MODE D3DFILL_SOLID
-#	define SHADE_MODE D3DSHADE_GOURAUD
-#	define SCREEN_QUALITY 1.f
-#endif
-
+#define FILL_MODE D3DFILL_SOLID
+#define SHADE_MODE D3DSHADE_GOURAUD
+#define SCREEN_QUALITY 1.f
 
 // identity box
 const u32 identboxcolor = D3DCOLOR_RGBA(255,255,255,0);
@@ -62,25 +49,6 @@ static Fvector identboxwire[identboxwirecount] = {
     {-0.5f, +0.5f, -0.5f},	{-0.5f, +0.5f, +0.5f},		{+0.5f, +0.5f, -0.5f},	{+0.5f, +0.5f, +0.5f},
     {+0.5f, -0.5f, -0.5f},	{+0.5f, -0.5f, +0.5f},		{-0.5f, -0.5f, -0.5f},	{-0.5f, -0.5f, +0.5f}
 };
-
-/*
-static const int identboxindexcount = 36;
-static const WORD identboxindices[identboxindexcount] = {
-	0, 1, 2,   2, 3, 0,
-	3, 2, 6,   6, 7, 3,
-	6, 4, 5,   6, 5, 7,
-    4, 1, 5,   1, 0, 5,
-    3, 5, 0,   3, 7, 5,
-    1, 4, 6,   1, 6, 2};
-static const int identboxindexwirecount = 24;
-static const WORD identboxindiceswire[identboxindexwirecount] = {
-	0, 1, 	1, 2,
-	2, 3, 	3, 0,
-	4, 6, 	6, 7,
-    7, 5, 	5, 4,
-    1, 4, 	2, 6,
-    3, 7, 	0, 5};
-*/
 
 #define SIGN(x) ((x<0)?-1:1)
 
@@ -558,17 +526,15 @@ void CDrawUtilities::DrawLineSphere(const Fvector& p, float radius, u32 c, BOOL 
 }
 
 //----------------------------------------------------
-#ifdef _EDITOR
-IC float 				_x2real			(float x)
-{ return (x+1)*Device.m_RenderWidth_2;	}
-IC float 				_y2real			(float y)
-{ return (y+1)*Device.m_RenderHeight_2;}
-#else
-IC float 				_x2real			(float x)
-{ return (x+1)*Device.dwWidth*0.5f;	}
-IC float 				_y2real			(float y)
-{ return (y+1)*Device.dwHeight*0.5f;}
-#endif
+IC float _x2real(float x)
+{ 
+	return (x+1)*Device.dwWidth*0.5f;	
+}
+
+IC float _y2real(float y)
+{ 
+	return (y+1)*Device.dwHeight*0.5f;
+}
 
 void CDrawUtilities::dbgDrawPlacement(const Fvector& p, int sz, u32 clr, LPCSTR caption, u32 clr_font)
 {

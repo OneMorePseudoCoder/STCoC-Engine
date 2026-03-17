@@ -5,9 +5,6 @@
 #ifndef DEBUG
 #undef BREAK_AT_STRCMP
 #endif
-#ifdef _EDITOR
-#undef BREAK_AT_STRCMP
-#endif
 
 #ifdef abs
 #undef abs
@@ -27,48 +24,6 @@
 
 #ifdef max
 #undef max
-#endif
-
-#ifdef _EDITOR
-IC char* strncpy_s(char* strDestination, size_t sizeInBytes, const char* strSource, size_t count)
-{
-    return strncpy(strDestination, strSource, count);
-}
-
-IC char* xr_strcpy(char* strDestination, size_t sizeInBytes, const char* strSource)
-{
-    return strcpy(strDestination, strSource);
-}
-
-IC char* xr_strcpy(char* strDestination, const char* strSource)
-{
-    return strcpy(strDestination, strSource);
-}
-
-IC char* _strlwr_s(char* strDestination, size_t sizeInBytes)
-{
-    return strlwr(strDestination);
-}
-
-IC char* xr_strcat(char* strDestination, size_t sizeInBytes, const char* strSource)
-{
-    return strncat(strDestination, strSource, sizeInBytes);
-}
-
-IC char* xr_strcat(char* strDestination, const char* strSource)
-{
-    return strcat(strDestination, strSource);
-}
-
-IC int xr_sprintf(char* dest, size_t sizeOfBuffer, const char* format, ...)
-{
-    va_list mark;
-    va_start(mark, format);
-    int sz = _vsnprintf(dest, sizeOfBuffer, format, mark);
-    dest[sizeOfBuffer - 1] = 0;
-    va_end(mark);
-    return sz;
-}
 #endif
 
 // token type definition
@@ -117,15 +72,8 @@ IC BOOL _valid(const float x)
     if (cls&(_FPCLASS_SNAN + _FPCLASS_QNAN + _FPCLASS_NINF + _FPCLASS_PINF + _FPCLASS_ND + _FPCLASS_PD))
         return false;
 
-    /* *****other cases are*****
-    _FPCLASS_NN Negative normalized non-zero
-    _FPCLASS_NZ Negative zero ( – 0)
-    _FPCLASS_PZ Positive 0 (+0)
-    _FPCLASS_PN Positive normalized non-zero
-    */
     return true;
 }
-
 
 // double
 IC double _abs(double x) { return fabs(x); }
@@ -139,12 +87,6 @@ IC BOOL _valid(const double x)
     if (cls&(_FPCLASS_SNAN + _FPCLASS_QNAN + _FPCLASS_NINF + _FPCLASS_PINF + _FPCLASS_ND + _FPCLASS_PD))
         return false;
 
-    /* *****other cases are*****
-    _FPCLASS_NN Negative normalized non-zero
-    _FPCLASS_NZ Negative zero ( – 0)
-    _FPCLASS_PZ Positive 0 (+0)
-    _FPCLASS_PN Positive normalized non-zero
-    */
     return true;
 }
 
@@ -203,9 +145,7 @@ IC int xr_strcmp(const char* S1, const char* S2)
 }
 #endif
 
-#ifndef _EDITOR
 #ifndef MASTER_GOLD
-
 inline errno_t xr_strcpy(LPSTR destination, size_t const destination_size, LPCSTR source)
 {
     return strcpy_s(destination, destination_size, source);
@@ -281,7 +221,6 @@ inline errno_t xr_strcat(char(&destination)[count], LPCSTR source)
 {
     return xr_strcat(destination, count, source);
 }
-#endif // #ifndef _EDITOR
 
 XRCORE_API char* timestamp(string64& dest);
 

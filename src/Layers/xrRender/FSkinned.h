@@ -2,17 +2,14 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef		FSkinnedH
-#define		FSkinnedH
-#pragma		once
+#ifndef FSkinnedH
+#define FSkinnedH
+#pragma once
 
-#include	"FVisual.h"
-#include	"FProgressive.h"
-#ifdef _EDITOR
-#	include	"SkeletonX.h"
-#else
-#	include	"SkeletonX.h"
-#endif
+#include "FVisual.h"
+#include "FProgressive.h"
+#include "SkeletonX.h"
+
 struct	SEnumVerticesCallback;
 class		CSkeletonX_ext	: public CSkeletonX	// shared code for SkeletonX derivates
 {

@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #pragma hdrstop
 
-//AVO: lua re-org
-//#include "lua/library_linkage.h"
-//-AVO
-
 #include	"../../xrEngine/Render.h"
 #include	"ResourceManager.h"
 #include	"tss.h"
@@ -245,13 +241,7 @@ BOOL	CResourceManager::_lua_HasShader	(LPCSTR s_shader)
 	for (int i=0, l=xr_strlen(s_shader)+1; i<l; i++)
 		undercorated[i]=('\\'==s_shader[i])?'_':s_shader[i];
 
-#ifdef _EDITOR
-	return Script::bfIsObjectPresent(LSVM,undercorated,"editor",LUA_TFUNCTION);
-#else
-	return	Script::bfIsObjectPresent(LSVM,undercorated,"normal",LUA_TFUNCTION)		||
-			Script::bfIsObjectPresent(LSVM,undercorated,"l_special",LUA_TFUNCTION)
-			;
-#endif
+	return Script::bfIsObjectPresent(LSVM, undercorated, "normal", LUA_TFUNCTION) || Script::bfIsObjectPresent(LSVM, undercorated, "l_special", LUA_TFUNCTION);
 }
 
 Shader*	CResourceManager::_lua_Create		(LPCSTR d_shader, LPCSTR s_textures)

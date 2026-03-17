@@ -3,7 +3,6 @@
 #include "UIWindow.h"
 #include "UIWndCallback.h"
 
-
 class CUICustomMap;
 class CUIGlobalMap;
 class CUIFrameWindow;
@@ -46,11 +45,6 @@ private:
 	CMapActionPlanner*			m_ActionPlanner;
 //	CUIFrameLineWnd*			UIMainMapHeader;
 	CUIMapLocationHint*			m_map_location_hint;
-
-#ifdef DEBUG
-//	CUIStatic*					m_dbg_text_hint;
-//	CUIStatic*					m_dbg_info;
-#endif // DEBUG
 
 	enum EBtnPos
 	{

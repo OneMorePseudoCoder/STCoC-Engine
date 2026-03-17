@@ -16,11 +16,7 @@
 
 CLocatorAPI* xr_FS = NULL;
 
-#ifdef _EDITOR
-#define FSLTX "fs.ltx"
-#else
 #define FSLTX "fsgame.ltx"
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -36,8 +32,7 @@ CLocatorAPI::CLocatorAPI()
 }
 
 CLocatorAPI::~CLocatorAPI()
-{
-}
+{}
 
 void CLocatorAPI::_initialize(u32 flags, LPCSTR target_folder, LPCSTR fs_fname)
 {
@@ -50,11 +45,11 @@ void CLocatorAPI::_initialize(u32 flags, LPCSTR target_folder, LPCSTR fs_fname)
     append_path("$fs_root$", "", 0, FALSE);
 
     // append application path
-
     if (m_Flags.is(flScanAppRoot))
     {
         append_path("$app_root$", Core.ApplicationPath, 0, FALSE);
     }
+
     if (m_Flags.is(flTargetFolderOnly))
     {
         append_path("$target_folder$", target_folder, 0, TRUE);
@@ -305,8 +300,10 @@ IReader* CLocatorAPI::r_open(LPCSTR path, LPCSTR _fname)
     LPCSTR source_name = &fname[0];
 
     // open file
-    if (desc.size < 256 * 1024) R = xr_new<CFileReader>(fname);
-    else R = xr_new<CVirtualFileReader>(fname);
+    if (desc.size < 256 * 1024)
+		R = xr_new<CFileReader>(fname);
+    else
+		R = xr_new<CVirtualFileReader>(fname);
 
 #ifdef DEBUG
     if (R && m_Flags.is(flBuildCopy | flReady))
@@ -386,12 +383,10 @@ void CLocatorAPI::r_close(IReader*& fs)
 IWriter* CLocatorAPI::w_open(LPCSTR path, LPCSTR _fname)
 {
     string_path fname;
-    xr_strlwr(strcpy(fname, _fname));//,".$");
-    if (path&&path[0]) update_path(fname, path, fname);
+    xr_strlwr(strcpy(fname, _fname));
+    if (path && path[0])
+		update_path(fname, path, fname);
     CFileWriter* W = xr_new<CFileWriter>(fname, false);
-#ifdef _EDITOR
-    if (!W->valid()) xr_delete(W);
-#endif
     return W;
 }
 
@@ -399,11 +394,9 @@ IWriter* CLocatorAPI::w_open_ex(LPCSTR path, LPCSTR _fname)
 {
     string_path fname;
     xr_strlwr(strcpy(fname, _fname));//,".$");
-    if (path&&path[0]) update_path(fname, path, fname);
+    if (path && path[0])
+		update_path(fname, path, fname);
     CFileWriter* W = xr_new<CFileWriter>(fname, true);
-#ifdef _EDITOR
-    if (!W->valid()) xr_delete(W);
-#endif
     return W;
 }
 
@@ -426,8 +419,10 @@ void __stdcall dir_delete_cb(_finddata_t& entry, void* data)
 {
     dir_delete_cb_data* D = (dir_delete_cb_data*)data;
 
-    if (entry.attrib&_A_SUBDIR) D->folders->insert(FS_File(entry));
-    else if (D->remove_files) FS.file_delete(entry.name);
+    if (entry.attrib&_A_SUBDIR)
+		D->folders->insert(FS_File(entry));
+    else if (D->remove_files)
+		FS.file_delete(entry.name);
 }
 
 BOOL CLocatorAPI::dir_delete(LPCSTR initial, LPCSTR nm, BOOL remove_files)
@@ -451,13 +446,14 @@ BOOL CLocatorAPI::dir_delete(LPCSTR initial, LPCSTR nm, BOOL remove_files)
     FS_FileSet::reverse_iterator r_it = folders.rbegin();
     for (; r_it != folders.rend(); r_it++)
         _rmdir(r_it->name.c_str());
+
     return TRUE;
 }
 
 void CLocatorAPI::file_delete(LPCSTR path, LPCSTR nm)
 {
     string_path fname;
-    if (path&&path[0])
+    if (path && path[0])
         update_path(fname, path, nm);
     else
         strcpy(fname, nm);
@@ -484,7 +480,8 @@ void CLocatorAPI::file_copy(LPCSTR src, LPCSTR dest)
 
 void CLocatorAPI::file_rename(LPCSTR src, LPCSTR dest, bool bOwerwrite)
 {
-    if (bOwerwrite&&exist(dest)) unlink(dest);
+    if (bOwerwrite && exist(dest))
+		unlink(dest);
     // physically rename file
     VerifyPath(dest);
     rename(src, dest);
@@ -504,7 +501,7 @@ BOOL CLocatorAPI::path_exist(LPCSTR path)
 
 FS_Path* CLocatorAPI::append_path(LPCSTR path_alias, LPCSTR root, LPCSTR add, BOOL recursive)
 {
-    VERIFY(root/*&&root[0]*/);
+    VERIFY(root);
     VERIFY(false == path_exist(path_alias));
     FS_Path* P = xr_new<FS_Path>(root, add, LPCSTR(0), LPCSTR(0), 0);
     pathes.insert(std::make_pair(xr_strdup(path_alias), P));
@@ -522,11 +519,6 @@ LPCSTR CLocatorAPI::update_path(string_path& dest, LPCSTR initial, LPCSTR src)
 {
     return get_path(initial)->_update(dest, src);
 }
-/*
-void CLocatorAPI::update_path(xr_string& dest, LPCSTR initial, LPCSTR src)
-{
-return get_path(initial)->_update(dest,src);
-} */
 
 time_t CLocatorAPI::get_file_age(LPCSTR nm)
 {
@@ -541,18 +533,20 @@ void CLocatorAPI::set_file_age(LPCSTR nm, time_t age)
     tm.actime = age;
     tm.modtime = age;
     int res = _utime(nm, &tm);
-    if (0 != res) Msg("!Can't set file age: '%s'. Error: '%s'", nm, _sys_errlist[errno]);
+    if (0 != res)
+		Msg("!Can't set file age: '%s'. Error: '%s'", nm, _sys_errlist[errno]);
 }
 
 BOOL CLocatorAPI::can_write_to_folder(LPCSTR path)
 {
-    if (path&&path[0])
+    if (path && path[0])
     {
         string_path temp;
         LPCSTR fn = "$!#%TEMP%#!$.$$$";
         strconcat(sizeof(temp), temp, path, path[xr_strlen(path) - 1] != '\\' ? "\\" : "", fn);
         FILE* hf = fopen(temp, "wb");
-        if (hf == 0) return FALSE;
+        if (hf == 0)
+			return FALSE;
         else
         {
             fclose(hf);

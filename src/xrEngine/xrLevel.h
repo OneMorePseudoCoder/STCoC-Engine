@@ -47,12 +47,14 @@ enum fsL_Chunks
     fsL_SWIS = 11, //* - collapse info, usually for trees
     fsL_forcedword = 0xFFFFFFFF
 };
+
 enum fsESectorChunks
 {
     fsP_Portals = 1, // - portal polygons
     fsP_Root, // - geometry root
     fsP_forcedword = u32(-1)
 };
+
 enum fsSLS_Chunks
 {
     fsSLS_Description = 1, // Name of level
@@ -96,7 +98,6 @@ struct hdrNODES
 
 #pragma pack(push,1)
 #pragma pack(1)
-#ifndef _EDITOR
 class NodePosition
 {
     u8 data[5];
@@ -232,7 +233,6 @@ public:
     friend class CNodeRenumberer;
     friend class CRenumbererConverter;
 };
-#endif
 
 #ifdef AI_COMPILER
 struct NodeCompressed6
@@ -347,10 +347,6 @@ struct SNodePositionOld
     s16 z;
 };
 #pragma pack (pop)
-
-#ifdef _EDITOR
-typedef SNodePositionOld NodePosition;
-#endif
 
 const u32 XRCL_CURRENT_VERSION = 18; //17; // input
 const u32 XRCL_PRODUCTION_VERSION = 14; // output

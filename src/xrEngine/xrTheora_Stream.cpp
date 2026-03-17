@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "xrtheora_stream.h"
 
-#ifdef _EDITOR
-//# pragma comment(lib, "x:\\oggB.lib")
-//# pragma comment(lib, "x:\\theoraB.lib")
-#endif
-
 CTheoraStream::CTheoraStream()
 {
     // clear self
@@ -64,7 +59,8 @@ BOOL CTheoraStream::ParseHeaders()
     while (!stateflag)
     {
         int ret = ReadData();
-        if (ret == 0) break;
+        if (ret == 0)
+			break;
         while (ogg_sync_pageout(&o_sync_state, &o_page) > 0)
         {
             ogg_stream_state test;
@@ -99,7 +95,8 @@ BOOL CTheoraStream::ParseHeaders()
     }
 
     // fail if theora stream not found in source
-    if (0 == header_count) return FALSE;
+    if (0 == header_count)
+		return FALSE;
 
     // we're expecting more header packets.
     while ((header_count && header_count < 3))
@@ -132,11 +129,13 @@ BOOL CTheoraStream::ParseHeaders()
         else
         {
             int ret = ReadData(); // someone needs more data
-            if (ret == 0) FATAL("End of file while searching for codec headers.");
+            if (ret == 0)
+				FATAL("End of file while searching for codec headers.");
         }
     }
 
-    if (3 != header_count) return FALSE;
+    if (3 != header_count)
+		return FALSE;
 
     // init decode
     theora_decode_init(&t_state, &t_info);
@@ -160,9 +159,11 @@ BOOL CTheoraStream::ParseHeaders()
             frame_count++;
         }
         // check eof
-        if (source->eof()) break;
+        if (source->eof())
+			break;
         // no data yet for somebody. Grab another page
-        if (0 == ReadData()) break;
+        if (0 == ReadData())
+			break;
         while (ogg_sync_pageout(&o_sync_state, &o_page) > 0)
             ogg_stream_pagein(&o_stream_state, &o_page);
     }
@@ -196,20 +197,19 @@ BOOL CTheoraStream::Decode(u32 in_tm_play)
                     //. hack preroll
                     if (d_frame < k_frame)
                     {
-                        //. dbg_log ((stderr,"%04d: preroll\n",d_frame));
                         VERIFY((0 != d_frame%key_rate) || (0 == d_frame%key_rate) && theora_packet_iskeyframe(&o_packet));
                         continue;
                     }
                     BOOL is_key = theora_packet_iskeyframe(&o_packet);
                     VERIFY((d_frame != k_frame) || ((d_frame == k_frame) && is_key));
                     // real decode
-                    //. dbg_log ((stderr,"%04d: decode\n",d_frame));
                     int res = theora_decode_packetin(&t_state, &o_packet);
                     VERIFY(res != OC_BADPACKET);
-                    //. dbg_log ((stderr,"%04d: granule frame\n",theora_granule_frame(&t_state,t_state.granulepos)));
-                    if (d_frame >= t_frame) result = TRUE;
+                    if (d_frame >= t_frame)
+						result = TRUE;
                 }
-                else break;
+                else
+					break;
             }
             // check eof
             VERIFY(!(FALSE == result&&source->eof()));
@@ -227,7 +227,6 @@ BOOL CTheoraStream::Decode(u32 in_tm_play)
         VERIFY(TRUE == result);
         VERIFY(d_frame == t_frame);
         theora_decode_YUVout(&t_state, &t_yuv_buffer);
-        //. dbg_log ((stderr,"%04d: yuv out\n",d_frame));
         return TRUE;
     }
     return FALSE;
@@ -237,15 +236,13 @@ BOOL CTheoraStream::Load(const char* fname)
 {
     VERIFY(0 == source);
     // open source
-#ifdef _EDITOR
-    source = FS.r_open(0, fname);
-#else
     source = FS.rs_open(0, fname);
-#endif
+
     VERIFY(source);
 
     // parse headers
     BOOL res = ParseHeaders();
+
     // seek to start
     Reset();
     return res;

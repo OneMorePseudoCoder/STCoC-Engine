@@ -10,8 +10,6 @@
 
 #include "dxRenderDeviceRender.h"
 
-
-//
 STextureList::~STextureList				()			{	DEV->_DeleteTextureList	(this);			}
 SMatrixList::~SMatrixList				()			{	DEV->_DeleteMatrixList		(this);			}
 SConstantList::~SConstantList			()			{	DEV->_DeleteConstantList	(this);			}
@@ -60,9 +58,6 @@ BOOL SPass::equal(const SPass& other)
 
 	if (T != other.T)					return FALSE;
 	if (C != other.C)					return FALSE;
-#ifdef _EDITOR
-	if (M != other.M)					return FALSE;
-#endif
 	return TRUE;
 }
 

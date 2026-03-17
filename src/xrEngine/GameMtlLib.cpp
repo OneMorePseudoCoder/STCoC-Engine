@@ -3,20 +3,14 @@
 #pragma hdrstop
 
 #include "GameMtlLib.h"
-//#include "../include/xrapi/xrapi.h"
 
 CGameMtlLibrary GMLib;
-//CSound_manager_interface* Sound = NULL;
-#ifdef _EDITOR
-CGameMtlLibrary* PGMLib = NULL;
-#endif
+
 CGameMtlLibrary::CGameMtlLibrary()
 {
     material_index = 0;
     material_pair_index = 0;
-#ifndef _EDITOR
     material_count = 0;
-#endif
     PGMLib = &GMLib;
 }
 
@@ -46,7 +40,6 @@ void SGameMtl::Load(IReader& fs)
     fBounceDamageFactor = fs.r_float();
     fVisTransparencyFactor = fs.r_float();
     fSndOcclusionFactor = fs.r_float();
-
 
     if (fs.find_chunk(GAMEMTL_CHUNK_FACTORS_MP))
         fShootFactorMP = fs.r_float();
@@ -120,7 +113,6 @@ void CGameMtlLibrary::Load()
         OBJ->close();
     }
 
-#ifndef _EDITOR
     material_count = (u32)materials.size();
     material_pairs_rt.resize(material_count*material_count, 0);
     for (GameMtlPairIt p_it = material_pairs.begin(); material_pairs.end() != p_it; ++p_it)
@@ -131,23 +123,14 @@ void CGameMtlLibrary::Load()
         material_pairs_rt[idx0] = S;
         material_pairs_rt[idx1] = S;
     }
-#endif
 
-    /*
-     for (GameMtlPairIt p_it=material_pairs.begin(); material_pairs.end() != p_it; ++p_it){
-     SGameMtlPair* S = *p_it;
-     for (int k=0; k<S->StepSounds.size(); k++){
-     Msg("%40s - 0x%x", S->StepSounds[k].handle->file_name(), S->StepSounds[k].g_type);
-     }
-     }
-     */
     FS.r_close (F);
 }
 
 #ifdef GM_NON_GAME
-SGameMtlPair::~SGameMtlPair ()
-{
-}
+SGameMtlPair::~SGameMtlPair()
+{}
+
 void SGameMtlPair::Load(IReader& fs)
 {
     shared_str buf;

@@ -11,38 +11,25 @@
 #include "detailmodel.h"
 #include "tbb/task_group.h"
 
-#ifdef _EDITOR
-//.	#include	"ESceneClassList.h"
-	const int	dm_max_decompress	= 14;
-	class CCustomObject;
-	typedef u32	ObjClassID;
-
-    typedef xr_list<CCustomObject*> 		ObjectList;
-    typedef ObjectList::iterator 			ObjectIt;
-    typedef xr_map<ObjClassID,ObjectList> 	ObjectMap;
-    typedef ObjectMap::iterator 			ObjectPairIt;
-
-#else
-	const int	dm_max_decompress	= 7;
-#endif
-	const int	dm_cache1_count = 4;
-	const int	dm_max_objects		= 64;
-	const int	dm_obj_in_slot		= 4;
-	const float dm_slot_size = DETAIL_SLOT_SIZE;
+const int	dm_max_decompress	= 7;
+const int	dm_cache1_count = 4;
+const int	dm_max_objects		= 64;
+const int	dm_obj_in_slot		= 4;
+const float dm_slot_size = DETAIL_SLOT_SIZE;
 //AVO: detail radius
-	const u32 dm_max_cache_size = 62001 * 2; // assuming max dm_size = 124
-	extern u32 dm_size;
-	extern u32 dm_cache1_line;
-	extern u32 dm_cache_line;
-	extern u32 dm_cache_size;
-	extern float dm_fade;
-	extern u32 dm_current_size;// = iFloor((float)ps_r__detail_radius/4)*2; //!
-	extern u32 dm_current_cache1_line;// = dm_current_size*2/dm_cache1_count; //! dm_current_size*2 must be div dm_cache1_count
-	extern u32 dm_current_cache_line;// = dm_current_size+1+dm_current_size;
-	extern u32 dm_current_cache_size;// = dm_current_cache_line*dm_current_cache_line;
-	extern float dm_current_fade;// = float(2*dm_current_size)-.5f;
-	extern float ps_current_detail_density;
-	extern float ps_current_detail_height;
+const u32 dm_max_cache_size = 62001 * 2; // assuming max dm_size = 124
+extern u32 dm_size;
+extern u32 dm_cache1_line;
+extern u32 dm_cache_line;
+extern u32 dm_cache_size;
+extern float dm_fade;
+extern u32 dm_current_size;
+extern u32 dm_current_cache1_line;
+extern u32 dm_current_cache_line;
+extern u32 dm_current_cache_size;
+extern float dm_current_fade;
+extern float ps_current_detail_density;
+extern float ps_current_detail_height;
 
 class ECORE_API CDetailManager
 {
@@ -122,10 +109,9 @@ public:
 public:
 	DetailVec						objects;
 	vis_list						m_visibles	[3];	// 0=still, 1=Wave1, 2=Wave2
-
-#ifndef _EDITOR    
+  
 	xrXRC							xrc;
-#endif
+
 	//AVO: detail draw radius
 	CacheSlot1**					cache_level1;
 	Slot***							cache; // grid-cache itself
@@ -139,10 +125,6 @@ public:
 	void							UpdateVisibleM	();
 	void							UpdateVisibleS	();
 public:
-#ifdef _EDITOR
-	virtual ObjectList* 			GetSnapList		()=0;
-#endif
-
 	IC bool							UseVS			()		{ return HW.Caps.geometry_major >= 1; }
 
 	// Software processor

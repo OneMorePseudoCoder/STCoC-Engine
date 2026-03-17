@@ -86,7 +86,6 @@ XRCORE_API void _decorate(LPSTR dest, LPCSTR src)
     }
     *dest = 0;
 }
-//------------------------------------------------------------------------------
 
 BOOL CInifile::Sect::line_exist(LPCSTR L, LPCSTR* val)
 {
@@ -98,36 +97,18 @@ BOOL CInifile::Sect::line_exist(LPCSTR L, LPCSTR* val)
     }
     return FALSE;
 }
-//------------------------------------------------------------------------------
 
-CInifile::CInifile(IReader* F, LPCSTR path
-#ifndef _EDITOR
-                   , allow_include_func_t allow_include_func
-#endif
-                  )
+CInifile::CInifile(IReader* F, LPCSTR path, allow_include_func_t allow_include_func)
 {
     m_file_name[0] = 0;
     m_flags.zero();
     m_flags.set(eSaveAtEnd, FALSE);
     m_flags.set(eReadOnly, TRUE);
     m_flags.set(eOverrideNames, FALSE);
-    Load(F, path
-#ifndef _EDITOR
-         , allow_include_func
-#endif
-        );
+    Load(F, path, allow_include_func);
 }
 
-CInifile::CInifile(LPCSTR szFileName,
-                   BOOL ReadOnly,
-                   BOOL bLoad,
-                   BOOL SaveAtEnd,
-                   u32 sect_count
-#ifndef _EDITOR
-                   , allow_include_func_t allow_include_func
-#endif
-                  )
-
+CInifile::CInifile(LPCSTR szFileName, BOOL ReadOnly, BOOL bLoad, BOOL SaveAtEnd, u32 sect_count, allow_include_func_t allow_include_func)
 {
     if (szFileName && strstr(szFileName, "system"))
         Msg("-----loading %s", szFileName);
@@ -150,11 +131,7 @@ CInifile::CInifile(LPCSTR szFileName,
         {
             if (sect_count)
                 DATA.reserve(sect_count);
-            Load(R, path
-#ifndef _EDITOR
-                 , allow_include_func
-#endif
-                );
+            Load(R, path, allow_include_func);
             FS.r_close(R);
         }
     }
@@ -197,11 +174,7 @@ IC BOOL is_empty_line_now(IReader* F)
     return (*a0 == 13) && (*a1 == 10) && (*a2 == 13) && (*a3 == 10);
 };
 
-void CInifile::Load(IReader* F, LPCSTR path
-#ifndef _EDITOR
-                    , allow_include_func_t allow_include_func
-#endif
-                   )
+void CInifile::Load(IReader* F, LPCSTR path, allow_include_func_t allow_include_func)
 {
     R_ASSERT(F);
     Sect* Current = 0;
@@ -258,17 +231,11 @@ void CInifile::Load(IReader* F, LPCSTR path
                 strconcat(sizeof(fn), fn, path, inc_name);
                 _splitpath(fn, inc_path, folder, 0, 0);
                 xr_strcat(inc_path, sizeof(inc_path), folder);
-#ifndef _EDITOR
                 if (!allow_include_func || allow_include_func(fn))
-#endif
                 {
                     IReader* I = FS.r_open(fn);
                     R_ASSERT3(I, "Can't find include file:", inc_name);
-                    Load(I, inc_path
-#ifndef _EDITOR
-                         , allow_include_func
-#endif
-                        );
+                    Load(I, inc_path, allow_include_func);
                     FS.r_close(I);
                 }
             }
@@ -549,11 +516,7 @@ u32 CInifile::r_u32(LPCSTR S, LPCSTR L)const
 u64 CInifile::r_u64(LPCSTR S, LPCSTR L)const
 {
     LPCSTR C = r_string(S, L);
-#ifndef _EDITOR
     return _strtoui64(C, NULL, 10);
-#else
-    return (u64)_atoi64(C);
-#endif
 }
 
 s64 CInifile::r_s64(LPCSTR S, LPCSTR L)const
@@ -774,22 +737,14 @@ void CInifile::w_u32(LPCSTR S, LPCSTR L, u32 V, LPCSTR comment)
 void CInifile::w_u64(LPCSTR S, LPCSTR L, u64 V, LPCSTR comment)
 {
     string128 temp;
-#ifndef _EDITOR
     _ui64toa_s(V, temp, sizeof(temp), 10);
-#else
-    _ui64toa(V, temp, 10);
-#endif
     w_string(S, L, temp, comment);
 }
 
 void CInifile::w_s64(LPCSTR S, LPCSTR L, s64 V, LPCSTR comment)
 {
     string128 temp;
-#ifndef _EDITOR
     _i64toa_s(V, temp, sizeof(temp), 10);
-#else
-    _i64toa(V, temp, 10);
-#endif
     w_string(S, L, temp, comment);
 }
 

@@ -392,7 +392,7 @@ bool CUIMapWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 
 bool CUIMapWnd::OnMouseAction(float x, float y, EUIMessages mouse_action)
 {
-	if (inherited::OnMouseAction(x,y,mouse_action))
+	if (inherited::OnMouseAction(x, y, mouse_action))
 	{
 		return true;
 	}
@@ -415,7 +415,6 @@ bool CUIMapWnd::OnMouseAction(float x, float y, EUIMessages mouse_action)
 				return	true;
 			}
 		break;
-
 		case WINDOW_MOUSE_WHEEL_DOWN:
 			UpdateZoom(true);
 			return true;
@@ -424,7 +423,6 @@ bool CUIMapWnd::OnMouseAction(float x, float y, EUIMessages mouse_action)
 			UpdateZoom(false);
 			return true;
 		break;
-
 		}//switch	
 	};
 

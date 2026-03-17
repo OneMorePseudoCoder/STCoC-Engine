@@ -204,7 +204,6 @@ void CInput::KeyUpdate()
         KBState[od[idx].dwOfs] = od[idx].dwData & 0x80;
     }
 
-#ifndef _EDITOR
     bool b_alt_tab = false;
 
     if (!b_altF4 && KBState[DIK_F4] && (KBState[DIK_RMENU] || KBState[DIK_LMENU]))
@@ -214,13 +213,9 @@ void CInput::KeyUpdate()
         Engine.Event.Defer("KERNEL:quit");
     }
 
-
-#endif
     if (b_altF4) return;
 
-#ifndef _EDITOR
     if (Device.dwPrecacheFrame == 0)
-#endif
     {
 
         for (u32 i = 0; i < dwElements; i++)
@@ -234,10 +229,8 @@ void CInput::KeyUpdate()
             else
             {
                 cbStack.back()->IR_OnKeyboardRelease(key);
-#ifndef _EDITOR
                 if (key == DIK_TAB && (iGetAsyncKeyState(DIK_RMENU) || iGetAsyncKeyState(DIK_LMENU)))
                     b_alt_tab = true;
-#endif
             }
         }
 
@@ -246,11 +239,10 @@ void CInput::KeyUpdate()
                 cbStack.back()->IR_OnKeyboardHold(i);
     }
 
-#ifndef _EDITOR
     if (b_alt_tab)
         SendMessage(Device.m_hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-#endif
 }
+
 bool CInput::get_dik_name(int dik, LPSTR dest_str, int dest_sz)
 {
     DIPROPSTRING keyname;
@@ -313,10 +305,9 @@ void CInput::MouseUpdate()
         if (hr != S_OK) return;
     };
 
-#ifndef _EDITOR
     if (Device.dwPrecacheFrame)
         return;
-#endif
+
     BOOL mouse_prev[COUNT_MOUSE_BUTTONS];
 
     mouse_prev[0] = mouseState[0];

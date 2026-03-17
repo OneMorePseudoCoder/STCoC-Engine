@@ -12,7 +12,7 @@
 
 using namespace luabind;
 
-CUIRankingsCoC::CUIRankingsCoC(CUIScrollView* parent):m_parent(parent)
+CUIRankingsCoC::CUIRankingsCoC(CUIScrollView* parent) : m_parent(parent)
 {}
 
 CUIRankingsCoC::~CUIRankingsCoC()
@@ -32,12 +32,12 @@ void CUIRankingsCoC::init_from_xml(CUIXml& xml, u8 index, bool bUnique)
 
 	xml.SetLocalRoot(node);
 
-	m_index		= index;
-	m_name		= UIHelper::CreateTextWnd	(xml, "name", this);
-	m_descr		= UIHelper::CreateTextWnd	(xml, "descr", this);
-	m_icon		= UIHelper::CreateStatic	(xml, "icon", this);
-	m_hint		= UIHelper::CreateHint		(xml, "hint_wnd");
-	//m_border	= UIHelper::CreateStatic(xml, "border", this);
+	m_index = index;
+	m_name = UIHelper::CreateTextWnd(xml, "name", this);
+	m_descr = UIHelper::CreateTextWnd(xml, "descr", this);
+	m_icon = UIHelper::CreateStatic(xml, "icon", this);
+	m_hint = UIHelper::CreateHint(xml, "hint_wnd");
+	//m_border = UIHelper::CreateStatic(xml, "border", this);
 
 	xml.SetLocalRoot(stored_root);
 	Show(false);
@@ -50,23 +50,22 @@ void CUIRankingsCoC::Update()
 	{
 		if (functorCanShow(m_index))
 		{
-			if(!ParentHasMe())
+			if (!ParentHasMe())
 			{
-				luabind::functor<LPCSTR> functorSetName;
+				luabind::functor<pcstr> functorSetName;
 				if (ai().script_engine().functor("pda.coc_rankings_set_name", functorSetName))
 					SetName(functorSetName(m_index));
 				 
-				luabind::functor<LPCSTR> functorSetDescription;
+				luabind::functor<pcstr> functorSetDescription;
 				if (ai().script_engine().functor("pda.coc_rankings_set_description", functorSetDescription))
 					SetDescription(functorSetDescription(m_index));
 				 
 				
-				luabind::functor<LPCSTR> functorSetHint;
+				luabind::functor<pcstr> functorSetHint;
 				if (ai().script_engine().functor("pda.coc_rankings_set_hint", functorSetHint))
 					SetHint(functorSetHint(m_index));
 				 
-				
-				luabind::functor<LPCSTR> functorSetIcon;
+				luabind::functor<pcstr> functorSetIcon;
 				if (ai().script_engine().functor("pda.coc_rankings_set_icon", functorSetIcon))
 					SetIcon(functorSetIcon(m_index));
 
@@ -94,8 +93,7 @@ void CUIRankingsCoC::Update()
 		} 
 		else
 		{
-			if
-			(ParentHasMe())
+			if (ParentHasMe())
 			{
 				m_parent->RemoveWindow(this);
 				if (IsShown())
@@ -126,7 +124,7 @@ void CUIRankingsCoC::SetDescription(LPCSTR desc)
 	m_descr->AdjustHeightToText();
 	Fvector2 descr_size = m_descr->GetWndSize();
 	descr_size.y += 30.0f;
-	if (descr_size.y>GetWndSize().y)
+	if (descr_size.y > GetWndSize().y)
 		SetWndSize(Fvector2().set(GetWndSize().x, descr_size.y));
 }
 

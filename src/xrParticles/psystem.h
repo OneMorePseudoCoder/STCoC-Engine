@@ -6,11 +6,7 @@
 	#define PARTICLES_API __declspec(dllexport)
 #else
 	#define PARTICLES_API __declspec(dllimport)
-	#ifdef _EDITOR
-		#pragma comment(lib,"x:\\xrParticlesB.lib")
-	#else
-		#pragma comment(lib,"xrParticles.lib")
-	#endif
+	#pragma comment(lib,"xrParticles.lib")
 #endif
 
 // Actually this must be < sqrt(MAXFLOAT) since we store this value squared.
@@ -23,7 +19,6 @@
 #endif
 
 #define drand48()		::Random.randF()
-//#define drand48() (((float) rand())/((float) RAND_MAX))
 
 namespace PAPI{
 	class pVector	: public Fvector

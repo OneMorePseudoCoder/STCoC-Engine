@@ -42,7 +42,6 @@ protected:
 	string64					oT_xform;
 protected:
 	u32							BC				(BOOL v)		{ return v?0xff:0; }
-	BOOL						c_XForm			();
 public:
 	static			IBlender*	Create			(CLASS_ID cls);
 	static			void		Destroy			(IBlender*& B);

@@ -4,20 +4,13 @@
 //---------------------------------------------------------------------------
 
 #include "ParticleEffectDef.h"
-
-#ifdef _EDITOR
-#	include "../../Layers/xrRender/FBasicVisual.h"
-#	include "../../Layers/xrRender/dxParticleCustom.h"
-#else // _EDITOR
-#	include "../xrRender/FBasicVisual.h"
-#	include "../xrRender/dxParticleCustom.h"
-#endif // _EDITOR
+#include "../xrRender/FBasicVisual.h"
+#include "../xrRender/dxParticleCustom.h"
 
 namespace PS
 {
 	class ECORE_API CParticleEffect: public dxParticleCustom
 	{
-//		friend void ParticleRenderStream( LPVOID lpvParams );
 		friend class CPEDef;
 	protected:
 		float				m_fElapsedLimit;

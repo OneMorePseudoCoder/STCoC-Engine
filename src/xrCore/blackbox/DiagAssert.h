@@ -7,10 +7,9 @@ Copyright (c) 1999-2000 John Robbins -- All rights reserved.
 #define _DIAGASSERT_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C" 
+{
 #endif  //__cplusplus
-
-//#include <tchar.h>
 
 /*//////////////////////////////////////////////////////////////////////
                                 Defines
@@ -223,10 +222,6 @@ void  __stdcall
 // I need to turn this off globally because the compilation error
 // occurs on the expansion of the macro.
 #pragma warning ( disable : 4127 )
-
-#ifdef _EDITOR
-#   define PORTABLE_BUGSLAYERUTIL
-#endif // _EDITOR
 
 #ifdef PORTABLE_BUGSLAYERUTIL
 #define ASSERTMACRO(a,x)                                            \

@@ -10,21 +10,18 @@
 
 class dxRenderFactory : public IRenderFactory
 {
-#ifndef _EDITOR	
 	RENDER_FACTORY_DECLARE(UISequenceVideoItem)
 	RENDER_FACTORY_DECLARE(UIShader)
 	RENDER_FACTORY_DECLARE(StatGraphRender)
 	RENDER_FACTORY_DECLARE(ConsoleRender)
 	RENDER_FACTORY_DECLARE(RenderDeviceRender)
-#	ifdef DEBUG
+#ifdef DEBUG
 		RENDER_FACTORY_DECLARE(ObjectSpaceRender)
-#	endif // DEBUG
+#endif // DEBUG
 	RENDER_FACTORY_DECLARE(ApplicationRender)
 	RENDER_FACTORY_DECLARE(WallMarkArray)
 	RENDER_FACTORY_DECLARE(StatsRender)
-#endif // _EDITOR
 
-#ifndef _EDITOR	
 	RENDER_FACTORY_DECLARE(FlareRender)
 	RENDER_FACTORY_DECLARE(ThunderboltRender)
 	RENDER_FACTORY_DECLARE(ThunderboltDescRender)
@@ -33,7 +30,6 @@ class dxRenderFactory : public IRenderFactory
 	RENDER_FACTORY_DECLARE(EnvironmentRender)
 	RENDER_FACTORY_DECLARE(EnvDescriptorMixerRender)
 	RENDER_FACTORY_DECLARE(EnvDescriptorRender)
-#endif
 	RENDER_FACTORY_DECLARE(FontRender)
 };
 

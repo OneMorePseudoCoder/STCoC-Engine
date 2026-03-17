@@ -10,9 +10,6 @@
 #include <sys\stat.h>
 #pragma warning(default:4995)
 
-//typedef void DUMMY_STUFF (const void*,const u32&,void*);
-//XRCORE_API DUMMY_STUFF *g_dummy_stuff = 0;
-
 #ifdef M_BORLAND
 # define O_SEQUENTIAL 0
 #endif // M_BORLAND
@@ -29,12 +26,9 @@ void register_file_mapping(void* address, const u32& size, LPCSTR file_name)
     VERIFY(I == g_file_mappings.end());
     g_file_mappings.insert(std::make_pair(*(u32*)&address, std::make_pair(size, shared_str(file_name))));
 
-    // Msg ("++register_file_mapping(%2d): [0x%08x]%s", g_file_mapped_count + 1, *((u32*)&address), file_name);
-
     g_file_mapped_memory += size;
     ++g_file_mapped_count;
 #ifdef USE_MEMORY_MONITOR
-    // memory_monitor::monitor_alloc (addres,size,"file mapping");
     string512 temp;
     xr_sprintf(temp, sizeof(temp), "file mapping: %s", file_name);
     memory_monitor::monitor_alloc(address, size, temp);
@@ -45,11 +39,8 @@ void unregister_file_mapping(void* address, const u32& size)
 {
     FILE_MAPPINGS::iterator I = g_file_mappings.find(*(u32*)&address);
     VERIFY(I != g_file_mappings.end());
-    // VERIFY2 ((*I).second.first == size,make_string("file mapping sizes are different: %d -> %d",(*I).second.first,size));
     g_file_mapped_memory -= (*I).second.first;
     --g_file_mapped_count;
-
-    // Msg ("--unregister_file_mapping(%2d): [0x%08x]%s", g_file_mapped_count + 1, *((u32*)&address), (*I).second.second.c_str());
 
     g_file_mappings.erase(I);
 
@@ -65,12 +56,7 @@ XRCORE_API void dump_file_mappings()
     FILE_MAPPINGS::const_iterator I = g_file_mappings.begin();
     FILE_MAPPINGS::const_iterator E = g_file_mappings.end();
     for (; I != E; ++I)
-        Msg(
-        "* [0x%08x][%d][%s]",
-        (*I).first,
-        (*I).second.first,
-        (*I).second.second.c_str()
-        );
+        Msg("* [0x%08x][%d][%s]", (*I).first, (*I).second.first, (*I).second.second.c_str());
 }
 #endif // DEBUG
 //////////////////////////////////////////////////////////////////////
@@ -90,33 +76,9 @@ void VerifyPath(LPCSTR path)
     }
 }
 
-#ifdef _EDITOR
-bool file_handle_internal(LPCSTR file_name, u32& size, int& hFile)
-{
-    hFile = _open(file_name, O_RDONLY | O_BINARY | O_SEQUENTIAL);
-    if (hFile <= 0)
-    {
-        Sleep(1);
-        hFile = _open(file_name, O_RDONLY | O_BINARY | O_SEQUENTIAL);
-        if (hFile <= 0)
-            return (false);
-    }
-
-    size = filelength(hFile);
-    return (true);
-}
-#else // EDITOR
 static errno_t open_internal(LPCSTR fn, int& handle)
 {
-    return (
-        _sopen_s(
-        &handle,
-        fn,
-        _O_RDONLY | _O_BINARY,
-        _SH_DENYNO,
-        _S_IREAD
-        )
-        );
+    return (_sopen_s(&handle, fn, _O_RDONLY | _O_BINARY, _SH_DENYNO, _S_IREAD));
 }
 
 bool file_handle_internal(LPCSTR file_name, u32& size, int& file_handle)
@@ -131,7 +93,6 @@ bool file_handle_internal(LPCSTR file_name, u32& size, int& file_handle)
     size = _filelength(file_handle);
     return (true);
 }
-#endif // EDITOR
 
 void* FileDownload(LPCSTR file_name, const int& file_handle, u32& file_size)
 {
@@ -143,21 +104,9 @@ void* FileDownload(LPCSTR file_name, const int& file_handle, u32& file_size)
         );
 
     int r_bytes = _read(file_handle, buffer, file_size);
-    R_ASSERT3(
-        // !file_size ||
-        // (r_bytes && (file_size >= (u32)r_bytes)),
-        file_size == (u32)r_bytes,
-        "can't read from file : ",
-        file_name
-        );
+    R_ASSERT3(file_size == (u32)r_bytes, "can't read from file : ", file_name);
 
-    // file_size = r_bytes;
-
-    R_ASSERT3(
-        !_close(file_handle),
-        "can't close file : ",
-        file_name
-        );
+    R_ASSERT3(!_close(file_handle), "can't close file : ", file_name);
 
     return (buffer);
 }
@@ -165,11 +114,7 @@ void* FileDownload(LPCSTR file_name, const int& file_handle, u32& file_size)
 void* FileDownload(LPCSTR file_name, u32* buffer_size)
 {
     int file_handle;
-    R_ASSERT3(
-        file_handle_internal(file_name, *buffer_size, file_handle),
-        "can't open file : ",
-        file_name
-        );
+    R_ASSERT3(file_handle_internal(file_name, *buffer_size, file_handle), "can't open file : ", file_name);
 
     return (FileDownload(file_name, file_handle, *buffer_size));
 }
@@ -327,11 +272,7 @@ void IWriter::w_printf(const char* format, ...)
     char buf[1024];
 
     va_start(mark, format);
-#ifndef _EDITOR
     vsprintf_s(buf, format, mark);
-#else
-    vsprintf(buf, format, mark);
-#endif
     va_end(mark);
 
     w(buf, xr_strlen(buf));
@@ -457,34 +398,34 @@ void IReader::r_string(char* dest, u32 tgt_sz)
     u32 sz = advance_term_string();
     R_ASSERT2(sz < (tgt_sz - 1), "Dest string less than needed.");
     R_ASSERT(!IsBadReadPtr((void*)src, sz));
-
-#ifdef _EDITOR
-    CopyMemory(dest, src, sz);
-#else
     strncpy_s(dest, tgt_sz, src, sz);
-#endif
     dest[sz] = 0;
 }
+
 void IReader::r_string(xr_string& dest)
 {
     char* src = (char*)data + Pos;
     u32 sz = advance_term_string();
     dest.assign(src, sz);
 }
+
 void IReader::r_stringZ(char* dest, u32 tgt_sz)
 {
     char* src = (char*)data;
     u32 sz = xr_strlen(src);
     R_ASSERT2(sz < tgt_sz, "Dest string less than needed.");
-    while ((src[Pos] != 0) && (!eof())) *dest++ = src[Pos++];
+    while ((src[Pos] != 0) && (!eof()))
+		*dest++ = src[Pos++];
     *dest = 0;
     Pos++;
 }
+
 void IReader::r_stringZ(shared_str& dest)
 {
     dest = (char*)(data + Pos);
     Pos += (dest.size() + 1);
 }
+
 void IReader::r_stringZ(xr_string& dest)
 {
     dest = (char*)(data + Pos);
@@ -494,7 +435,8 @@ void IReader::r_stringZ(xr_string& dest)
 void IReader::skip_stringZ()
 {
     char* src = (char*)data;
-    while ((src[Pos] != 0) && (!eof())) Pos++;
+    while ((src[Pos] != 0) && (!eof()))
+		Pos++;
     Pos++;
 };
 
@@ -532,11 +474,11 @@ CCompressedReader::CCompressedReader(const char* name, const char* sign)
     data = (char*)FileDecompress(name, sign, (u32*)&Size);
     Pos = 0;
 }
+
 CCompressedReader::~CCompressedReader()
 {
     xr_free(data);
 };
-
 
 CVirtualFileRW::CVirtualFileRW(const char* cFileName)
 {

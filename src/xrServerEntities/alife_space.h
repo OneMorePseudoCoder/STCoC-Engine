@@ -33,7 +33,8 @@ class CSE_ALifeItemWeapon;
 class CSE_ALifeSchedulable;
 class CGameGraph;
 
-namespace ALife {
+namespace ALife 
+{
 	typedef u64	_CLASS_ID;									// Class ID
 	typedef u16	_OBJECT_ID;									// Object ID
 	typedef u64	_TIME_ID;									// Time  ID
@@ -44,13 +45,15 @@ namespace ALife {
 	typedef u32 _STORY_ID;									// Story ID
 	typedef u32 _SPAWN_STORY_ID;							// Spawn Story ID
 
-	struct SSumStackCell {
+	struct SSumStackCell 
+	{
 		int						i1;
 		int						i2;
 		int						iCurrentSum;
 	};
 
-	enum ECombatResult {
+	enum ECombatResult 
+	{
 		eCombatResultRetreat1 = u32(0),
 		eCombatResultRetreat2,
 		eCombatResultRetreat12,
@@ -60,13 +63,15 @@ namespace ALife {
 		eCombatDummy = u32(-1),
 	};
 
-	enum ECombatAction {
+	enum ECombatAction 
+	{
 		eCombatActionAttack = u32(0),
 		eCombatActionRetreat,
 		eCombatActionDummy = u32(-1),
 	};
 
-	enum EMeetActionType {
+	enum EMeetActionType 
+	{
 		eMeetActionTypeAttack = u32(0),
 		eMeetActionTypeInteract,
 		eMeetActionTypeIgnore,
@@ -74,7 +79,8 @@ namespace ALife {
 		eMeetActionTypeDummy = u32(-1),
 	};
 
-	enum ERelationType {
+	enum ERelationType 
+	{
 		eRelationTypeFriend = u32(0),
 		eRelationTypeNeutral,
 		eRelationTypeEnemy,
@@ -83,7 +89,8 @@ namespace ALife {
 		eRelationTypeDummy = u32(-1),
 	};
 
-	enum EHitType {
+	enum EHitType 
+	{
 		eHitTypeBurn = u32(0),
 		eHitTypeShock,
 		eHitTypeChemicalBurn,
@@ -99,7 +106,8 @@ namespace ALife {
 		eHitTypeMax,
 	};
 
-	enum EInfluenceType	{
+	enum EInfluenceType	
+	{
 		infl_rad = u32(0),
 		infl_fire,
 		infl_acid,
@@ -108,7 +116,8 @@ namespace ALife {
 		infl_max_count
 	};
 
-	enum EConditionRestoreType {
+	enum EConditionRestoreType 
+	{
 		eHealthRestoreSpeed = u32(0),
 		eSatietyRestoreSpeed,
 		ePowerRestoreSpeed,
@@ -117,13 +126,15 @@ namespace ALife {
 		eRestoreTypeMax,
 	};
 
-	enum ETakeType {
+	enum ETakeType 
+	{
 		eTakeTypeAll,
 		eTakeTypeMin,
 		eTakeTypeRest,
 	};
 
-	enum EWeaponPriorityType {
+	enum EWeaponPriorityType 
+	{
 		eWeaponPriorityTypeKnife = u32(0),
 		eWeaponPriorityTypeSecondary,
 		eWeaponPriorityTypePrimary,
@@ -131,7 +142,8 @@ namespace ALife {
 		eWeaponPriorityTypeDummy = u32(-1),
 	};
 
-	enum ECombatType {
+	enum ECombatType 
+	{
 		eCombatTypeMonsterMonster = u32(0),
 		eCombatTypeMonsterAnomaly,
 		eCombatTypeAnomalyMonster,
@@ -140,7 +152,8 @@ namespace ALife {
 	};
 
 	//возможность подключения аддонов
-	enum EWeaponAddonStatus{
+	enum EWeaponAddonStatus
+	{
 		eAddonDisabled				= 0,	//нельзя присоеденить
 		eAddonPermanent				= 1,	//постоянно подключено по умолчанию
 		eAddonAttachable			= 2		//можно присоединять
@@ -177,14 +190,13 @@ namespace ALife {
 		return(eHitTypeMax);
 #endif
 	}
-#ifndef	_EDITOR
 	extern xr_token hit_types_token[];
 
 	IC LPCSTR g_cafHitType2String(EHitType tHitType)
 	{
 		return get_token_name(hit_types_token, tHitType);
 	}
-#endif
+
 	using INT_VECTOR = xr_vector<int>;
 	using INT_IT = INT_VECTOR::iterator;
 

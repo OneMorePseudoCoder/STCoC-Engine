@@ -28,7 +28,7 @@
 #include "UICharacterInfo.h"
 #include "ui_base.h"
 
-#define  PDA_RANKING_XML		"pda_ranking.xml"
+#define PDA_RANKING_XML "pda_ranking.xml"
 
 using namespace luabind;
 
@@ -80,7 +80,7 @@ void CUIRankingWnd::Init()
 	xml.Load(CONFIG_PATH, UI_PATH, PDA_RANKING_XML);
 
 	CUIXmlInit::InitWindow(xml, "main_wnd", 0, this);
-	m_delay = (u32)xml.ReadAttribInt( "main_wnd", 0, "delay", 3000);
+	m_delay = (u32)xml.ReadAttribInt("main_wnd", 0, "delay", 3000);
 
 	m_background = UIHelper::CreateFrameWindow(xml, "background", this);
 	m_down_background = UIHelper::CreateFrameWindow(xml, "down_background", this);
@@ -147,7 +147,7 @@ void CUIRankingWnd::Init()
 		topRankCount = getRankingArraySize();
 	}
 	
-	for (u8 i=1; i <= topRankCount; i++)
+	for (u8 i = 1; i <= topRankCount; i++)
 	{
 		CUIRankingsCoC* character_rank_item = xr_new<CUIRankingsCoC>(m_coc_ranking);
 		character_rank_item->init_from_xml(xml, i, false);
@@ -178,7 +178,7 @@ void CUIRankingWnd::add_achievement(CUIXml& xml, shared_str const& achiev_id)
 	achievement->SetHint(pSettings->r_string(achiev_id, "hint"));
 	achievement->SetIcon(pSettings->r_string(achiev_id, "icon"));
 	achievement->SetFunctor(pSettings->r_string(achiev_id, "functor"));
-	achievement->SetRepeatable(!!READ_IF_EXISTS(pSettings,r_bool,achiev_id,"repeatable",false));
+	achievement->SetRepeatable(!!READ_IF_EXISTS(pSettings, r_bool, achiev_id, "repeatable", false));
 
 	m_achieves_vec.push_back(achievement);
 }
@@ -186,7 +186,7 @@ void CUIRankingWnd::add_achievement(CUIXml& xml, shared_str const& achiev_id)
 void CUIRankingWnd::update_info()
 {
 	ACHIEVES_VEC_IT b = m_achieves_vec.begin(), e = m_achieves_vec.end();
-	for (; b!=e; b++)
+	for (; b != e; b++)
 		(*b)->Update();
 	
 	//Alundaio: CoC Ranking
@@ -211,7 +211,7 @@ void CUIRankingWnd::DrawHint()
 	
 	//Alundaio: CoC Ranking
 	RANKINGCOC_VEC_IT begin = m_coc_ranking_vec.begin(), end = m_coc_ranking_vec.end();
-	for( ; begin!=end; begin++)
+	for (; begin != end; begin++)
 	{
 		if ((*begin)->IsShown())
 			(*begin)->DrawHint();
@@ -224,13 +224,13 @@ void CUIRankingWnd::DrawHint()
 
 void CUIRankingWnd::get_statistic()
 {
-	for(u8 i = 0; i < m_stat_count; ++i)
+	for (u8 i = 0; i < m_stat_count; ++i)
 	{
 		luabind::functor<LPCSTR> funct;
 		if (ai().script_engine().functor("pda.get_stat", funct))
 		{
 			LPCSTR str = funct(i);
-			m_stat_info[i]->SetTextColor(color_rgba(170,170,170,255));
+			m_stat_info[i]->SetTextColor(color_rgba(170, 170, 170, 255));
 			m_stat_info[i]->TextItemControl().SetColoringMode(true);
 			m_stat_info[i]->SetTextST(str);
 		}
@@ -240,12 +240,12 @@ void CUIRankingWnd::get_statistic()
 void CUIRankingWnd::ResetAll()
 {
 	ACHIEVES_VEC_IT b = m_achieves_vec.begin(), e = m_achieves_vec.end();
-	for (; b!=e; b++)
+	for (; b != e; b++)
 		(*b)->Reset();
 
 	//Alundaio: CoC Rankings
 	RANKINGCOC_VEC_IT be = m_coc_ranking_vec.begin(), ed = m_coc_ranking_vec.end();
-	for (; be!=ed; be++)
+	for (; be != ed; be++)
 		(*be)->Reset();
 	
 	m_coc_ranking_actor->Reset();

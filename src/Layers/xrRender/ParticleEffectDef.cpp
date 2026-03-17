@@ -3,12 +3,6 @@
 
 #include "ParticleEffectDef.h"
 #include "ParticleEffect.h"
-#ifdef _EDITOR
-	#include "UI_ToolsCustom.h"
-	#include "ParticleEffectActions.h"
-#else
-
-#endif
 
 //---------------------------------------------------------------------------
 using namespace PAPI;
@@ -36,73 +30,29 @@ CPEDef::CPEDef()
 }
 
 CPEDef::~CPEDef()
-{
-#ifdef _EDITOR
-	for (EPAVecIt it=m_EActionList.begin(); it!=m_EActionList.end(); it++) xr_delete(*it);
-#endif
-}
+{}
+
 void CPEDef::CreateShader()
 {
     if (*m_ShaderName&&*m_TextureName)	
         m_CachedShader.create(*m_ShaderName,*m_TextureName);
 }
+
 void CPEDef::DestroyShader()
 {
     m_CachedShader.destroy();
 }
+
 void CPEDef::SetName(LPCSTR name)
 {
     m_Name				= name;
 }
 
-/*
-void CPEDef::pAlignToPath(float rot_x, float rot_y, float rot_z)
-{
-	m_Flags.set			(dfAlignToPath,TRUE);
-	m_APDefaultRotation.set(rot_x,rot_y,rot_z);
-}
-void CPEDef::pVelocityScale(float scale_x, float scale_y, float scale_z)
-{
-	m_Flags.set			(dfVelocityScale,TRUE);
-	m_VelocityScale.set	(scale_x, scale_y, scale_z);
-}
-void CPEDef::pCollision(float friction, float resilience, float cutoff, BOOL destroy_on_contact)
-{
-	m_fCollideOneMinusFriction 	= 1.f-friction;
-	m_fCollideResilience		= resilience;
-	m_fCollideSqrCutoff			= cutoff*cutoff;
-	m_Flags.set					(dfCollision,TRUE);
-	m_Flags.set					(dfCollisionDel,destroy_on_contact);
-}
-
-void CPEDef::pSprite(string128& sh_name, string128& tex_name)
-{
-	xr_free(m_ShaderName);	m_ShaderName	= xr_strdup(sh_name);
-	xr_free(m_TextureName);	m_TextureName	= xr_strdup(tex_name);
-	m_Flags.set	(dfSprite,TRUE);
-}
-void CPEDef::pFrame(BOOL random_frame, u32 frame_count, u32 tex_width, u32 tex_height, u32 frame_width, u32 frame_height)
-{
-	m_Flags.set			(dfFramed,TRUE);
-	m_Flags.set			(dfRandomFrame,random_frame);
-	m_Frame.Set			(frame_count, (float)tex_width, (float)tex_height, (float)frame_width, (float)frame_height);
-}
-void CPEDef::pAnimate(float speed, BOOL random_playback)
-{
-	m_Frame.m_fSpeed	= speed;
-	m_Flags.set			(dfAnimated,TRUE);
-	m_Flags.set			(dfRandomPlayback,random_playback);
-}
-void CPEDef::pTimeLimit(float time_limit)
-{
-	m_Flags.set			(dfTimeLimit,TRUE);
-	m_fTimeLimit		= time_limit;
-}
-*/
 void CPEDef::ExecuteAnimate(Particle *particles, u32 p_cnt, float dt)
 {
 	float speedFac = m_Frame.m_fSpeed * dt;
-	for(u32 i = 0; i < p_cnt; i++){
+	for(u32 i = 0; i < p_cnt; i++)
+	{
 		Particle &m = particles[i];
 		float f						= (float(m.frame)/255.f+((m.flags.is(Particle::ANIMATE_CCW))?-1.f:1.f)*speedFac);
 		if (f>m_Frame.m_iFrameCount)f-=m_Frame.m_iFrameCount;
@@ -115,38 +65,46 @@ void CPEDef::ExecuteCollision(PAPI::Particle* particles, u32 p_cnt, float dt, CP
 {
 	pVector pt,n;
 	// Must traverse list in reverse order so Remove will work
-	for(int i = p_cnt-1; i >= 0; i--){
+	for(int i = p_cnt-1; i >= 0; i--)
+	{
 		Particle &m = particles[i];
 
 		bool pick_needed;
 		int pick_cnt=0;
-		do{		
+		do
+		{		
 			pick_needed = false;
 			Fvector 	dir;
 			dir.sub		(m.pos,m.posB);
 			float dist 	= dir.magnitude();
-			if (dist>=EPS){
+			if (dist>=EPS)
+			{
 				dir.div	(dist);
-#ifdef _EDITOR                
-				if (Tools->RayPick(m.posB,dir,dist,&pt,&n)){
-#else
 				collide::rq_result	RQ;
                 collide::rq_target	RT = m_Flags.is(dfCollisionDyn)?collide::rqtBoth:collide::rqtStatic;
-				if (g_pGameLevel->ObjectSpace.RayPick(m.posB,dir,dist,RT,RQ,NULL)){	
+				if (g_pGameLevel->ObjectSpace.RayPick(m.posB,dir,dist,RT,RQ,NULL))
+				{	
 					pt.mad	(m.posB,dir,RQ.range);
-					if (RQ.O){
+					if (RQ.O)
+					{
 						n.set(0.f,1.f,0.f);
-					}else{
+					}
+					else
+					{
 						CDB::TRI*	T		=  	g_pGameLevel->ObjectSpace.GetStaticTris()+RQ.element;
 						Fvector*	verts	=	g_pGameLevel->ObjectSpace.GetStaticVerts();
 						n.mknormal(verts[T->verts[0]],verts[T->verts[1]],verts[T->verts[2]]);
 					}
-#endif
 					pick_cnt++;
-					if (cb&&(pick_cnt==1)) if (!cb(owner,m,pt,n)) break;
-					if (m_Flags.is(dfCollisionDel)){ 
+					if (cb&&(pick_cnt==1))
+						if (!cb(owner,m,pt,n))
+							break;
+					if (m_Flags.is(dfCollisionDel))
+					{ 
 	                   	ParticleManager()->RemoveParticle(owner->m_HandleEffect,i);
-					}else{
+					}
+					else
+					{
 						// Compute tangential and normal components of velocity
 						float nmag = m.vel * n;
 						pVector vn(n * nmag); 	// Normal Vn = (V.N)N
@@ -154,19 +112,25 @@ void CPEDef::ExecuteCollision(PAPI::Particle* particles, u32 p_cnt, float dt, CP
 
 						// Compute _new velocity heading out:
 						// Don't apply friction if tangential velocity < cutoff
-						if(vt.length2() <= m_fCollideSqrCutoff){
+						if(vt.length2() <= m_fCollideSqrCutoff)
+						{
 							m.vel = vt - vn * m_fCollideResilience;
-						}else{
+						}
+						else
+						{
 							m.vel = vt * m_fCollideOneMinusFriction - vn * m_fCollideResilience;
 						}
 						m.pos	= m.posB + m.vel * dt; 
 						pick_needed = true;
 					}
 				}
-			}else{
+			}
+			else
+			{
 				m.pos	= m.posB;
 			}
-		}while(pick_needed&&(pick_cnt<2));
+		}
+		while(pick_needed&&(pick_cnt<2));
 	}
 }
 
@@ -235,26 +199,11 @@ BOOL CPEDef::Load(IReader& F)
 		}
 	}
 
-#ifdef _EDITOR
-    if (pCreateEAction&&F.find_chunk(PED_CHUNK_EDATA))
-	{
-        m_EActionList.resize(F.r_u32());
-        for (EPAVecIt it=m_EActionList.begin(); it!=m_EActionList.end(); ++it)
-		{
-            PAPI::PActionEnum type		= (PAPI::PActionEnum)F.r_u32();
-            (*it)						= pCreateEAction(type);
-            (*it)->Load					(F);
-        }
-		Compile							(m_EActionList);
-    } 
-#endif
-
 	return TRUE;
 }
 
 BOOL CPEDef::Load2(CInifile& ini)
 {
-//.	u16 version		= ini.r_u16("_effect", "version");
 	m_MaxParticles	= ini.r_u32("_effect", "max_particles");
 	m_Flags.assign	(ini.r_u32("_effect", "flags"));
 
@@ -294,23 +243,6 @@ BOOL CPEDef::Load2(CInifile& ini)
 	{
 		m_APDefaultRotation			= ini.r_fvector3	("align_to_path", "default_rotation");
 	}
-#ifdef _EDITOR
-	if(pCreateEAction)
-	{
-		u32 count		= ini.r_u32("_effect", "action_count");
-        m_EActionList.resize(count);
-		u32 action_id	= 0;
-        for (EPAVecIt it=m_EActionList.begin(); it!=m_EActionList.end(); ++it,++action_id)
-		{
-			string256					sect;
-			xr_sprintf					(sect, sizeof(sect), "action_%04d", action_id);
-            PAPI::PActionEnum type		= (PAPI::PActionEnum)(ini.r_u32(sect,"action_type"));
-            (*it)						= pCreateEAction(type);
-            (*it)->Load2				(ini, sect);
-        }
-		Compile							(m_EActionList);
-    }
-#endif
 
 	return TRUE;
 }
@@ -318,9 +250,7 @@ BOOL CPEDef::Load2(CInifile& ini)
 void CPEDef::Save2(CInifile& ini)
 {
 	ini.w_u16		("_effect", "version",			PED_VERSION);
-//.	ini.w_string	("_effect", "name",				m_Name.c_str());
 	ini.w_u32		("_effect", "max_particles",	m_MaxParticles);
-//.!!	F.w				(m_Actions.pointer(),m_Actions.size());
 	ini.w_u32		("_effect", "flags",				m_Flags.get());
 
 	if (m_Flags.is(dfSprite))
@@ -359,17 +289,6 @@ void CPEDef::Save2(CInifile& ini)
 	{
 		ini.w_fvector3	("align_to_path", "default_rotation", m_APDefaultRotation);
 	}
-#ifdef _EDITOR
-    ini.w_u32			("_effect", "action_count", m_EActionList.size());
-    u32					action_id = 0;
-	for (EPAVecIt it=m_EActionList.begin(); it!=m_EActionList.end(); ++it,++action_id)
-	{
-		string256		sect;
-		xr_sprintf		(sect, sizeof(sect), "action_%04d", action_id);
-		ini.w_u32		(sect, "action_type", (*it)->type);
-    	(*it)->Save2	(ini, sect);
-    }
-#endif
 }
 
 void CPEDef::Save(IWriter& F)
@@ -436,36 +355,4 @@ void CPEDef::Save(IWriter& F)
 		F.w_fvector3	(m_APDefaultRotation);
 		F.close_chunk	();
 	}
-#ifdef _EDITOR
-	F.open_chunk	(PED_CHUNK_EDATA);
-    F.w_u32			(m_EActionList.size());
-    for (EPAVecIt it=m_EActionList.begin(); it!=m_EActionList.end(); it++){
-        F.w_u32		((*it)->type);
-    	(*it)->Save	(F);
-    }
-	F.close_chunk	();
-#endif
 }
-
-#ifdef _EDITOR
-void PS::CPEDef::Compile(EPAVec& v)
-{
-	m_Actions.clear	();
-    m_Actions.w_u32	(v.size());
-    int cnt			= 0;
-	EPAVecIt it		= v.begin();
-	EPAVecIt it_e	= v.end();
-    
-	for(; it!=it_e; ++it)
-	{
-		if ((*it)->flags.is(EParticleAction::flEnabled))
-		{
-    	    (*it)->Compile(m_Actions);
-            cnt++;
-        }
-    }
-    m_Actions.seek	(0);
-    m_Actions.w_u32 (cnt);
-}
-#endif
-

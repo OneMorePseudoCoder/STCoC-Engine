@@ -30,25 +30,11 @@ namespace PS
 			shared_str		m_OnDeadChildName;
 			float			m_Time0;
 			float			m_Time1;
-							SEffect				(){m_Flags.zero();/*set(flEnabled)*/m_Time0=0;m_Time1=0;}
-#ifdef _EDITOR
-            BOOL			Equal				(const SEffect&);
-#endif
+							SEffect				(){m_Flags.zero();m_Time0=0;m_Time1=0;}
 		};
 		using EffectVec = xr_vector<SEffect*>;
 		using EffectIt = EffectVec::iterator;
 		EffectVec			m_Effects;
-#ifdef _EDITOR
-// change Equal if variables changed 
-		void __stdcall  	OnEffectsEditClick	(ButtonValue* sender, bool& bDataModified, bool& bSafe);
-		void __stdcall  	OnEffectTypeChange	(PropValue* sender);
-		void __stdcall  	OnEffectEditClick	(ButtonValue* sender, bool& bDataModified, bool& bSafe);
-		void __stdcall  	OnControlClick	(ButtonValue* sender, bool& bDataModified, bool& bSafe);
-		void __stdcall  	OnParamsChange	(PropValue* sender);
-		void				FillProp	   	(LPCSTR pref, ::PropItemVec& items, ::ListItem* owner);
-		BOOL				Equal			(const CPGDef* pe);
-		bool				Validate 			(bool bMsg);
-#endif
 	public:
 							CPGDef		  	();
 							~CPGDef		  	();
@@ -59,10 +45,6 @@ namespace PS
 
 		void 				Save2		  	(CInifile& ini);
 		BOOL 				Load2		 	(CInifile& ini);
-
-#ifdef _EDITOR
-        void				Clone			(CPGDef* source);
-#endif
 	};
 
 	class ECORE_API CParticleGroup: public dxParticleCustom
@@ -72,7 +54,8 @@ namespace PS
 		Fvector				m_InitialPosition;
 	public:
     	DEFINE_VECTOR(dxRender_Visual*,VisualVec,VisualVecIt);
-    	struct SItem		{
+    	struct SItem		
+		{
         	dxRender_Visual*	_effect;
             VisualVec		_children_related;
             VisualVec		_children_free;
@@ -108,7 +91,8 @@ namespace PS
 		using SItemVecIt = SItemVec::iterator;
 		SItemVec			items;
 	public:
-		enum{
+		enum
+		{
 			flRT_Playing		= (1<<0),
 			flRT_DefferedStop	= (1<<1),
 		};

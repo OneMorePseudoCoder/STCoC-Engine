@@ -8,18 +8,9 @@
 #include "DetailManager.h"
 #include "cl_intersect.h"
 
-#ifdef _EDITOR
-#	include "ESceneClassList.h"
-#	include "Scene.h"
-#	include "SceneObject.h"
-#	include "igame_persistent.h"
-#	include "environment.h"
-#else
-#	include "../../xrEngine/igame_persistent.h"
-#	include "../../xrEngine/environment.h"
-#   include <xmmintrin.h>
-#endif
-
+#include "../../xrEngine/igame_persistent.h"
+#include "../../xrEngine/environment.h"
+#include <xmmintrin.h>
 
 const float dbgOffset			= 0.f;
 const int	dbgItems			= 128;
@@ -162,19 +153,7 @@ CDetailManager::~CDetailManager()
 	}
 	Memory.mem_free(cache_level1);
 }
-/*
-*/
-#ifndef _EDITOR
 
-/*
-void dump	(CDetailManager::vis_list& lst)
-{
-	for (int i=0; i<lst.size(); i++)
-	{
-		Msg("%8x / %8x / %8x",	lst[i]._M_start, lst[i]._M_finish, lst[i]._M_end_of_storage._M_data);
-	}
-}
-*/
 void CDetailManager::Load		()
 {
 	// Open file stream
@@ -235,7 +214,7 @@ void CDetailManager::Load		()
 	swing_desc[1].rot2	= pSettings->r_float("details","swing_fast_rot2");
 	swing_desc[1].speed	= pSettings->r_float("details","swing_fast_speed");
 }
-#endif
+
 void CDetailManager::Unload		()
 {
 	if (UseVS())	hw_Unload	();

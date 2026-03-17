@@ -2,10 +2,6 @@
 #define STDAFX_3DA
 #pragma once
 
-#ifdef _EDITOR
-#include "..\editors\ECore\stdafx.h"
-#else
-
 #include "../xrCore/xrCore.h"
 #include "../Include/xrAPI/xrAPI.h"
 
@@ -15,7 +11,6 @@
 
 #pragma warning(disable:4995)
 #include <d3d9.h>
-//#include <dplay8.h>
 #pragma warning(default:4995)
 
 // you must define ENGINE_BUILD then building the engine itself
@@ -74,4 +69,3 @@ extern ENGINE_API CInifile* pGameIni;
  (((ltx)->line_exist(section, name)) ? ((ltx)->method(section, name)) : (default_value))
 
 #endif // !M_BORLAND
-#endif // !defined STDAFX_3DA

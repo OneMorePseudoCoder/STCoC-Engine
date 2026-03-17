@@ -405,9 +405,6 @@ void CSkeletonX_ST::Load(const char* N, IReader *data, u32 dwFlags)
 
 void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 {
-	// Create HW VB in case this is possible
-//	BOOL	bSoft				= HW.Caps.geometry.bSoftware;
-//	u32		dwUsage				= /*D3DUSAGE_WRITEONLY |*/ (bSoft?D3DUSAGE_SOFTWAREPROCESSING:0);	// VB may be read by wallmarks code
 	switch (RenderMode)
 	{
 	case RM_SINGLE:
@@ -421,19 +418,7 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 
 		u32		vStride = D3DXGetDeclVertexSize(dwDecl_01W, 0);
 		VERIFY(vStride == sizeof(vertHW_1W));
-		//			BYTE*	bytes		= 0;
 		VERIFY(NULL == V.p_rm_Vertices);
-
-		//R_CHK				(HW.pDevice->CreateVertexBuffer(V.vCount*vStride,dwUsage,0,D3DPOOL_MANAGED,&V.p_rm_Vertices,0));
-		//R_CHK				(V.p_rm_Vertices->Lock(0,0,(void**)&bytes,0));
-		//vertHW_1W*		dst	= (vertHW_1W*)bytes;
-		//vertBoned1W*	src = (vertBoned1W*)_verts_;
-		//for (u32 it=0; it<V.vCount; it++)	{
-			//Fvector2	uv; uv.set(src->u,src->v);
-			//dst->set	(src->P,src->N,src->T,src->B,uv,src->matrix*3);
-			//dst++; src++;
-		//}
-		//V.p_rm_Vertices->Unlock	();
 
 		//	TODO: DX10: Check for memory fragmentation
 		vertHW_1W*		dstOriginal = xr_alloc<vertHW_1W>(V.vCount);
@@ -444,7 +429,6 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 			dst->set(src->P, src->N, src->T, src->B, uv, src->matrix * 3);
 			dst++; src++;
 		}
-		//R_CHK				(HW.pDevice->CreateVertexBuffer(V.vCount*vStride,dwUsage,0,D3DPOOL_MANAGED,&V.p_rm_Vertices,0));
 		R_CHK(dx10BufferUtils::CreateVertexBuffer(&V.p_rm_Vertices, dstOriginal, V.vCount*vStride));
 		HW.stats_manager.increment_stats_vb(V.p_rm_Vertices);
 		xr_free(dstOriginal);
@@ -462,21 +446,7 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 
 		u32 vStride = D3DXGetDeclVertexSize(dwDecl_2W, 0);
 		VERIFY(vStride == sizeof(vertHW_2W));
-		//			BYTE* bytes			= 0;
 		VERIFY(NULL == V.p_rm_Vertices);
-
-		//R_CHK				(HW.pDevice->CreateVertexBuffer(V.vCount*vStride,dwUsage,0,D3DPOOL_MANAGED,&V.p_rm_Vertices,0));
-		//R_CHK				(V.p_rm_Vertices->Lock(0,0,(void**)&bytes,0));
-		//vertHW_2W* dst		= (vertHW_2W*)bytes;
-		//vertBoned2W* src	= (vertBoned2W*)_verts_;
-
-		//for (u32 it=0; it<V.vCount; ++it)	
-		//{
-		//	Fvector2	uv; uv.set(src->u,src->v);
-		//	dst->set	(src->P,src->N,src->T,src->B,uv,int(src->matrix0)*3,int(src->matrix1)*3,src->w);
-		//	dst++;		src++;
-		//}
-		//V.p_rm_Vertices->Unlock	();
 
 		//	TODO: DX10: Check for memory fragmentation
 		vertHW_2W*		dstOriginal = xr_alloc<vertHW_2W>(V.vCount);
@@ -503,22 +473,7 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 
 		u32		vStride = D3DXGetDeclVertexSize(dwDecl_3W, 0);
 		VERIFY(vStride == sizeof(vertHW_3W));
-		//			BYTE*	bytes			= 0;
 		VERIFY(NULL == V.p_rm_Vertices);
-
-		//R_CHK					(HW.pDevice->CreateVertexBuffer(V.vCount*vStride,dwUsage,0,D3DPOOL_MANAGED,&V.p_rm_Vertices,0));
-		//R_CHK					(V.p_rm_Vertices->Lock(0,0,(void**)&bytes,0));
-		//vertHW_3W* dst			= (vertHW_3W*)bytes;
-		//vertBoned3W* src		= (vertBoned3W*)_verts_;
-
-		//for (u32 it=0; it<V.vCount; ++it)	
-		//{
-		//	Fvector2	uv; uv.set(src->u,src->v);
-		//	dst->set	(src->P,src->N,src->T,src->B,uv,int(src->m[0])*3,int(src->m[1])*3,int(src->m[2])*3,src->w[0],src->w[1]);
-		//	dst++;		
-		//	src++;
-		//}
-		//V.p_rm_Vertices->Unlock	();
 
 		//	TODO: DX10: Check for memory fragmentation
 		vertHW_3W*		dstOriginal = xr_alloc<vertHW_3W>(V.vCount);
@@ -547,22 +502,7 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 
 		u32 vStride = D3DXGetDeclVertexSize(dwDecl_4W, 0);
 		VERIFY(vStride == sizeof(vertHW_4W));
-		//			BYTE*	bytes			= 0;
 		VERIFY(NULL == V.p_rm_Vertices);
-
-		//R_CHK					(HW.pDevice->CreateVertexBuffer(V.vCount*vStride,dwUsage,0,D3DPOOL_MANAGED,&V.p_rm_Vertices,0));
-		//R_CHK					(V.p_rm_Vertices->Lock(0,0,(void**)&bytes,0));
-		//vertHW_4W* dst			= (vertHW_4W*)bytes;
-		//vertBoned4W* src		= (vertBoned4W*)_verts_;
-
-		//for (u32 it=0; it<V.vCount; ++it)
-		//{
-		//	Fvector2	uv; uv.set(src->u,src->v);
-		//	dst->set	(src->P,src->N,src->T,src->B,uv,int(src->m[0])*3,int(src->m[1])*3,int(src->m[2])*3,int(src->m[3])*3,src->w[0],src->w[1],src->w[2]);
-		//	dst++;		
-		//	src++;
-		//}
-		//V.p_rm_Vertices->Unlock	();
 
 		//	TODO: DX10: Check for memory fragmentation
 		vertHW_4W*		dstOriginal = xr_alloc<vertHW_4W>(V.vCount);
@@ -689,12 +629,10 @@ void CSkeletonX_ext::_Load_hw(Fvisual& V, void *	_verts_)
 #include "cl_intersect.h"
 
 #ifdef	DEBUG
-
 template	< typename vertex_type >
 static void verify_vertex(const vertex_type& v, const Fvisual* V, const CKinematics *Parent, u32 iBase, u32 iCount, const u16 *indices, u32 vertex_idx, u32 idx)
 {
 	VERIFY(Parent);
-#ifndef _EDITOR
 	for (u8 i = 0; i < vertex_type::bones_count; ++i)
 		if (v.get_bone_id(i) >= Parent->LL_BoneCount())
 		{
@@ -705,8 +643,7 @@ static void verify_vertex(const vertex_type& v, const Fvisual* V, const CKinemat
 			Msg("Parent->dbg_name: %s ", Parent->dbg_name.c_str());
 			FlushLog();
 			FATAL("v.get_bone_id(i) >= Parent->LL_BoneCount()");
-		}
-#endif        
+		}      
 }
 #endif
 
@@ -905,106 +842,6 @@ BOOL CSkeletonX_ext::_PickBoneHW4W(IKinematics::pick_result &r, float dist, cons
 {
 	return pick_bone<vertHW_4W>(Parent, r, dist, S, D, V, indices, faces);
 }
-/*
-BOOL CSkeletonX_ext::_PickBoneHW1W		(Fvector& normal, float& dist, const Fvector& S, const Fvector& D, Fvisual* V, u16* indices, CBoneData::FacesVec& faces)
-{
-	vertHW_1W* vertices;
-	CHK_DX				(V->p_rm_Vertices->Lock(V->vBase,V->vCount,(void**)&vertices,D3DLOCK_READONLY));
-	bool intersect		= FALSE;
-	for (CBoneData::FacesVecIt it=faces.begin(); it!=faces.end(); it++){
-		Fvector			p[3];
-		u32 idx			= (*it)*3;
-		for (u32 k=0; k<3; k++){
-			vertHW_1W& vert			= vertices[indices[idx+k]];
-			vert.get_pos_bones(p[k],Parent);
-		}
-		float u,v,range	= flt_max;
-		if (CDB::TestRayTri(S,D,p,u,v,range,true)&&(range<dist)){
-			normal.mknormal(p[0],p[1],p[2]);
-			dist		= range;
-			intersect	= TRUE;
-		}
-	}
-	CHK_DX				(V->p_rm_Vertices->Unlock());
-	return intersect;
-}
-BOOL CSkeletonX_ext::_PickBoneHW2W		(Fvector& normal, float& dist, const Fvector& S, const Fvector& D, Fvisual* V, u16* indices, CBoneData::FacesVec& faces)
-{
-	vertHW_2W*			vertices;
-	CHK_DX				(V->p_rm_Vertices->Lock(V->vBase,V->vCount,(void**)&vertices,D3DLOCK_READONLY));
-	bool intersect		= FALSE;
-
-	for (CBoneData::FacesVecIt it=faces.begin(); it!=faces.end(); it++){
-		Fvector			p[3];
-		u32 idx			= (*it)*3;
-		for (u32 k=0; k<3; k++)
-		{
-			vertHW_2W& vert			= vertices[indices[idx+k]];
-			vert.get_pos_bones(p[k],Parent);
-		}
-		float u,v,range	= flt_max;
-		if (CDB::TestRayTri(S,D,p,u,v,range,true)&&(range<dist)){
-			normal.mknormal(p[0],p[1],p[2]);
-			dist		= range;
-			intersect	= TRUE;
-		}
-	}
-	CHK_DX				(V->p_rm_Vertices->Unlock());
-	return intersect;
-}
-
-BOOL CSkeletonX_ext::_PickBoneHW3W(Fvector& normal, float& dist, const Fvector& S, const Fvector& D, Fvisual* V, u16* indices, CBoneData::FacesVec& faces)
-{
-	vertHW_3W*			vertices;
-	CHK_DX				(V->p_rm_Vertices->Lock(V->vBase,V->vCount,(void**)&vertices,D3DLOCK_READONLY));
-	bool intersect		= FALSE;
-
-	for (CBoneData::FacesVecIt it=faces.begin(); it!=faces.end(); it++){
-		Fvector			p[3];
-		u32 idx			= (*it)*3;
-		for (u32 k=0; k<3; k++){
-			vertHW_3W& vert			= vertices[indices[idx+k]];
-			vert.get_pos_bones		(p[k],Parent);
-		}
-
-		float u,v,range	= flt_max;
-		if (CDB::TestRayTri(S,D,p,u,v,range,true)&&(range<dist)){
-			normal.mknormal(p[0],p[1],p[2]);
-			dist		= range;
-			intersect	= TRUE;
-		}
-	}
-	CHK_DX				(V->p_rm_Vertices->Unlock());
-	return				intersect;
-}
-
-BOOL CSkeletonX_ext::_PickBoneHW4W(Fvector& normal, float& dist, const Fvector& S, const Fvector& D, Fvisual* V, u16* indices, CBoneData::FacesVec& faces)
-{
-	vertHW_4W*			vertices;
-	CHK_DX				(V->p_rm_Vertices->Lock(V->vBase,V->vCount,(void**)&vertices,D3DLOCK_READONLY));
-	bool intersect		= FALSE;
-
-	for (CBoneData::FacesVecIt it=faces.begin(); it!=faces.end(); it++){
-		Fvector			p[3];
-		u32 idx			= (*it)*3;
-		for (u32 k=0; k<3; k++)
-		{
-			vertHW_4W& vert			= vertices[indices[idx+k]];
-			vert.get_pos_bones		(p[k],Parent);
-		}
-
-		float u,v,range	= flt_max;
-		if (CDB::TestRayTri(S,D,p,u,v,range,true)&&(range<dist))
-		{
-			normal.mknormal(p[0],p[1],p[2]);
-			dist		= range;
-			intersect	= TRUE;
-		}
-	}
-	CHK_DX				(V->p_rm_Vertices->Unlock());
-	return				intersect;
-}
-*/
 
 BOOL CSkeletonX_ext::_PickBone(IKinematics::pick_result &r, float dist, const Fvector& start, const Fvector& dir, Fvisual* V, u16 bone_id, u32 iBase, u32 iCount)
 {
@@ -1053,13 +890,12 @@ BOOL CSkeletonX_PM::PickBone(IKinematics::pick_result &r, float dist, const Fvec
 	return inherited2::_PickBone(r, dist, start, dir, this, bone_id, iBase + SW.offset, SW.num_tris * 3);
 }
 
-
-void	CSkeletonX_ST::EnumBoneVertices(SEnumVerticesCallback &C, u16 bone_id)
+void CSkeletonX_ST::EnumBoneVertices(SEnumVerticesCallback &C, u16 bone_id)
 {
 	inherited2::_EnumBoneVertices(C, this, bone_id, iBase, iCount);
 }
 
-void	CSkeletonX_PM::EnumBoneVertices(SEnumVerticesCallback &C, u16 bone_id)
+void CSkeletonX_PM::EnumBoneVertices(SEnumVerticesCallback &C, u16 bone_id)
 {
 	FSlideWindow& SW = nSWI.sw[0];
 	inherited2::_EnumBoneVertices(C, this, bone_id, iBase + SW.offset, SW.num_tris * 3);

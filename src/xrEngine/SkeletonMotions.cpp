@@ -3,7 +3,6 @@
 #pragma hdrstop
 
 #include "SkeletonMotions.h"
-//#include "SkeletonAnimated.h"
 #include "Fmesh.h"
 #include "motion.h"
 #include "..\Include\xrRender\Kinematics.h"
@@ -106,35 +105,17 @@ BOOL motions_value::load(LPCSTR N, IReader* data, vecBones* bones)
                 MP->r_stringZ(buf, sizeof(buf));
                 u16 m_idx = u16(MP->r_u32());
                 *b_it = find_bone_id(bones, buf);
-#ifdef _EDITOR
-                if (*b_it==BI_NONE )
-                {
-                    bRes = false;
-                    Msg ("!Can't find bone: '%s'", buf);
-                }
 
-                if (rm_bones.size() <= m_idx)
-                {
-                    bRes = false;
-                    Msg ("!Can't load: '%s' invalid bones count", N);
-                }
-#else
                 VERIFY3(*b_it != BI_NONE, "Can't find bone:", buf);
-#endif
-                if (bRes) rm_bones[m_idx] = u16(*b_it);
+
+                if (bRes)
+					rm_bones[m_idx] = u16(*b_it);
             }
             part_bone_cnt = u16(part_bone_cnt + (u16)PART.bones.size());
         }
 
-#ifdef _EDITOR
-        if (part_bone_cnt!=(u16)bones->size())
-        {
-            bRes = false;
-            Msg("!Different bone count[%s] [Object: '%d' <-> Motions: '%d']", N, bones->size(),part_bone_cnt);
-        }
-#else
         VERIFY3(part_bone_cnt == (u16)bones->size(), "Different bone count '%s'", N);
-#endif
+
         if (bRes)
         {
             // motion defs (cycle&fx)
@@ -148,7 +129,6 @@ BOOL motions_value::load(LPCSTR N, IReader* data, vecBones* bones)
                 u32 dwFlags = MP->r_u32();
                 CMotionDef& D = m_mdefs[mot_i];
                 D.Load(MP, dwFlags, vers);
-                //. m_mdefs.push_back (D);
 
                 if (dwFlags&esmFX)
                     m_fx.insert(std::make_pair(nm, mot_i));
@@ -164,11 +144,13 @@ BOOL motions_value::load(LPCSTR N, IReader* data, vecBones* bones)
     {
         Debug.fatal(DEBUG_INFO, "Old skinned model version unsupported! (%s)", N);
     }
-    if (!bRes) return false;
+    if (!bRes)
+		return false;
 
     // Load animation
     IReader* MS = data->open_chunk(OGF_S_MOTIONS);
-    if (!MS) return false;
+    if (!MS)
+		return false;
 
     u32 dwCNT = 0;
     MS->r_chunk_safe(0, &dwCNT, sizeof(dwCNT));
@@ -266,7 +248,7 @@ BOOL motions_value::load(LPCSTR N, IReader* data, vecBones* bones)
             
         }
     }
-    // Msg("Motions %d/%d %4d/%4d/%d, %s",p_cnt,m_cnt, m_load,m_total,m_r,N);
+
     MS->close();
 
     return bRes;
@@ -275,25 +257,18 @@ BOOL motions_value::load(LPCSTR N, IReader* data, vecBones* bones)
 MotionVec* motions_value::bone_motions(shared_str bone_name)
 {
     BoneMotionMapIt I = m_motions.find(bone_name);
-    // VERIFY (I != m_motions.end());
     if (I == m_motions.end())
         return (0);
 
     return (&(*I).second);
 }
-//-----------------------------------
+
 motions_container::motions_container()
-{
-}
-//extern shared_str s_bones_array_const;
+{}
+
 motions_container::~motions_container()
 {
-    // clean (false);
-    // clean (true);
-    // dump ();
     VERIFY(container.empty());
-    // Igor:
-    //s_bones_array_const = 0;
 }
 
 bool motions_container::has(shared_str key)
@@ -320,6 +295,7 @@ motions_value* motions_container::dock(shared_str key, IReader* data, vecBones* 
     }
     return result;
 }
+
 void motions_container::clean(bool force_destroy)
 {
     SharedMotionsMapIt it = container.begin();
@@ -353,6 +329,7 @@ void motions_container::clean(bool force_destroy)
         }
     }
 }
+
 void motions_container::dump()
 {
     SharedMotionsMapIt it = container.begin();
@@ -373,8 +350,8 @@ void motions_container::dump()
 void CMotionDef::Load(IReader* MP, u32 fl, u16 version)
 {
     // params
-    bone_or_part = MP->r_u16(); // bCycle?part_id:bone_id;
-    motion = MP->r_u16(); // motion_id
+    bone_or_part = MP->r_u16();
+    motion = MP->r_u16();
     speed = Quantize(MP->r_float());
     power = Quantize(MP->r_float());
     accrue = Quantize(MP->r_float());
@@ -501,17 +478,3 @@ void ENGINE_API motion_marks::Load(IReader* R)
         item.second = R->r_float();
     }
 }
-#ifdef _EDITOR
-void motion_marks::Save(IWriter* W)
-{
-    W->w_string (name.c_str());
-    u32 cnt = intervals.size();
-    W->w_u32 (cnt);
-    for(u32 i=0; i<cnt; ++i)
-    {
-        interval& item = intervals[i];
-        W->w_float (item.first);
-        W->w_float (item.second);
-    }
-}
-#endif

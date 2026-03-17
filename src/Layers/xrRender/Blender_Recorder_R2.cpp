@@ -74,7 +74,6 @@ u32		CBlender_Compile::i_Sampler		(LPCSTR _name)
 	//
 	string256				name;
 	xr_strcpy					(name,_name);
-//. andy	if (strext(name)) *strext(name)=0;
 	fix_texture_name		(name);
 
 	// Find index
@@ -85,7 +84,6 @@ u32		CBlender_Compile::i_Sampler		(LPCSTR _name)
 	u32 stage				= C->samp.index;
 
 	// Create texture
-	// while (stage>=passTextures.size())	passTextures.push_back		(NULL);
 	return					stage;
 }
 void	CBlender_Compile::i_Texture		(u32 s, LPCSTR name)
@@ -137,8 +135,8 @@ u32		CBlender_Compile::r_Sampler		(LPCSTR _name, LPCSTR texture, bool b_ps1x_Pro
 		
 		if ( 0==xr_strcmp(_name,"s_base_hud") )
 		{
-			fmin	= D3DTEXF_GAUSSIANQUAD; //D3DTEXF_PYRAMIDALQUAD; //D3DTEXF_ANISOTROPIC; //D3DTEXF_LINEAR; //D3DTEXF_POINT; //D3DTEXF_NONE
-			fmag	= D3DTEXF_GAUSSIANQUAD; //D3DTEXF_PYRAMIDALQUAD; //D3DTEXF_ANISOTROPIC; //D3DTEXF_LINEAR; //D3DTEXF_POINT; //D3DTEXF_NONE; 
+			fmin	= D3DTEXF_GAUSSIANQUAD;
+			fmag	= D3DTEXF_GAUSSIANQUAD;
 		}
 
 		if ((0==xr_strcmp(_name,"s_detail")) && (fmin==D3DTEXF_LINEAR))	{ fmin = D3DTEXF_ANISOTROPIC; fmag=D3DTEXF_ANISOTROPIC; }
@@ -146,7 +144,6 @@ u32		CBlender_Compile::r_Sampler		(LPCSTR _name, LPCSTR texture, bool b_ps1x_Pro
 		// Sampler states
 		i_Address				(dwStage,address);
 		i_Filter				(dwStage,fmin,fmip,fmag);
-		//.i_Filter				(dwStage,D3DTEXF_POINT,D3DTEXF_POINT,D3DTEXF_POINT); // show pixels
 		if (dwStage<4)			i_Projective		(dwStage,b_ps1x_ProjectiveDivide);
 	}
 	return	dwStage;
@@ -173,9 +170,6 @@ void	CBlender_Compile::r_End			()
 	dest.state				= DEV->_CreateState		(RS.GetContainer());
 	dest.T					= DEV->_CreateTextureList	(passTextures);
 	dest.C					= 0;
-#ifdef _EDITOR
-	dest.M					= 0;
-#endif
 	SH->passes.push_back(DEV->_CreatePass(dest));
 }
 #endif	//	USE_DX10

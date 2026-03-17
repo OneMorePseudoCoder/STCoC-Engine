@@ -3,10 +3,7 @@
 
 #include "ResourceManager.h"
 
-#ifndef _EDITOR
 #include "../../xrEngine/render.h"
-#endif
-
 #include "../../xrEngine/tntQAVI.h"
 #include "../../xrEngine/xrTheora_Surface.h"
 
@@ -16,13 +13,10 @@
 #define		PRIORITY_NORMAL	8
 #define		PRIORITY_LOW	4
 
-
-
 void resptrcode_texture::create(LPCSTR _name)
 {
 	_set(DEV->_CreateTexture(_name));
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -162,10 +156,7 @@ void CTexture::Load		()
 	}
 
 	Preload							();
-//#ifndef		DEDICATED_SERVER
-#ifndef _EDITOR
 	if (!g_dedicated_server)
-#endif
 	{
 		// Check for OGM
 		string_path			fn;
@@ -284,7 +275,6 @@ void CTexture::Load		()
 				flags.MemoryUsage		=	mem;
 			}
 		}
-//#endif
 	}
 	PostLoad	()		;
 }
@@ -296,8 +286,6 @@ void CTexture::Unload	()
 	xr_sprintf				(msg_buff,sizeof(msg_buff),"* Unloading texture [%s] pSurface RefCount=",cName.c_str());
 #endif // DEBUG
 
-//.	if (flags.bLoaded)		Msg		("* Unloaded: %s",cName.c_str());
-	
 	flags.bLoaded			= FALSE;
 	if (!seqDATA.empty())	{
 		for (u32 I=0; I<seqDATA.size(); I++)

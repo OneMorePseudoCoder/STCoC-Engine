@@ -312,11 +312,7 @@ private:
 
 extern ENGINE_API CRenderDevice Device;
 
-#ifndef _EDITOR
 #define RDEVICE Device
-#else
-#define RDEVICE EDevice
-#endif
 
 extern ENGINE_API bool g_bBenchmark;
 

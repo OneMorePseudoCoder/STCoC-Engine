@@ -1,25 +1,15 @@
 #include "stdafx.h"
 #pragma hdrstop
-
-#ifndef _EDITOR
 #include "render.h"
-#endif
-
 #include "Environment.h"
 #include "xr_efflensflare.h"
 #include "rain.h"
 #include "thunderbolt.h"
 #include "xrHemisphere.h"
 #include "perlin.h"
-
 #include "xr_input.h"
-
-#ifndef _EDITOR
 #include "IGame_Level.h"
-#endif
-
 #include "../xrcore/xrCore.h"
-
 #include "../Include/xrRender/EnvironmentRender.h"
 #include "../Include/xrRender/LensFlareRender.h"
 #include "../Include/xrRender/RainRender.h"
@@ -54,14 +44,8 @@ m_ambients_config(0)
     eff_LensFlare = 0;
     eff_Thunderbolt = 0;
     OnDeviceCreate();
-#ifdef _EDITOR
-    ed_from_time = 0.f;
-    ed_to_time = DAY_LENGTH;
-#endif
 
-#ifndef _EDITOR
     m_paused = false;
-#endif
 
     fGameTime = 0.f;
     fTimeFactor = 12.f;
@@ -161,8 +145,10 @@ void CEnvironment::Invalidate()
 
 float CEnvironment::TimeDiff(float prev, float cur)
 {
-    if (prev > cur) return (DAY_LENGTH - prev) + cur;
-    else return cur - prev;
+    if (prev > cur)
+		return (DAY_LENGTH - prev) + cur;
+    else
+		return cur - prev;
 }
 
 float CEnvironment::TimeWeight(float val, float min_t, float max_t)
@@ -173,16 +159,19 @@ float CEnvironment::TimeWeight(float val, float min_t, float max_t)
     {
         if (min_t > max_t)
         {
-            if ((val >= min_t) || (val <= max_t)) weight = TimeDiff(min_t, val) / length;
+            if ((val >= min_t) || (val <= max_t))
+				weight = TimeDiff(min_t, val) / length;
         }
         else
         {
-            if ((val >= min_t) && (val <= max_t)) weight = TimeDiff(min_t, val) / length;
+            if ((val >= min_t) && (val <= max_t))
+				weight = TimeDiff(min_t, val) / length;
         }
         clamp(weight, 0.f, 1.f);
     }
     return weight;
 }
+
 void CEnvironment::ChangeGameTime(float game_time)
 {
     fGameTime = NormalizeTime(fGameTime + game_time);
@@ -190,13 +179,12 @@ void CEnvironment::ChangeGameTime(float game_time)
 
 void CEnvironment::SetGameTime(float game_time, float time_factor)
 {
-#ifndef _EDITOR
     if (m_paused)
     {
         g_pGameLevel->SetEnvironmentGameTimeFactor(iFloor(fGameTime*1000.f), fTimeFactor);
         return;
     }
-#endif
+
     if (bWFX)
         wfx_time -= TimeDiff(fGameTime, game_time);
     fGameTime = game_time;
@@ -225,7 +213,10 @@ void CEnvironment::SetWeather(shared_str name, bool forced)
         }
         R_ASSERT3(it != WeatherCycles.end(), "Invalid weather name.", *name);
         CurrentCycleName = it->first;
-        if (forced) { Invalidate(); }
+        if (forced)
+		{ 
+			Invalidate(); 
+		}
         if (!bWFX)
         {
             CurrentWeather = &it->second;
@@ -238,9 +229,7 @@ void CEnvironment::SetWeather(shared_str name, bool forced)
     }
     else
     {
-#ifndef _EDITOR
         FATAL("! Empty weather name");
-#endif
     }
 }
 
@@ -302,9 +291,7 @@ bool CEnvironment::SetWeatherFX(shared_str name)
     }
     else
     {
-#ifndef _EDITOR
         FATAL("! Empty weather effect name");
-#endif
     }
     return true;
 }
@@ -412,7 +399,8 @@ int get_ref_count(IUnknown* ii)
 
 void CEnvironment::lerp(float& current_weight)
 {
-    if (bWFX && (wfx_time <= 0.f)) StopWFX();
+    if (bWFX && (wfx_time <= 0.f))
+		StopWFX();
 
     SelectEnvs(fGameTime);
     VERIFY(Current[0] && Current[1]);
@@ -439,29 +427,8 @@ void CEnvironment::lerp(float& current_weight)
 
 void CEnvironment::OnFrame()
 {
-#ifdef _EDITOR
-    SetGameTime(fGameTime + Device.fTimeDelta*fTimeFactor, fTimeFactor);
-    if (fsimilar(ed_to_time, DAY_LENGTH) && fsimilar(ed_from_time, 0.f))
-    {
-        if (fGameTime > DAY_LENGTH) fGameTime -= DAY_LENGTH;
-    }
-    else
-    {
-        if (fGameTime > ed_to_time)
-        {
-            fGameTime = fGameTime - ed_to_time + ed_from_time;
-            Current[0] = Current[1] = 0;
-        }
-        if (fGameTime < ed_from_time)
-        {
-            fGameTime = ed_from_time;
-            Current[0] = Current[1] = 0;
-        }
-    }
-    if (!psDeviceFlags.is(rsEnvironment)) return;
-#else
-    if (!g_pGameLevel) return;
-#endif
+    if (!g_pGameLevel)
+		return;
 
     float current_weight;
     lerp(current_weight);
@@ -511,8 +478,10 @@ void CEnvironment::calculate_dynamic_sun_dir()
     float SHA = (fGameTime / (DAY_LENGTH / 24) - 12) * 15 + Longitude + TC;
 
     // Need this to correctly determine SHA sign
-    if (SHA > 180) SHA -= 360;
-    if (SHA < -180) SHA += 360;
+    if (SHA > 180)
+		SHA -= 360;
+    if (SHA < -180)
+		SHA += 360;
 
     // IN degrees
     float const Latitude = 50.27f;

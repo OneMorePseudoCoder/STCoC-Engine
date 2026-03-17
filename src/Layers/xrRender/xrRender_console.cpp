@@ -250,7 +250,6 @@ xr_token ext_quality_token[] = { {"qt_off", 0}, {"qt_low", 1}, {"qt_medium", 2},
 //- Mad Max
 float		ps_r2_gloss_factor			= 4.0f;
 //- Mad Max
-#ifndef _EDITOR
 #include	"../../xrEngine/xr_ioconsole.h"
 #include	"../../xrEngine/xr_ioc_cmd.h"
 
@@ -947,5 +946,3 @@ void	xrRender_apply_tf		()
 	Console->Execute	("r2_tf_mipbias");
 #endif
 }
-
-#endif

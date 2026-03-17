@@ -3,17 +3,12 @@
 	#define XRNETSERVER_API __declspec(dllexport)
 #else
 	#define XRNETSERVER_API __declspec(dllimport)
-
-	#ifndef _EDITOR
-		#pragma comment(lib,	"xrNetServer"	)
-    #endif
+	#pragma comment(lib, "xrNetServer")
 #endif
 
 #include "../xrCore/net_utils.h"
 #include <dplay/dplay8.h>
 #include "net_messages.h"
-
-
 
 #include "net_compressor.h"
 

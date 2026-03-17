@@ -311,17 +311,8 @@ public:
     void OnDeviceCreate();
     void OnDeviceDestroy();
 
-    // editor-related
-#ifdef _EDITOR
-public:
-    float ed_from_time;
-    float ed_to_time;
-public:
-    void ED_Reload();
-    float GetGameTime() { return fGameTime; }
-#else // #ifdef _EDITOR
     bool m_paused;
-#endif // #ifdef _EDITOR
+
 	//[FFT++]: thx to OpenXray 1.6
 	bool useDynamicSunDir;
 	float sunDirAzimuth;

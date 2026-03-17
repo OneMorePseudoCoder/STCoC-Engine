@@ -109,12 +109,9 @@ void CDetail::Load		(IReader* S)
 		bv_bb.modify	(vertices[i].P);
 	bv_bb.getsphere		(bv_sphere.P,bv_sphere.R);
 
-#ifndef _EDITOR
 	Optimize	();
-#endif
 }
 
-#ifndef _EDITOR
 #include "xrstripify.h"
 
 void CDetail::Optimize	()
@@ -130,8 +127,6 @@ void CDetail::Optimize	()
 	int vt_new			= xrSimulate(vec_indices,cache);
 	if (vt_new<vt_old)	
 	{
-		// Msg					("* DM: %d verts, %d indices, VT: %d/%d",number_vertices,number_indices,vt_old,vt_new);
-
 		// Copy faces
 		CopyMemory			(indices,&*vec_indices.begin(),vec_indices.size()*sizeof(u16));
 
@@ -142,4 +137,3 @@ void CDetail::Optimize	()
 			vertices[i]=verts[vec_permute[i]];
 	}
 }
-#endif

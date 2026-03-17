@@ -2,9 +2,9 @@
 #ifndef SkeletonMotionsH
 #define SkeletonMotionsH
 
-//#include "skeletoncustom.h"
 #include "bone.h"
 #include "skeletonmotiondefs.h"
+
 // refs
 class CKinematicsAnimated;
 class CBlend;
@@ -23,23 +23,28 @@ enum
 	flTKeyFFT_Bit = ( 1 << 3),
 };
 #pragma pack(push,2)
+
 struct CKey
 {
     Fquaternion Q; // rotation
     Fvector T; // translation
 };
+
 struct CKeyQR
 {
     s16 x, y, z, w; // rotation
 };
+
 struct CKeyQT8
 {
     s8 x1, y1, z1;
 };
+
 struct CKeyQT16
 {
     s16 x1, y1, z1;
 };
+
 struct CKeyQT_FFT
 {
 	float x1,y1,z1;
@@ -49,13 +54,7 @@ struct CKeyQR_FFT
 {
 	float x, y, z, w; // rotation
 };
-/*
-struct CKeyQT
-{
-// s8 x,y,z;
-s16 x1,y1,z1;
-};
-*/
+
 #pragma pack(pop)
 
 //*** Motion Data *********************************************************************************
@@ -100,11 +99,7 @@ class ENGINE_API motion_marks
 {
 public:
     typedef std::pair< float, float > interval;
-#ifdef _EDITOR
-public:
-#else
 private:
-#endif
     typedef xr_vector< interval > STORAGE;
     typedef STORAGE::iterator ITERATOR;
     typedef STORAGE::const_iterator C_ITERATOR;
@@ -113,10 +108,6 @@ private:
 public:
     shared_str name;
     void Load(IReader*);
-
-#ifdef _EDITOR
-    void Save(IWriter*);
-#endif
     bool is_empty() const { return intervals.empty(); }
     const interval* pick_mark(float const& t) const;
     bool is_mark_between(float const& t0, float const& t1) const;

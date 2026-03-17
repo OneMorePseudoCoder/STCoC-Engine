@@ -9,11 +9,7 @@
 #include <d3dx9.h>
 #pragma warning(default:4995)
 
-#ifndef _EDITOR
-	#include	"../../xrEngine/Render.h"
-#else
-	#include "../../Include/xrAPI/xrAPI.h"
-#endif
+#include "../../xrEngine/Render.h"
 
 #include "SkeletonX.h"
 #include "SkeletonCustom.h"
@@ -114,15 +110,12 @@ void CSkeletonX::_Load	(const char* N, IReader *data, u32& dwVertCount)
 	//	Igor: some shaders in r1 need more free constant registers
 	u16			hw_bones_cnt		= u16((HW.Caps.geometry.dwRegisters-22-3)/3);
 
-	#if RENDER == R_R1
+#if RENDER == R_R1
 		if ( ps_r1_SoftwareSkinning == 1 )
 			hw_bones_cnt = 0;
-	#endif // RENDER == R_R1
+#endif // RENDER == R_R1
 
 	u16			sw_bones_cnt		= 0;
-#ifdef _EDITOR
-	hw_bones_cnt					= 0;
-#endif
 
 	u32								dwVertType,size,it,crc;
 	dwVertType						= data->r_u32(); 
@@ -149,11 +142,6 @@ void CSkeletonX::_Load	(const char* N, IReader *data, u32& dwVertCount)
 
 				sw_bones_cnt		= _max(sw_bones_cnt, mid);
 			}
-#ifdef _EDITOR
-			// software
-			crc						= crc32	(data->pointer(),size);
-			Vertices1W.create		(crc,dwVertCount,(vertBoned1W*)data->pointer());
-#else
 			if(1==bids.size())	
 			{
 				// HW- single bone
@@ -173,8 +161,7 @@ void CSkeletonX::_Load	(const char* N, IReader *data, u32& dwVertCount)
 				crc								= crc32	(data->pointer(),size);
 				Vertices1W.create				(crc,dwVertCount,(vertBoned1W*)data->pointer());
 				Render->shader_option_skinning	(-1);
-			}
-#endif        
+			}    
 		}
 		break;
 	case OGF_VERTEXFORMAT_FVF_2L: // 2-Link
@@ -276,11 +263,7 @@ void CSkeletonX::_Load	(const char* N, IReader *data, u32& dwVertCount)
 		Debug.fatal	(DEBUG_INFO,"Invalid vertex type in skinned model '%s'",N);
 		break;
 	}
-#ifdef _EDITOR
-	if (bids.size()>0)	
-#else
-	if (bids.size()>1)	
-#endif
+	if (bids.size()>1)
     {
 		crc					= crc32(&*bids.begin(),bids.size()*sizeof(u16)); 
 		BonesUsed.create	(crc,bids.size(),&*bids.begin());

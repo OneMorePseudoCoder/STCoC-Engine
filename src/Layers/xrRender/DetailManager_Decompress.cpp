@@ -4,12 +4,6 @@
 #include "DetailManager.h"
 #include "cl_intersect.h"
 
-#ifdef _EDITOR
-#	include "scene.h"
-#	include "sceneobject.h"
-#	include "../utils/ETools/ETools.h"
-#endif
-
 //--------------------------------------------------- Decompression
 IC float	Interpolate			(float* base,		u32 x, u32 y, u32 size)
 {
@@ -40,9 +34,7 @@ IC bool		InterpolateAndDither(float* alpha255,	u32 x, u32 y, u32 sx, u32 sy, u32
 	return	c	> dither[col][row];
 }
 
-#ifndef _EDITOR
 #ifdef	DEBUG
-//#include "../../Include/xrRender/DebugRender.h"
 #include "dxDebugRender.h"
 static void draw_obb		( const Fmatrix &matrix, const u32 &color )
 {
@@ -65,11 +57,9 @@ static void draw_obb		( const Fmatrix &matrix, const u32 &color )
 
 bool det_render_debug = false;
 #endif
-#endif
 
 #include "../../xrEngine/gamemtllib.h"
 
-//#define		DBG_SWITCHOFF_RANDOMIZE
 void		CDetailManager::cache_Decompress(Slot* S)
 {
 	VERIFY				(S);
@@ -83,19 +73,11 @@ void		CDetailManager::cache_Decompress(Slot* S)
 	Fvector		bC,bD;
 	D.vis.box.get_CD	(bC,bD);
 
-#ifdef _EDITOR
-	ETOOLS::box_options	(CDB::OPT_FULL_TEST);
-	// Select polygons
-	SBoxPickInfoVec		pinf;
-    Scene->BoxPickObjects(D.vis.box,pinf,GetSnapList());
-	u32	triCount		= pinf.size();
-#else
 	xrc.box_options		(CDB::OPT_FULL_TEST); 
 	xrc.box_query		(g_pGameLevel->ObjectSpace.GetStaticModel(),bC,bD);
 	u32	triCount		= xrc.r_count	();
 	CDB::TRI*	tris	= g_pGameLevel->ObjectSpace.GetStaticTris();
 	Fvector*	verts	= g_pGameLevel->ObjectSpace.GetStaticVerts();
-#endif
 
 	if (0==triCount)	return;
 
@@ -209,7 +191,6 @@ void		CDetailManager::cache_Decompress(Slot* S)
 			Item.scale	= r_scale.randF		(Dobj->m_fMinScale*0.5f,Dobj->m_fMaxScale*0.9f) * ps_current_detail_height;
 #else
 			Item.scale	= (Dobj->m_fMinScale*0.5f+Dobj->m_fMaxScale*0.9f)/2;
-			//Item.scale	= 0.1f;
 #endif
 			// X-Form BBox
 			Fmatrix		mScale,mXform;
@@ -227,26 +208,11 @@ void		CDetailManager::cache_Decompress(Slot* S)
 			ItemBB.xform					(Dobj->bv_bb,mXform);
 			Bounds.merge					(ItemBB);
 
-#ifndef _EDITOR
 #ifdef		DEBUG
-			if(det_render_debug)
-				draw_obb(  mXform, color_rgba		(255,0,0,255) );//Fmatrix().mul_43( mXform, Fmatrix().scale(5,5,5) )
-#endif
+			if (det_render_debug)
+				draw_obb(  mXform, color_rgba		(255,0,0,255) );
 #endif
 
-			// Color
-			/*
-			DetailPalette*	c_pal			= (DetailPalette*)&DS.color;
-			float gray255	[4];
-			gray255[0]						=	255.f*float(c_pal->a0)/15.f;
-			gray255[1]						=	255.f*float(c_pal->a1)/15.f;
-			gray255[2]						=	255.f*float(c_pal->a2)/15.f;
-			gray255[3]						=	255.f*float(c_pal->a3)/15.f;
-			*/
-			//float c_f						=	1.f;	//Interpolate		(gray255,x,z,d_size)+.5f;
-			//int c_dw						=	255;	//iFloor			(c_f);
-			//clamp							(c_dw,0,255);
-			//Item.C_dw						=	color_rgba		(c_dw,c_dw,c_dw,255);
 #if RENDER==R_R1
 			Item.c_rgb.x					=	DS.r_qclr	(DS.c_r,	15);
 			Item.c_rgb.y					=	DS.r_qclr	(DS.c_g,	15);
@@ -254,9 +220,6 @@ void		CDetailManager::cache_Decompress(Slot* S)
 #endif
 			Item.c_hemi						=	DS.r_qclr	(DS.c_hemi,	15);
 			Item.c_sun						=	DS.r_qclr	(DS.c_dir,	15);
-
-			//? hack: RGB = hemi
-			//? Item.c_rgb.add					(ps_r__Detail_rainbow_hemi*Item.c_hemi);
 
 			// Vis-sorting
 #ifndef		DBG_SWITCHOFF_RANDOMIZE

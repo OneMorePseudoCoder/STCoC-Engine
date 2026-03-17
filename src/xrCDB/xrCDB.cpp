@@ -77,7 +77,6 @@ void	MODEL::build_thread		(void *params)
 	P.M->build_internal			(P.V,P.Vcnt,P.T,P.Tcnt,P.BC,P.BCP);
 	P.M->status					= S_READY;
 	P.M->cs.Leave				();
-	//Msg						("* xrCDB: cform build completed, memory usage: %d K",P.M->memory()/1024);
 }
 
 void	MODEL::build			(Fvector* V, int Vcnt, TRI* T, int Tcnt, build_callback* bc, void* bcp)
@@ -86,20 +85,18 @@ void	MODEL::build			(Fvector* V, int Vcnt, TRI* T, int Tcnt, build_callback* bc,
     R_ASSERT					((Vcnt>=4)&&(Tcnt>=2));
 
 	_initialize_cpu_thread		();
-#ifdef _EDITOR    
-	build_internal				(V,Vcnt,T,Tcnt,bc,bcp);
-#else
+
 	if(!strstr(Core.Params, "-mt_cdb"))
 	{
 		build_internal				(V,Vcnt,T,Tcnt,bc,bcp);
 		status						= S_READY;
-	}else
+	}
+	else
 	{
 		BTHREAD_params				P = { this, V, Vcnt, T, Tcnt, bc, bcp };
 		thread_spawn				(build_thread,"CDB-construction",0,&P);
 		while						(S_INIT	== status)	Sleep	(5);
 	}
-#endif
 }
 
 void	MODEL::build_internal	(Fvector* V, int Vcnt, TRI* T, int Tcnt, build_callback* bc, void* bcp)

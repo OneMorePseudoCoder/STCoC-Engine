@@ -1,35 +1,21 @@
 #include "stdafx.h"
 #pragma once
-
-#ifndef _EDITOR
 #include "render.h"
-#endif
 #include "Thunderbolt.h"
 #include "igame_persistent.h"
 #include "LightAnimLibrary.h"
-
-#ifdef _EDITOR
-#include "ui_toolscustom.h"
-#else
 #include "igame_level.h"
 #include "../xrcdb/xr_area.h"
 #include "xr_object.h"
-#endif
 
-SThunderboltDesc::SThunderboltDesc() :
-    m_GradientTop(0),
-    m_GradientCenter(0)
-{
-}
+SThunderboltDesc::SThunderboltDesc() : m_GradientTop(0), m_GradientCenter(0)
+{}
 
 SThunderboltDesc::~SThunderboltDesc()
 {
     m_pRender->DestroyModel();
-    //::Render->model_Delete (l_model);
     m_GradientTop->m_pFlare->DestroyShader();
     m_GradientCenter->m_pFlare->DestroyShader();
-    //m_GradientTop.hShader.destroy ();
-    //m_GradientCenter.hShader.destroy();
     snd.destroy();
 
     xr_delete(m_GradientTop);
@@ -71,24 +57,17 @@ void SThunderboltDesc::load(CInifile& pIni, shared_str const& sect)
     m_name = pIni.r_string(sect, "lightning_model");
     m_pRender->CreateModel(m_name);
 
-    /*
-    IReader* F = 0;
-    F = FS.r_open("$game_meshes$",m_name); R_ASSERT2(F,"Empty 'lightning_model'.");
-    l_model = ::Render->model_CreateDM(F);
-    FS.r_close (F);
-    */
-
     // sound
     m_name = pIni.r_string(sect, "sound");
-    if (m_name&&m_name[0]) snd.create(m_name, st_Effect, sg_Undefined);
+    if (m_name&&m_name[0])
+		snd.create(m_name, st_Effect, sg_Undefined);
 }
 
 //----------------------------------------------------------------------------------------------
 // collection
 //----------------------------------------------------------------------------------------------
 SThunderboltCollection::SThunderboltCollection()
-{
-}
+{}
 
 void SThunderboltCollection::load(CInifile* pIni, CInifile* thunderbolts, LPCSTR sect)
 {
@@ -101,6 +80,7 @@ void SThunderboltCollection::load(CInifile* pIni, CInifile* thunderbolts, LPCSTR
             palette.push_back(g_pGamePersistent->Environment().thunderbolt_description(*thunderbolts, N));
     }
 }
+
 SThunderboltCollection::~SThunderboltCollection()
 {
     for (DescIt d_it = palette.begin(); d_it != palette.end(); d_it++)
@@ -119,22 +99,6 @@ CEffect_Thunderbolt::CEffect_Thunderbolt()
     state = stIdle;
     next_lightning_time = 0.f;
     bEnabled = FALSE;
-
-    // geom
-    //hGeom_model.create (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, RCache.Vertex.Buffer(), RCache.Index.Buffer());
-    //hGeom_gradient.create(FVF::F_LIT,RCache.Vertex.Buffer(),RCache.QuadIB);
-
-    // params
-    // p_var_alt = pSettings->r_fvector2 ( "environment","altitude" );
-    // p_var_alt.x = deg2rad(p_var_alt.x); p_var_alt.y = deg2rad(p_var_alt.y);
-    // p_var_long = deg2rad ( pSettings->r_float ( "environment","delta_longitude" ));
-    // p_min_dist = _min (.95f,pSettings->r_float ( "environment","min_dist_factor" ));
-    // p_tilt = deg2rad (pSettings->r_float ( "environment","tilt" ));
-    // p_second_prop = pSettings->r_float ( "environment","second_propability" );
-    // clamp (p_second_prop,0.f,1.f);
-    // p_sky_color = pSettings->r_float ( "environment","sky_color" );
-    // p_sun_color = pSettings->r_float ( "environment","sun_color" );
-    // p_fog_color = pSettings->r_float ( "environment","fog_color" );
 }
 
 CEffect_Thunderbolt::~CEffect_Thunderbolt()
@@ -142,15 +106,15 @@ CEffect_Thunderbolt::~CEffect_Thunderbolt()
     for (CollectionVecIt d_it = collection.begin(); d_it != collection.end(); d_it++)
         xr_delete(*d_it);
     collection.clear();
-    //hGeom_model.destroy ();
-    //hGeom_gradient.destroy ();
 }
 
 shared_str CEffect_Thunderbolt::AppendDef(CEnvironment& environment, CInifile* pIni, CInifile* thunderbolts, LPCSTR sect)
 {
-    if (!sect || (0 == sect[0])) return "";
+    if (!sect || (0 == sect[0]))
+		return "";
     for (CollectionVecIt it = collection.begin(); it != collection.end(); it++)
-        if ((*it)->section == sect) return (*it)->section;
+        if ((*it)->section == sect)
+			return (*it)->section;
     collection.push_back(environment.thunderbolt_collection(pIni, thunderbolts, sect));
     return collection.back()->section;
 }
@@ -158,13 +122,11 @@ shared_str CEffect_Thunderbolt::AppendDef(CEnvironment& environment, CInifile* p
 BOOL CEffect_Thunderbolt::RayPick(const Fvector& s, const Fvector& d, float& dist)
 {
     BOOL bRes = TRUE;
-#ifdef _EDITOR
-    bRes = Tools->RayPick(s, d, dist, 0, 0);
-#else
     collide::rq_result RQ;
     CObject* E = g_pGameLevel->CurrentViewEntity();
     bRes = g_pGameLevel->ObjectSpace.RayPick(s, d, dist, collide::rqtBoth, RQ, E);
-    if (bRes) dist = RQ.range;
+    if (bRes)
+		dist = RQ.range;
     else
     {
         Fvector N = {0.f, -1.f, 0.f};
@@ -172,12 +134,17 @@ BOOL CEffect_Thunderbolt::RayPick(const Fvector& s, const Fvector& d, float& dis
         Fplane PL;
         PL.build(P, N);
         float dst = dist;
-        if (PL.intersectRayDist(s, d, dst) && (dst <= dist)) { dist = dst; return true; }
-        else return false;
+        if (PL.intersectRayDist(s, d, dst) && (dst <= dist))
+		{ 
+			dist = dst; 
+			return true; 
+		}
+        else
+			return false;
     }
-#endif
     return bRes;
 }
+
 #define FAR_DIST g_pGamePersistent->Environment().CurrentEnv->far_plane
 
 void CEffect_Thunderbolt::Bolt(shared_str id, float period, float lt)
@@ -228,7 +195,6 @@ void CEffect_Thunderbolt::Bolt(shared_str id, float period, float lt)
         current->snd.play_no_feedback(0, 0, dist / 300.f, &pos, 0, 0, &Fvector2().set(dist / 2, dist*2.f));
     }
 
-
     current_direction.invert(); // for env-sun
 }
 
@@ -242,20 +208,18 @@ void CEffect_Thunderbolt::OnFrame(shared_str id, float period, float duration)
     }
     else if (bEnabled && (Device.fTimeGlobal > next_lightning_time))
     {
-        if (state == stIdle && !!(id.size())) Bolt(id, period, duration);
+        if (state == stIdle && !!(id.size()))
+			Bolt(id, period, duration);
     }
     if (state == stWorking)
     {
-        if (current_time > life_time) state = stIdle;
+        if (current_time > life_time)
+			state = stIdle;
         current_time += Device.fTimeDelta;
         Fvector fClr;
         int frame;
         u32 uClr = current->color_anim->CalculateRGB(current_time / life_time, frame);
-        fClr.set(
-            clampr(float(color_get_R(uClr) / 255.f), 0.f, 1.f),
-            clampr(float(color_get_G(uClr) / 255.f), 0.f, 1.f),
-            clampr(float(color_get_B(uClr) / 255.f), 0.f, 1.f)
-        );
+        fClr.set(clampr(float(color_get_R(uClr) / 255.f), 0.f, 1.f), clampr(float(color_get_G(uClr) / 255.f), 0.f, 1.f), clampr(float(color_get_B(uClr) / 255.f), 0.f, 1.f));
 
         lightning_phase = 1.5f*(current_time / life_time);
         clamp(lightning_phase, 0.f, 1.f);
