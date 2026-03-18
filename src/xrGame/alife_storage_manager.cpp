@@ -35,9 +35,7 @@ using namespace luabind; //Alundaio
 extern string_path g_last_saved_game;
 
 CALifeStorageManager::~CALifeStorageManager()
-{
-	*g_last_saved_game = 0;
-}
+{}
 
 void CALifeStorageManager::save(LPCSTR save_name_no_check, bool update_name)
 {
@@ -106,7 +104,7 @@ void CALifeStorageManager::save(LPCSTR save_name_no_check, bool update_name)
 	//Alundaio: To get the savegame fname to make our own custom save states
 	luabind::functor<void> funct2;
 	if (ai().script_engine().functor("alife_storage_manager.CALifeStorageManager_save", funct2))
-		funct2((LPCSTR)m_save_name);
+		funct2(static_cast<pcstr>(m_save_name));
 	//-Alundaio
 
 	if (!update_name)
@@ -118,7 +116,7 @@ void CALifeStorageManager::load(void *buffer, const u32 &buffer_size, LPCSTR fil
 	//Alundaio: So we can get the fname to make our own custom save states
 	luabind::functor<void> funct;
 	if (ai().script_engine().functor("alife_storage_manager.CALifeStorageManager_load", funct))
-		funct((LPCSTR)file_name);
+		funct(file_name);
 	//-Alundaio
 
 	IReader source(buffer, buffer_size);
@@ -177,7 +175,7 @@ bool CALifeStorageManager::load	(LPCSTR save_name_no_check)
 	}
 
 	string_path file_name;
-	FS.update_path (file_name, "$game_saves$", m_save_name);
+	FS.update_path(file_name, "$game_saves$", m_save_name);
 
 	xr_strcpy(g_last_saved_game, save_name);
 	xr_strcpy(g_bug_report_file, file_name);
@@ -186,7 +184,7 @@ bool CALifeStorageManager::load	(LPCSTR save_name_no_check)
 	stream = FS.r_open(file_name);
 	if (!stream) 
 	{
-		Msg("* Cannot find saved game %s",file_name);
+		Msg("* Cannot find saved game %s", file_name);
 		xr_strcpy(m_save_name, save);
 		return (false);
 	}
