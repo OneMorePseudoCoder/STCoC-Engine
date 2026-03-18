@@ -23,7 +23,6 @@
 #include "script_process.h"
 #include "xrServer_Objects.h"
 #include "ui/UIMainIngameWnd.h"
-//#include "../xrphysics/PhysicsGamePars.h"
 #include "../xrphysics/iphworld.h"
 #include "string_table.h"
 #include "autosave_manager.h"
@@ -39,7 +38,6 @@
 #include "MainMenu.h"
 #include "saved_game_wrapper.h"
 #include "level_graph.h"
-//#include "../xrEngine/resourcemanager.h"
 #include "../xrEngine/doug_lea_memory_allocator.h"
 #include "cameralook.h"
 #include "character_hit_animations_params.h"
@@ -48,10 +46,10 @@
 #include "ai_debug_variables.h"
 #include "../xrphysics/console_vars.h"
 #ifdef DEBUG
-#	include "PHDebug.h"
-#	include "ui/UIDebugFonts.h" 
-#	include "game_graph.h"
-#	include "CharacterPhysicsSupport.h"
+#include "PHDebug.h"
+#include "ui/UIDebugFonts.h" 
+#include "game_graph.h"
+#include "CharacterPhysicsSupport.h"
 #endif // DEBUG
 
 string_path		g_last_saved_game;
@@ -963,16 +961,14 @@ public:
 
 };
 
-
-
-/*class CCC_DebugFonts : public IConsole_Command {
+class CCC_DebugFonts : public IConsole_Command {
 public:
 	CCC_DebugFonts (LPCSTR N) : IConsole_Command(N) {bEmptyArgsHandled = true; }
 	virtual void Execute				(LPCSTR args) 
 	{
 		xr_new<CUIDebugFonts>()->ShowDialog(true);		
 	}
-};*/
+};
 
 class CCC_DebugNode : public IConsole_Command {
 public:
@@ -1885,22 +1881,15 @@ void CCC_RegisterCommands()
 	CMD3(CCC_Mask,				"ai_animation_stats",		&psAI_Flags,	aiAnimationStats);
 
 /////////////////////////////////////////////HIT ANIMATION////////////////////////////////////////////////////
-//float						power_factor				= 2.f;
-//float						rotational_power_factor		= 3.f;
-//float						side_sensitivity_threshold	= 0.2f;
-//float						anim_channel_factor			= 3.f;
+	CMD4(CCC_Float,				"hit_anims_power",						&ghit_anims_params.power_factor,					0.0f, 100.0f);
+	CMD4(CCC_Float,				"hit_anims_rotational_power",			&ghit_anims_params.rotational_power_factor,			0.0f, 100.0f);
+	CMD4(CCC_Float,				"hit_anims_side_sensitivity_threshold",	&ghit_anims_params.side_sensitivity_threshold,		0.0f, 10.0f);
+	CMD4(CCC_Float,				"hit_anims_channel_factor",				&ghit_anims_params.anim_channel_factor,				0.0f, 100.0f);
 
-CMD4(CCC_Float,				"hit_anims_power",						&ghit_anims_params.power_factor,					0.0f, 100.0f);
-CMD4(CCC_Float,				"hit_anims_rotational_power",			&ghit_anims_params.rotational_power_factor,			0.0f, 100.0f);
-CMD4(CCC_Float,				"hit_anims_side_sensitivity_threshold",	&ghit_anims_params.side_sensitivity_threshold,		0.0f, 10.0f);
-CMD4(CCC_Float,				"hit_anims_channel_factor",				&ghit_anims_params.anim_channel_factor,				0.0f, 100.0f);
-//float	block_blend					= 0.1f;
-//float	reduce_blend				= 0.5f;
-//float	reduce_power_factor			= 0.5f;
-CMD4(CCC_Float,				"hit_anims_block_blend",				&ghit_anims_params.block_blend,			0.f,	1.f);
-CMD4(CCC_Float,				"hit_anims_reduce_blend",				&ghit_anims_params.reduce_blend,		0.f, 1.f);
-CMD4(CCC_Float,				"hit_anims_reduce_blend_factor",		&ghit_anims_params.reduce_power_factor, 0.0f,	1.0f);
-CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
+	CMD4(CCC_Float,				"hit_anims_block_blend",				&ghit_anims_params.block_blend,			0.f,	1.f);
+	CMD4(CCC_Float,				"hit_anims_reduce_blend",				&ghit_anims_params.reduce_blend,		0.f, 1.f);
+	CMD4(CCC_Float,				"hit_anims_reduce_blend_factor",		&ghit_anims_params.reduce_power_factor, 0.0f,	1.0f);
+	CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
 /////////////////////////////////////////////HIT ANIMATION END////////////////////////////////////////////////////
 
 #ifdef DEBUG_MEMORY_MANAGER
@@ -1931,7 +1920,7 @@ CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
 #endif // #if defined(USE_DEBUGGER) && defined(USE_LUA_STUDIO)
 	
 	CMD1(CCC_ShowMonsterInfo,	"ai_monster_info");
-	//CMD1(CCC_DebugFonts,		"debug_fonts");
+	CMD1(CCC_DebugFonts,		"debug_fonts");
 
 
 	CMD1(CCC_ShowAnimationStats,"ai_show_animation_stats");
