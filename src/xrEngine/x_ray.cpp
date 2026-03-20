@@ -8,7 +8,6 @@
 #include "stdafx.h"
 #include "igame_level.h"
 #include "igame_persistent.h"
-#include "dedicated_server_only.h"
 #include "no_single.h"
 #include "../xrNetServer/NET_AuthCheck.h"
 
@@ -67,7 +66,7 @@ static int start_year = 2019; // 1999
 #define DEFAULT_MODULE_HASH "3CAABCFCFF6F3A810019C6A72180F166"
 static char szEngineHash[33] = DEFAULT_MODULE_HASH;
 
-PROTECT_API char* ComputeModuleHash(char* pszHash)
+char* ComputeModuleHash(char* pszHash)
 {
     char szModuleFileName[MAX_PATH];
     HANDLE hModuleHandle = NULL, hFileMapping = NULL;
@@ -209,7 +208,7 @@ void InitConfig(T& config, pcstr name, bool fatal = true, bool readOnly = true, 
 	CHECK_OR_EXIT(config->section_count() || !fatal, make_string("Cannot find file %s.\nReinstalling application may fix this problem.", fname));
 }
 
-PROTECT_API void InitSettings()
+void InitSettings()
 {
     Msg("EH: %s\n", ComputeModuleHash(szEngineHash));
 
@@ -230,7 +229,7 @@ PROTECT_API void InitSettings()
 	InitConfig(pGameIni, "game.ltx");
 }
 
-PROTECT_API void InitConsole()
+void InitConsole()
 {
     Console = xr_new<CConsole>();
     Console->Initialize();
@@ -244,7 +243,7 @@ PROTECT_API void InitConsole()
     }
 }
 
-PROTECT_API void InitInput()
+void InitInput()
 {
     BOOL bCaptureInput = !strstr(Core.Params, "-i");
     pInput = xr_new<CInput>(bCaptureInput);
@@ -255,12 +254,12 @@ void destroyInput()
     xr_delete(pInput);
 }
 
-PROTECT_API void InitSound1()
+void InitSound1()
 {
     CSound_manager_interface::_create(0);
 }
 
-PROTECT_API void InitSound2()
+void InitSound2()
 {
     CSound_manager_interface::_create(1);
 }
@@ -1133,9 +1132,10 @@ void CApplication::destroy_loading_shaders()
 
 #include "Render.h"
 
-PROTECT_API void CApplication::LoadDraw()
+void CApplication::LoadDraw()
 {
-    if (g_appLoaded) return;
+    if (g_appLoaded)
+		return;
 
     Device.dwFrame += 1;
 
@@ -1144,7 +1144,8 @@ PROTECT_API void CApplication::LoadDraw()
 	Render->currentViewPort = MAIN_VIEWPORT;
 	Render->needPresenting = true;
 
-    if (!Device.Begin()) return;
+    if (!Device.Begin())
+		return;
 
     if (g_dedicated_server)
         Console->OnRender();

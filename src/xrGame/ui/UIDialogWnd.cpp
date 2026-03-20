@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "uidialogwnd.h"
 
-CUIDialogWnd:: CUIDialogWnd()
+CUIDialogWnd::CUIDialogWnd()
 {
-	m_pParentHolder		= NULL;
-	m_bWorkInPause		= false;
-	m_bShowMe			= false;
+	m_pParentHolder = NULL;
+	m_bWorkInPause = false;
+	m_bShowMe = false;
 }
 
 CUIDialogWnd::~CUIDialogWnd()
@@ -13,7 +13,7 @@ CUIDialogWnd::~CUIDialogWnd()
 
 void CUIDialogWnd::Show(bool status)
 {
-	inherited::Show		(status);
+	inherited::Show(status);
 
 	if (status)
 		ResetAll();
@@ -23,6 +23,7 @@ bool CUIDialogWnd::OnKeyboardHold(int dik)
 {
 	if (!IR_process())
 		return false;
+
 	return inherited::OnKeyboardHold(dik);
 }
 
@@ -30,8 +31,10 @@ bool CUIDialogWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 {
 	if (!IR_process())
 		return false;
+
 	if (inherited::OnKeyboardAction(dik, keyboard_action))
 		return true;
+
 	return false;
 }
 
@@ -60,5 +63,5 @@ void CUIDialogWnd::ShowDialog(bool bDoHideIndicators)
 void CUIDialogWnd::HideDialog()
 {
 	R_ASSERT2(IsShown(), "dialog already hidden");
-	GetHolder()->StopDialog	(this);
+	GetHolder()->StopDialog(this);
 }

@@ -1,10 +1,9 @@
 #include "stdafx.h"
 #include "resource.h"
-#include "dedicated_server_only.h"
 
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-PROTECT_API void CRenderDevice::Initialize()
+void CRenderDevice::Initialize()
 {
     Log("Initializing Engine...");
     TimerGlobal.Start();
@@ -13,7 +12,7 @@ PROTECT_API void CRenderDevice::Initialize()
     // Unless a substitute hWnd has been specified, create a window to render into
     if (m_hWnd == NULL)
     {
-        const char* wndclass = "_XRAY_1.5";
+        const char* wndclass = "_XRAY_1.6";
 
         // Register the windows class
         HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(0);
