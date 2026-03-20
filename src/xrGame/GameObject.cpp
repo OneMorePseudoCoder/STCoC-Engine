@@ -36,8 +36,8 @@ extern MagicBox3 MagicMinBox (int iQuantity, const Fvector* akPoint);
 #pragma warning(pop)
 
 #ifdef DEBUG
-#	include "debug_renderer.h"
-#	include "PHDebug.h"
+#include "debug_renderer.h"
+#include "PHDebug.h"
 #endif
 
 ENGINE_API bool g_dedicated_server;
@@ -182,10 +182,6 @@ void CGameObject::OnEvent		(NET_Packet& P, u16 type)
 				// !!! ___ it is necessary to be check!
 				break;
 			}
-#ifdef MP_LOGGING
-			Msg("--- Object: GE_DESTROY of [%d][%s]", ID(), cNameSect().c_str());
-#endif // MP_LOGGING
-
 			setDestroy		(TRUE);
 		}
 		break;

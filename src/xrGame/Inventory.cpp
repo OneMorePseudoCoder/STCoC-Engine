@@ -964,10 +964,6 @@ bool CInventory::Eat(PIItem pIItem)
 	if (!pItemToEat->UseBy(entity_alive))
 		return false;
 
-#ifdef MP_LOGGING
-	Msg( "--- Actor [%d] use or eat [%d][%s]", entity_alive->ID(), pItemToEat->object().ID(), pItemToEat->object().cNameSect().c_str() );
-#endif // MP_LOGGING
-
 	luabind::functor<bool>	funct;
 	if (ai().script_engine().functor("_G.CInventory__eat", funct))
 	{

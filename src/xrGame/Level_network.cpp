@@ -380,25 +380,16 @@ bool			CLevel::Connect2Server				(const char* options)
 		}
 	};
 
-	//---------------------------------------------------------------------------
-	//P.w_begin	(M_CLIENT_REQUEST_CONNECTION_DATA);
-	//Send		(P, net_flags(TRUE, TRUE, TRUE, TRUE));
-	//---------------------------------------------------------------------------
 	return TRUE;
 };
 
-void			CLevel::OnBuildVersionChallenge		()
+void CLevel::OnBuildVersionChallenge()
 {
 	NET_Packet P;
-	P.w_begin				(M_CL_AUTH);
-#ifdef USE_DEBUG_AUTH
-	u64 auth = MP_DEBUG_AUTH;
-	Msg("* Sending auth value ...");
-#else
+	P.w_begin(M_CL_AUTH);
 	u64 auth = FS.auth_get();
-#endif //#ifdef DEBUG
-	P.w_u64					(auth);
-	SecureSend				(P, net_flags(TRUE, TRUE, TRUE, TRUE));
+	P.w_u64(auth);
+	SecureSend(P, net_flags(TRUE, TRUE, TRUE, TRUE));
 };
 
 void CLevel::OnConnectResult(NET_Packet* P)
