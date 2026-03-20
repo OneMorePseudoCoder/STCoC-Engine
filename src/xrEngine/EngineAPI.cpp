@@ -46,16 +46,15 @@ ENGINE_API int g_current_renderer = 0;
 ENGINE_API bool is_enough_address_space_available()
 {
     SYSTEM_INFO system_info;
-
     GetSystemInfo(&system_info);
-
     return (*(u32*)&system_info.lpMaximumApplicationAddress) > 0x90000000;
 }
 
-#ifndef DEDICATED_SERVER
-
-void CEngineAPI::InitializeNotDedicated()
+void CEngineAPI::Initialize(void)
 {
+    //////////////////////////////////////////////////////////////////////////
+    // render
+    LPCSTR r1_name = "xrRender_R1.dll";
     LPCSTR r2_name = "xrRender_R2.dll";
     LPCSTR r3_name = "xrRender_R3.dll";
     LPCSTR r4_name = "xrRender_R4.dll";
@@ -63,19 +62,26 @@ void CEngineAPI::InitializeNotDedicated()
     if (psDeviceFlags.test(rsR4))
     {
         // try to initialize R4
+        psDeviceFlags.set(rsR3, FALSE);
+        psDeviceFlags.set(rsR2, FALSE);
         Log("Loading DLL:", r4_name);
         hRender = LoadLibrary(r4_name);
         if (0 == hRender)
         {
             // try to load R1
             Msg("! ...Failed - incompatible hardware/pre-Vista OS.");
-            psDeviceFlags.set(rsR2, TRUE);
+            psDeviceFlags.set(rsR3, TRUE);
+            g_current_renderer = 3;
         }
+        else
+            g_current_renderer = 4;
     }
 
     if (psDeviceFlags.test(rsR3))
     {
         // try to initialize R3
+        psDeviceFlags.set(rsR4, FALSE);
+        psDeviceFlags.set(rsR2, FALSE);
         Log("Loading DLL:", r3_name);
         hRender = LoadLibrary(r3_name);
         if (0 == hRender)
@@ -83,6 +89,7 @@ void CEngineAPI::InitializeNotDedicated()
             // try to load R1
             Msg("! ...Failed - incompatible hardware/pre-Vista OS.");
             psDeviceFlags.set(rsR2, TRUE);
+            g_current_renderer = 2;
         }
         else
             g_current_renderer = 3;
@@ -99,23 +106,11 @@ void CEngineAPI::InitializeNotDedicated()
         {
             // try to load R1
             Msg("! ...Failed - incompatible hardware.");
+            g_current_renderer = 1;
         }
         else
             g_current_renderer = 2;
     }
-}
-#endif // DEDICATED_SERVER
-
-
-void CEngineAPI::Initialize(void)
-{
-    //////////////////////////////////////////////////////////////////////////
-    // render
-    LPCSTR r1_name = "xrRender_R1.dll";
-
-#ifndef DEDICATED_SERVER
-    InitializeNotDedicated();
-#endif // DEDICATED_SERVER
 
     if (0 == hRender)
     {
@@ -127,7 +122,8 @@ void CEngineAPI::Initialize(void)
 
         Log("Loading DLL:", r1_name);
         hRender = LoadLibrary(r1_name);
-        if (0 == hRender) R_CHK(GetLastError());
+        if (0 == hRender)
+            R_CHK(GetLastError());
         R_ASSERT(hRender);
         g_current_renderer = 1;
     }
@@ -139,7 +135,8 @@ void CEngineAPI::Initialize(void)
         LPCSTR g_name = "xrGame.dll";
         Log("Loading DLL:", g_name);
         hGame = LoadLibrary(g_name);
-        if (0 == hGame) R_CHK(GetLastError());
+        if (0 == hGame)
+            R_CHK(GetLastError());
         R_ASSERT2(hGame, "Game DLL raised exception during loading or there is no game DLL at all");
         pCreate = (Factory_Create*)GetProcAddress(hGame, "xrFactory_Create");
         R_ASSERT(pCreate);
