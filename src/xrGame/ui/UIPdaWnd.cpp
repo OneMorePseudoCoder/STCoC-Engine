@@ -55,83 +55,82 @@ CUIPdaWnd::~CUIPdaWnd()
 
 void CUIPdaWnd::Init()
 {
-	CUIXml					uiXml;
-	uiXml.Load				(CONFIG_PATH, UI_PATH, PDA_XML);
+	CUIXml uiXml;
+	uiXml.Load(CONFIG_PATH, UI_PATH, PDA_XML);
 
-	m_pActiveDialog			= NULL;
-	m_sActiveSection		= "";
+	m_pActiveDialog = NULL;
+	m_sActiveSection = "";
 
-	CUIXmlInit::InitWindow	(uiXml, "main", 0, this);
+	CUIXmlInit::InitWindow(uiXml, "main", 0, this);
 
-	UIMainPdaFrame			= UIHelper::CreateStatic	( uiXml, "background_static", this );
-	m_caption				= UIHelper::CreateTextWnd	( uiXml, "caption_static", this );
-	m_caption_const			= ( m_caption->GetText() );
-	m_clock					= UIHelper::CreateTextWnd	( uiXml, "clock_wnd", this );
+	UIMainPdaFrame = UIHelper::CreateStatic(uiXml, "background_static", this);
+	m_caption = UIHelper::CreateTextWnd(uiXml, "caption_static", this);
+	m_caption_const = (m_caption->GetText());
+	m_clock = UIHelper::CreateTextWnd(uiXml, "clock_wnd", this);
 /*
-	m_anim_static			= xr_new<CUIAnimatedStatic>();
-	AttachChild				(m_anim_static);
+	m_anim_static = xr_new<CUIAnimatedStatic>();
+	AttachChild(m_anim_static);
 	m_anim_static->SetAutoDelete(true);
 	CUIXmlInit::InitAnimatedStatic(uiXml, "anim_static", 0, m_anim_static);
 */
-	m_btn_close				= UIHelper::Create3tButton( uiXml, "close_button", this );
-	m_hint_wnd				= UIHelper::CreateHint( uiXml, "hint_wnd" );
+	m_btn_close = UIHelper::Create3tButton(uiXml, "close_button", this);
+	m_hint_wnd = UIHelper::CreateHint(uiXml, "hint_wnd");
 
+	pUITaskWnd = xr_new<CUITaskWnd>();
+	pUITaskWnd->hint_wnd = m_hint_wnd;
+	pUITaskWnd->Init();
 
-	pUITaskWnd					= xr_new<CUITaskWnd>();
-	pUITaskWnd->hint_wnd		= m_hint_wnd;
-	pUITaskWnd->Init			();
+	pUIRankingWnd = xr_new<CUIRankingWnd>();
+	pUIRankingWnd->Init();
 
-	pUIRankingWnd					= xr_new<CUIRankingWnd>();
-	pUIRankingWnd->Init				();
+	pUILogsWnd = xr_new<CUILogsWnd>();
+	pUILogsWnd->Init();
 
-	pUILogsWnd						= xr_new<CUILogsWnd>();
-	pUILogsWnd->Init				();
+	UITabControl = xr_new<CUITabControl>();
+	UITabControl->SetAutoDelete(true);
+	AttachChild(UITabControl);
+	CUIXmlInit::InitTabControl(uiXml, "tab", 0, UITabControl);
+	UITabControl->SetMessageTarget(this);
 
-	UITabControl					= xr_new<CUITabControl>();
-	UITabControl->SetAutoDelete		(true);
-	AttachChild						(UITabControl);
-	CUIXmlInit::InitTabControl		(uiXml, "tab", 0, UITabControl);
-	UITabControl->SetMessageTarget	(this);
-
-	UINoice					= xr_new<CUIStatic>();
-	UINoice->SetAutoDelete	( true );
-	CUIXmlInit::InitStatic	( uiXml, "noice_static", 0, UINoice );
+	UINoice = xr_new<CUIStatic>();
+	UINoice->SetAutoDelete(true);
+	CUIXmlInit::InitStatic(uiXml, "noice_static", 0, UINoice);
 }
 
 void CUIPdaWnd::SendMessage(CUIWindow* pWnd, s16 msg, void* pData)
 {
-	switch ( msg )
+	switch (msg)
 	{
 	case TAB_CHANGED:
+	{
+		if (pWnd == UITabControl)
 		{
-			if ( pWnd == UITabControl )
-			{
-				SetActiveSubdialog			(UITabControl->GetActiveId());
-			}
-			break;
+			SetActiveSubdialog(UITabControl->GetActiveId());
 		}
+		break;
+	}
 	case BUTTON_CLICKED:
+	{
+		if (pWnd == m_btn_close)
 		{
-			if ( pWnd == m_btn_close )
-			{
-				HideDialog();
-			}
-			break;
+			HideDialog();
 		}
+		break;
+	}
 	default:
-		{
-			if (m_pActiveDialog)
-				m_pActiveDialog->SendMessage(pWnd, msg, pData);
-		}
+	{
+		if (m_pActiveDialog)
+			m_pActiveDialog->SendMessage(pWnd, msg, pData);
+	}
 	};
 }
 
 void CUIPdaWnd::Show(bool status)
 {
-	inherited::Show						(status);
+	inherited::Show(status);
 	if (status)
 	{
-		InventoryUtilities::SendInfoToActor	("ui_pda");
+		InventoryUtilities::SendInfoToActor("ui_pda");
 		
 		if (m_sActiveSection == NULL || strcmp(m_sActiveSection.c_str(), "") == 0)
 		{
@@ -143,7 +142,7 @@ void CUIPdaWnd::Show(bool status)
 	}
 	else
 	{
-		InventoryUtilities::SendInfoToActor	("ui_pda_hide");
+		InventoryUtilities::SendInfoToActor("ui_pda_hide");
 		CurrentGameUI()->UIMainIngameWnd->SetFlashIconState_(CUIMainIngameWnd::efiPdaTask, false);
 		if (m_pActiveDialog)
 		{
@@ -158,11 +157,13 @@ void CUIPdaWnd::Show(bool status)
 void CUIPdaWnd::Update()
 {
 	inherited::Update();
+
 	if (m_pActiveDialog)
 		m_pActiveDialog->Update();
+
 	m_clock->TextItemControl().SetText(InventoryUtilities::GetGameTimeAsString(InventoryUtilities::etpTimeToMinutes).c_str());
 
-	Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(pUILogsWnd,&CUILogsWnd::PerformWork));
+	Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(pUILogsWnd, &CUILogsWnd::PerformWork));
 }
 
 void CUIPdaWnd::SetActiveSubdialog(const shared_str& section)
@@ -264,9 +265,7 @@ void CUIPdaWnd::DrawHint()
 		pUIRankingWnd->DrawHint();
 	}
 	else if (m_sActiveSection == "eptLogs")
-	{
-
-	}
+	{}
 	m_hint_wnd->Draw();
 }
 
@@ -334,7 +333,6 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 		if (is_binded(kACTIVE_JOBS, dik))
 		{
 			HideDialog();
-
 			return true;
 		}
 	}

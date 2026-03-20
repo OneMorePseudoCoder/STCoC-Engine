@@ -175,8 +175,10 @@ void CMemoryWriter::w(const void* ptr, u32 count)
     if (position + count > mem_size)
     {
         // reallocate
-        if (mem_size == 0) mem_size = 128;
-        while (mem_size <= (position + count)) mem_size *= 2;
+        if (mem_size == 0)
+			mem_size = 128;
+        while (mem_size <= (position + count))
+			mem_size *= 2;
         if (0 == data) data = (BYTE*)Memory.mem_alloc(mem_size
 #ifdef DEBUG_MEMORY_NAME
             , "CMemoryWriter - storage"
@@ -190,10 +192,10 @@ void CMemoryWriter::w(const void* ptr, u32 count)
     }
     CopyMemory(data + position, ptr, count);
     position += count;
-    if (position > file_size) file_size = position;
+    if (position > file_size)
+		file_size = position;
 }
 
-//static const u32 mb_sz = 0x1000000;
 bool CMemoryWriter::save_to(LPCSTR fn)
 {
     IWriter* F = FS.w_open(fn);
@@ -206,13 +208,13 @@ bool CMemoryWriter::save_to(LPCSTR fn)
     return false;
 }
 
-
 void IWriter::open_chunk(u32 type)
 {
     w_u32(type);
     chunk_pos.push(tell());
     w_u32(0); // the place for 'size'
 }
+
 void IWriter::close_chunk()
 {
     VERIFY(!chunk_pos.empty());
@@ -223,9 +225,11 @@ void IWriter::close_chunk()
     seek(pos);
     chunk_pos.pop();
 }
+
 u32 IWriter::chunk_size() // returns size of currently opened chunk, 0 otherwise
 {
-    if (chunk_pos.empty()) return 0;
+    if (chunk_pos.empty())
+		return 0;
     return tell() - chunk_pos.top() - 4;
 }
 
@@ -235,21 +239,22 @@ void IWriter::w_compressed(void* ptr, u32 count)
     unsigned dest_sz = 0;
     _compressLZ(&dest, &dest_sz, ptr, count);
 
-    // if (g_dummy_stuff)
-    // g_dummy_stuff (dest,dest_sz,dest);
-
     if (dest && dest_sz)
         w(dest, dest_sz);
+
     xr_free(dest);
 }
 
 void IWriter::w_chunk(u32 type, void* data, u32 size)
 {
     open_chunk(type);
-    if (type & CFS_CompressMark) w_compressed(data, size);
-    else w(data, size);
+    if (type & CFS_CompressMark)
+		w_compressed(data, size);
+    else
+		w(data, size);
     close_chunk();
 }
+
 void IWriter::w_sdir(const Fvector& D)
 {
     Fvector C;
@@ -266,6 +271,7 @@ void IWriter::w_sdir(const Fvector& D)
     w_dir(C);
     w_float(mag);
 }
+
 void IWriter::w_printf(const char* format, ...)
 {
     va_list mark;
@@ -301,6 +307,7 @@ IReader* IReader::open_chunk(u32 ID)
     }
     else return 0;
 };
+
 void IReader::close()
 {
     IReader* self = this;
@@ -365,8 +372,12 @@ void IReader::r(void* p, int cnt)
     advance(cnt);
 #ifdef DEBUG
     BOOL bShow = FALSE;
-    if (dynamic_cast<CFileReader*>(this)) bShow = TRUE;
-    if (dynamic_cast<CVirtualFileReader*>(this)) bShow = TRUE;
+    if (dynamic_cast<CFileReader*>(this))
+		bShow = TRUE;
+
+    if (dynamic_cast<CVirtualFileReader*>(this))
+		bShow = TRUE;
+
     if (bShow)
     {
         FS.dwOpenCounter++;
@@ -392,6 +403,7 @@ IC u32 IReader::advance_term_string()
     }
     return sz;
 }
+
 void IReader::r_string(char* dest, u32 tgt_sz)
 {
     char* src = (char*)data + Pos;
@@ -463,6 +475,7 @@ CFileReader::CFileReader(const char* name)
     data = (char*)FileDownload(name, (u32*)&Size);
     Pos = 0;
 };
+
 CFileReader::~CFileReader()
 {
     xr_free(data);

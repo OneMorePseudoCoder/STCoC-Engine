@@ -41,7 +41,7 @@ CUIRankingWnd::CUIRankingWnd()
 CUIRankingWnd::~CUIRankingWnd()
 {
 	ACHIEVES_VEC_IT b = m_achieves_vec.begin(), e = m_achieves_vec.end();
-	for(; b!=e; b++)
+	for (; b!=e; b++)
 		xr_delete(*b);
 	m_achieves_vec.clear();
 	
@@ -97,13 +97,13 @@ void CUIRankingWnd::Init()
 	{
 		m_stat_caption[i] = xr_new<CUITextWnd>();
 		AttachChild(m_stat_caption[i]);
-		m_stat_caption[i]->SetAutoDelete( true );
+		m_stat_caption[i]->SetAutoDelete(true);
 		CUIXmlInit::InitTextWnd(xml, "stat", i, m_stat_caption[i]);
 		m_stat_caption[i]->AdjustWidthToText();
 
 		m_stat_info[i] = xr_new<CUITextWnd>();
 		AttachChild(m_stat_info[i]);
-		m_stat_info[i]->SetAutoDelete( true );
+		m_stat_info[i]->SetAutoDelete(true);
 		CUIXmlInit::InitTextWnd(xml, "stat", i, m_stat_info[i]);
 		
 		m_stat_info[i]->SetTextColor(value_color);
