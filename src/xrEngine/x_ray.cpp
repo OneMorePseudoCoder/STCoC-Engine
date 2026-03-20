@@ -8,7 +8,6 @@
 #include "stdafx.h"
 #include "igame_level.h"
 #include "igame_persistent.h"
-#include "no_single.h"
 #include "../xrNetServer/NET_AuthCheck.h"
 
 #include "xr_input.h"
@@ -1008,29 +1007,10 @@ void CApplication::OnEvent(EVENT E, u64 P1, u64 P2)
         R_ASSERT(0 == g_pGameLevel);
         R_ASSERT(0 != g_pGamePersistent);
 
-#ifdef NO_SINGLE
-        Console->Execute("main_menu on");
-        if ((op_server == NULL) ||
-                (!xr_strlen(op_server)) ||
-                (
-                    (strstr(op_server, "/dm") || strstr(op_server, "/deathmatch") ||
-                     strstr(op_server, "/tdm") || strstr(op_server, "/teamdeathmatch") ||
-                     strstr(op_server, "/ah") || strstr(op_server, "/artefacthunt") ||
-                     strstr(op_server, "/cta") || strstr(op_server, "/capturetheartefact")
-                    ) &&
-                    !strstr(op_server, "/alife")
-                )
-           )
-#endif // #ifdef NO_SINGLE
         {
             Console->Execute("main_menu off");
             Console->Hide();
-            //! this line is commented by Dima
-            //! because I don't see any reason to reset device here
-            //! Device.Reset (false);
-            //-----------------------------------------------------------
             g_pGamePersistent->PreStart(op_server);
-            //-----------------------------------------------------------
             g_pGameLevel = (IGame_Level*)NEW_INSTANCE(CLSID_GAME_LEVEL);
             pApp->LoadBegin();
             g_pGamePersistent->Start(op_server);
@@ -1101,7 +1081,6 @@ void CApplication::LoadBegin()
     ll_dwReference++;
     if (1 == ll_dwReference)
     {
-
         g_appLoaded = FALSE;
 
         _InitializeFont(pFontSystem, "ui_font_letterica18_russian", 0);
@@ -1239,7 +1218,9 @@ void gen_logo_name(string_path& dest, LPCSTR level_name, int num)
 
 void CApplication::Level_Set(u32 L)
 {
-    if (L >= Levels.size()) return;
+    if (L >= Levels.size())
+		return;
+
     FS.get_path("$level$")->_set(Levels[L].folder);
 
     static string_path path;
