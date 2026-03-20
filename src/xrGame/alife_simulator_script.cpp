@@ -37,6 +37,11 @@ CALifeSimulator *alife				()
 CSE_ALifeDynamicObject *alife_object		(const CALifeSimulator *self, ALife::_OBJECT_ID object_id)
 {
 	VERIFY			(self);
+	if (object_id == 0xffff)
+	{
+		Msg("alife():object(id) ! invalid id specified");
+		return (0);
+	}
 	return			(self->objects().object(object_id,true));
 }
 
@@ -290,6 +295,14 @@ void CALifeSimulator__release					(CALifeSimulator *self, CSE_Abstract *object, 
 		return;
 	}
 
+	// awesome hack, for everyone only
+	CObject* obj = Level().Objects.net_Find(object->ID);
+	if (!obj)
+		return;
+
+	if (obj->getDestroy())
+		return;
+
 	// awful hack, for stohe only
 	NET_Packet							packet;
 	packet.w_begin						(M_EVENT);
@@ -297,6 +310,11 @@ void CALifeSimulator__release					(CALifeSimulator *self, CSE_Abstract *object, 
 	packet.w_u16						(GE_DESTROY);
 	packet.w_u16						(object->ID);
 	Level().Send						(packet,net_flags(TRUE,TRUE));
+}
+
+void CALifeSimulator__release2(CALifeSimulator *self, CSE_Abstract *object)
+{
+	CALifeSimulator__release(self, object, false);
 }
 
 LPCSTR get_level_name							(const CALifeSimulator *self, int level_id)
@@ -336,21 +354,45 @@ bool dont_has_info								(const CALifeSimulator *self, const ALife::_OBJECT_ID 
 	return								(!has_info(self,id,info_id));
 }
 
+void AlifeGiveInfo(const CALifeSimulator *alife, const ALife::_OBJECT_ID &id, LPCSTR info_id)
+{
+	KNOWN_INFO_VECTOR *known_info = alife->registry(info_portions).object(id, true);
+	if (!known_info)
+		return;
+
+	if (std::find_if(known_info->begin(), known_info->end(), CFindByIDPred(info_id)) == known_info->end())
+	{
+		known_info->push_back(info_id);
+	}
+
+	return;
+}
+
+void AlifeRemoveInfo(const CALifeSimulator *alife, const ALife::_OBJECT_ID &id, LPCSTR info_id)
+{
+	KNOWN_INFO_VECTOR	*known_info = alife->registry(info_portions).object(id, true);
+	if (!known_info)
+		return;
+	known_info->erase(std::find_if(known_info->begin(), known_info->end(), CFindByIDPred(info_id)),known_info->end());
+}
+
+//Alundaio: teleport object		   
 void teleport_object(CALifeSimulator *alife, ALife::_OBJECT_ID id, GameGraph::_GRAPH_ID game_vertex_id, u32 level_vertex_id, const Fvector &position)
 {
 	alife->teleport_object(id, game_vertex_id, level_vertex_id, position);
 }
 
-void IterateInfo(const CALifeSimulator *alife, const ALife::_OBJECT_ID &id, luabind::functor<void> functor)
+void IterateInfo(const CALifeSimulator *alife, const ALife::_OBJECT_ID &id, const luabind::functor<bool> &functor)
 {
 	const KNOWN_INFO_VECTOR	*known_info = registry(alife, id);
 	if (!known_info)
 		return;
 
-	xr_vector<shared_str>::const_iterator I = known_info->begin();
-	xr_vector<shared_str>::const_iterator E = known_info->end();
+	xr_vector<shared_str>::const_iterator	I = known_info->begin();
+	xr_vector<shared_str>::const_iterator	E = known_info->end();
 	for (; I != E; ++I)
-		functor(id, (LPCSTR)(*I).c_str());
+		if (functor(id, (LPCSTR)(*I).c_str()) == true)
+			return;
 }
 
 CSE_Abstract* reprocess_spawn(CALifeSimulator *self, CSE_Abstract *object)
@@ -408,8 +450,20 @@ void set_process_time(CALifeSimulator *self, int micro)
 	self->set_process_time(micro);
 }
 
+const CALifeObjectRegistry::OBJECT_REGISTRY& alife_objects(const CALifeSimulator *self)
+{
+	VERIFY(self);
+	return self->objects().objects();
+}
+
+xr_vector<u16>& get_children(const CALifeSimulator *self, CSE_Abstract *object)
+{
+	VERIFY(self);
+	return object->children;
+}
+//-Alundaio
 #pragma optimize("s",on)
-void CALifeSimulator::script_register			(lua_State *L)
+void CALifeSimulator::script_register(lua_State *L)
 {
 	module(L)
 	[
@@ -419,6 +473,7 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("level_name",				&get_level_name)
 			.def("object",					(CSE_ALifeDynamicObject *(*) (const CALifeSimulator *,ALife::_OBJECT_ID))(alife_object))
 			.def("object",					(CSE_ALifeDynamicObject *(*) (const CALifeSimulator *,ALife::_OBJECT_ID, bool))(alife_object))
+			.def("objects", &alife_objects, return_stl_pair_iterator)															
 			.def("story_object",			(CSE_ALifeDynamicObject *(*) (const CALifeSimulator *,ALife::_STORY_ID))(alife_story_object))
 			.def("set_switch_online",		(void (CALifeSimulator::*) (ALife::_OBJECT_ID,bool))(&CALifeSimulator::set_switch_online))
 			.def("set_switch_offline",		(void (CALifeSimulator::*) (ALife::_OBJECT_ID,bool))(&CALifeSimulator::set_switch_offline))
@@ -437,10 +492,13 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("create",					&CALifeSimulator__spawn_item3)
 			.def("create_ammo",				&CALifeSimulator__spawn_ammo)
 			.def("release",					&CALifeSimulator__release)
+			.def("release",					&CALifeSimulator__release2)												  
 			.def("spawn_id",				&CALifeSimulator__spawn_id)
 			.def("actor",					&get_actor)
 			.def("has_info",				&has_info)
 			.def("dont_has_info",			&dont_has_info)
+			.def("give_info",				&AlifeGiveInfo)
+			.def("disable_info",			&AlifeRemoveInfo)					   
 			.def("switch_distance",			&CALifeSimulator::switch_distance)
 			.def("set_switch_distance",		&CALifeSimulator::set_switch_distance)
 			//Alundaio: extend alife simulator exports
@@ -450,6 +508,7 @@ void CALifeSimulator::script_register			(lua_State *L)
 			.def("register", &reprocess_spawn)
 			.def("set_objects_per_update", &set_objects_per_update)
 			.def("set_process_time", &set_process_time)
+			.def("get_children", &get_children, return_stl_iterator)														   
 			//Alundaio: END
 
 		,def("alife",						&alife)
@@ -459,7 +518,7 @@ void CALifeSimulator::script_register			(lua_State *L)
 		if (story_ids.empty())
 			generate_story_ids(story_ids, INVALID_STORY_ID, "story_ids", "INVALID_STORY_ID", "Invalid story id description (contains spaces)!", "INVALID_STORY_ID redifinition!", "Duplicated story id description!");
 
-		luabind::class_<class_exporter<CALifeSimulator> >	instance("story_ids");
+		luabind::class_<class_exporter<CALifeSimulator>> instance("story_ids");
 
 		STORY_PAIRS::const_iterator	I = story_ids.begin();
 		STORY_PAIRS::const_iterator	E = story_ids.end();
@@ -471,24 +530,16 @@ void CALifeSimulator::script_register			(lua_State *L)
 
 	{
 		if (spawn_story_ids.empty())
-			generate_story_ids	(
-				spawn_story_ids,
-				INVALID_SPAWN_STORY_ID,
-				"spawn_story_ids",
-				"INVALID_SPAWN_STORY_ID",
-				"Invalid spawn story id description (contains spaces)!",
-				"INVALID_SPAWN_STORY_ID redifinition!",
-				"Duplicated spawn story id description!"
-			);
+			generate_story_ids(spawn_story_ids, INVALID_SPAWN_STORY_ID, "spawn_story_ids", "INVALID_SPAWN_STORY_ID", "Invalid spawn story id description (contains spaces)!", "INVALID_SPAWN_STORY_ID redifinition!", "Duplicated spawn story id description!");
 
-		luabind::class_<class_exporter<class_exporter<CALifeSimulator> > >	instance("spawn_story_ids");
+		luabind::class_<class_exporter<class_exporter<CALifeSimulator>>> instance("spawn_story_ids");
 
-		SPAWN_STORY_PAIRS::const_iterator	I = spawn_story_ids.begin();
-		SPAWN_STORY_PAIRS::const_iterator	E = spawn_story_ids.end();
+		SPAWN_STORY_PAIRS::const_iterator I = spawn_story_ids.begin();
+		SPAWN_STORY_PAIRS::const_iterator E = spawn_story_ids.end();
 		for ( ; I != E; ++I)
-			instance = std::move(instance).enum_		("_spawn_story_ids")[luabind::value(*(*I).first,(*I).second)];
+			instance = std::move(instance).enum_("_spawn_story_ids")[luabind::value(*(*I).first,(*I).second)];
 
-		luabind::module			(L)[std::move(instance)];
+		luabind::module(L)[std::move(instance)];
 	}
 }
 
@@ -503,27 +554,20 @@ struct dummy
 void CALifeSimulator::validate()
 {
 	typedef CALifeSpawnRegistry::SPAWN_GRAPH::const_vertex_iterator	const_vertex_iterator;
-	const_vertex_iterator		I = spawns().spawns().vertices().begin();
-	const_vertex_iterator		E = spawns().spawns().vertices().end();
-	for ( ; I != E; ++I) {
-		luabind::wrap_base		*base = smart_cast<luabind::wrap_base*>(&(*I).second->data()->object());
+	const_vertex_iterator I = spawns().spawns().vertices().begin();
+	const_vertex_iterator E = spawns().spawns().vertices().end();
+	for ( ; I != E; ++I) 
+	{
+		luabind::wrap_base *base = smart_cast<luabind::wrap_base*>(&(*I).second->data()->object());
 		if (!base)
 			continue;
 
 		if (!base->m_self.m_impl)
 			continue;
 
-		dummy					*_dummy = (dummy*)((void*)base->m_self.m_impl);
-		lua_State				**_state = &_dummy->state;
-		VERIFY2					(
-			base->m_self.state(),
-			make_string(
-				"0x%08x name[%s] name_replace[%s]",
-				*(int*)&_state,
-				(*I).second->data()->object().name(),
-				(*I).second->data()->object().name_replace()
-			)
-		);
+		dummy *_dummy = (dummy*)((void*)base->m_self.m_impl);
+		lua_State **_state = &_dummy->state;
+		VERIFY2(base->m_self.state(), make_string("0x%08x name[%s] name_replace[%s]", *(int*)&_state, (*I).second->data()->object().name(), (*I).second->data()->object().name_replace()));
 	}
 }
 #endif //DEBUG
