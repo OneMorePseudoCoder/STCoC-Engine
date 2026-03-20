@@ -2,22 +2,18 @@
 #include "../xrCDB/frustum.h"
 
 #pragma warning(disable:4995)
-// mmsystem.h
 #define MMNOSOUND
 #define MMNOMIDI
 #define MMNOAUX
 #define MMNOMIXER
 #define MMNOJOY
-//#define OPT_Z
 #include <mmsystem.h>
-// d3dx9.h
 #include <d3dx9.h>
 #pragma warning(default:4995)
 
 #include "x_ray.h"
 #include "render.h"
 
-// must be defined before include of FS_impl.h
 #define INCLUDE_FROM_ENGINE
 #include "../xrCore/FS_impl.h"
 
@@ -26,7 +22,6 @@
 
 ENGINE_API CRenderDevice Device;
 ENGINE_API CLoadScreenRenderer load_screen_renderer;
-
 
 ENGINE_API BOOL g_bRendering = FALSE;
 
@@ -37,7 +32,6 @@ ref_light precache_light = 0;
 
 BOOL CRenderDevice::Begin()
 {
-#ifndef DEDICATED_SERVER
     switch (m_pRender->GetDeviceState())
     {
     case IRenderDeviceRender::dsOK:
@@ -62,7 +56,7 @@ BOOL CRenderDevice::Begin()
 
     FPU::m24r();
     g_bRendering = TRUE;
-#endif
+
     return TRUE;
 }
 
@@ -75,14 +69,12 @@ extern void CheckPrivilegySlowdown();
 
 void CRenderDevice::End(void)
 {
-#ifndef DEDICATED_SERVER
     bool load_finished = false;
 
     if (dwPrecacheFrame)
     {
         ::Sound->set_master_volume(0.f);
         dwPrecacheFrame--;
-        //. pApp->load_draw_internal ();
         if (0 == dwPrecacheFrame)
         {
             m_pRender->updateGamma();
@@ -117,14 +109,12 @@ void CRenderDevice::End(void)
     }
 
     g_bRendering = FALSE;
-    // end scene
 
     // Present goes here, so call OA Frame end.
     if (g_SASH.IsBenchmarkRunning())
         g_SASH.DisplayFrame(Device.fTimeGlobal);
 
     m_pRender->End();
-#endif
 }
 
 void CRenderDevice::SecondaryThreadProc(void* context)
@@ -152,10 +142,7 @@ void CRenderDevice::PreCache(u32 amount, bool b_draw_loadscreen, bool b_wait_use
 {
     if (m_pRender->GetForceGPU_REF())
 		amount = 0;
-#ifdef DEDICATED_SERVER
-    amount = 0;
-#endif
-    // Msg ("* PCACHE: start for %d...",amount);
+
     dwPrecacheFrame = dwPrecacheTotal = amount;
     if (amount && !precache_light && g_pGameLevel && g_loading_events.empty())
     {
@@ -328,9 +315,8 @@ void CRenderDevice::on_idle()
 			Device.dwHeight = t_height;
 		}
 	}
-#endif // 0
+#endif
 
-	
 	// Restore main vp saved stuff for the needs of new frame
     if (Device.m_SecondViewport.IsSVPActive())
     {
@@ -496,7 +482,6 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
     if (g_bBenchmark)
 		return;
 
-#ifndef DEDICATED_SERVER
     if (bOn)
     {
         if (!Paused())
@@ -542,7 +527,6 @@ void CRenderDevice::Pause(BOOL bOn, BOOL bTimer, BOOL bSound, LPCSTR reason)
             }
         }
     }
-#endif
 }
 
 BOOL CRenderDevice::Paused()
@@ -564,10 +548,7 @@ void CRenderDevice::OnWM_Activate(WPARAM wParam, LPARAM lParam)
         {
             Device.seqAppActivate.Process(rp_AppActivate);
             app_inactive_time += TimerMM.GetElapsed_ms() - app_inactive_time_start;
-
-#ifndef DEDICATED_SERVER
             ShowCursor(FALSE);
-#endif // #ifndef DEDICATED_SERVER
         }
         else
         {

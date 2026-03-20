@@ -89,14 +89,14 @@ void CEffect_Rain::RenewItem(Item& dest, float height, BOOL bHit)
     dest.uv_set = Random.randI(2);
     if (bHit)
     {
-        dest.dwTime_Life = Device.dwTimeGlobal + iFloor(1000.f*height / dest.fSpeed) - Device.dwTimeDelta;
-        dest.dwTime_Hit = Device.dwTimeGlobal + iFloor(1000.f*height / dest.fSpeed) - Device.dwTimeDelta;
+        dest.dwTime_Life = Device.dwTimeGlobal + iFloor(1000.f * height / dest.fSpeed) - Device.dwTimeDelta;
+        dest.dwTime_Hit = Device.dwTimeGlobal + iFloor(1000.f * height / dest.fSpeed) - Device.dwTimeDelta;
         dest.Phit.mad(dest.P, dest.D, height);
     }
     else
     {
-        dest.dwTime_Life = Device.dwTimeGlobal + iFloor(1000.f*height / dest.fSpeed) - Device.dwTimeDelta;
-        dest.dwTime_Hit = Device.dwTimeGlobal + iFloor(2 * 1000.f*height / dest.fSpeed) - Device.dwTimeDelta;
+        dest.dwTime_Life = Device.dwTimeGlobal + iFloor(1000.f * height / dest.fSpeed) - Device.dwTimeDelta;
+        dest.dwTime_Hit = Device.dwTimeGlobal + iFloor(2 * 1000.f * height / dest.fSpeed) - Device.dwTimeDelta;
         dest.Phit.set(dest.P);
     }
 }
@@ -105,10 +105,6 @@ void CEffect_Rain::OnFrame()
 {
     if (!g_pGameLevel)
 		return;
-
-#ifdef DEDICATED_SERVER
-    return;
-#endif
 
     // Parse states
     float factor = g_pGamePersistent->Environment().CurrentEnv->rain_density;
@@ -180,7 +176,6 @@ void CEffect_Rain::Hit(Fvector& pos)
     P->mXForm.translate_over(pos);
     P->mXForm.transform_tiny(P->bounds.P, bv_sphere.P);
     P->bounds.R = bv_sphere.R;
-
 }
 
 // initialize particles pool
@@ -233,7 +228,8 @@ void CEffect_Rain::p_insert(Particle* P, Particle*& LST)
     VERIFY(P);
     P->prev = 0;
     P->next = LST;
-    if (LST) LST->prev = P;
+    if (LST)
+		LST->prev = P;
     LST = P;
 }
 

@@ -20,7 +20,6 @@ xr_token vid_bpp_token[] =
     {"32", 32},
     {0, 0}
 };
-//-----------------------------------------------------------------------
 
 void IConsole_Command::add_to_LRU(shared_str const& arg)
 {
@@ -50,8 +49,6 @@ void IConsole_Command::add_LRU_to_tips(vecTips& tips)
     }
 }
 
-// =======================================================
-
 class CCC_Quit : public IConsole_Command
 {
 public:
@@ -63,7 +60,7 @@ public:
         Engine.Event.Defer("KERNEL:quit");
     }
 };
-//-----------------------------------------------------------------------
+
 #ifdef DEBUG_MEMORY_MANAGER
 class CCC_MemStat : public IConsole_Command
 {
@@ -104,7 +101,6 @@ public:
     virtual void Execute(LPCSTR args) { g_pStringContainer->dump(); }
 };
 
-//-----------------------------------------------------------------------
 class CCC_MotionsStat : public IConsole_Command
 {
 public:
@@ -123,7 +119,7 @@ public:
         Device.DumpResourcesMemoryUsage();
     }
 };
-//-----------------------------------------------------------------------
+
 class CCC_E_Dump : public IConsole_Command
 {
 public:
@@ -133,10 +129,11 @@ public:
         Engine.Event.Dump();
     }
 };
+
 class CCC_E_Signal : public IConsole_Command
 {
 public:
-    CCC_E_Signal(LPCSTR N) : IConsole_Command(N) { };
+    CCC_E_Signal(LPCSTR N) : IConsole_Command(N) {};
     virtual void Execute(LPCSTR args)
     {
         char Event[128], Param[128];
@@ -183,7 +180,6 @@ public:
     }
 };
 
-//-----------------------------------------------------------------------
 class CCC_Help : public IConsole_Command
 {
 public:
@@ -236,7 +232,6 @@ public:
     }
 };
 
-//-----------------------------------------------------------------------
 class CCC_SaveCFG : public IConsole_Command
 {
 public:
@@ -272,6 +267,7 @@ public:
             Msg("!Cannot store config file [%s]", cfg_full_name);
     }
 };
+
 CCC_LoadCFG::CCC_LoadCFG(LPCSTR N) : IConsole_Command(N)
 {};
 
@@ -324,7 +320,6 @@ bool CCC_LoadCFG_custom::allow(LPCSTR cmd)
     return (cmd == strstr(cmd, m_cmd));
 };
 
-//-----------------------------------------------------------------------
 class CCC_Start : public IConsole_Command
 {
     void parse(LPSTR dest, LPCSTR args, LPCSTR name)
@@ -409,7 +404,7 @@ public:
         Engine.Event.Defer("KERNEL:disconnect");
     }
 };
-//-----------------------------------------------------------------------
+
 class CCC_VID_Reset : public IConsole_Command
 {
 public:
@@ -422,6 +417,7 @@ public:
         }
     }
 };
+
 class CCC_VidMode : public CCC_Token
 {
     u32 _dummy;
@@ -442,11 +438,14 @@ public:
             return;
         }
     }
+
     virtual void Status(TStatus& S)
     {
         xr_sprintf(S, sizeof(S), "%dx%d", psCurrentVidMode[0], psCurrentVidMode[1]);
     }
+
     virtual xr_token* GetToken() { return vid_mode_token; }
+
     virtual void Info(TInfo& I)
     {
         xr_strcpy(I, sizeof(I), "change screen resolution WxH");
@@ -480,9 +479,8 @@ public:
             tok++;
         }
     }
-
 };
-//-----------------------------------------------------------------------
+
 class CCC_SND_Restart : public IConsole_Command
 {
 public:
@@ -493,7 +491,6 @@ public:
     }
 };
 
-//-----------------------------------------------------------------------
 float ps_gamma = 1.f, ps_brightness = 1.f, ps_contrast = 1.f;
 class CCC_Gamma : public CCC_Float
 {
@@ -521,12 +518,10 @@ class CCC_r2 : public CCC_Token
 public:
     CCC_r2(LPCSTR N) :inherited(N, &renderer_value, NULL) { renderer_value = 3; };
     virtual ~CCC_r2()
-    {
-        //free_render_mode_list();
-    }
+    {}
+
     virtual void Execute(LPCSTR args)
     {
-        //fill_render_mode_list ();
         // vid_quality_token must be already created!
         tokens = vid_quality_token;
 
@@ -545,7 +540,6 @@ public:
 
     virtual void Save(IWriter* F)
     {
-        //fill_render_mode_list ();
         tokens = vid_quality_token;
         if (!strstr(Core.Params, "-r2"))
         {
@@ -559,7 +553,7 @@ public:
     }
 
 };
-#ifndef DEDICATED_SERVER
+
 class CCC_soundDevice : public CCC_Token
 {
     typedef CCC_Token inherited;
@@ -595,18 +589,15 @@ public:
         inherited::Save(F);
     }
 };
-#endif
-//-----------------------------------------------------------------------
+
 class CCC_ExclusiveMode : public IConsole_Command
 {
 private:
     typedef IConsole_Command inherited;
 
 public:
-    CCC_ExclusiveMode(LPCSTR N) :
-        inherited(N)
-    {
-    }
+    CCC_ExclusiveMode(LPCSTR N) : inherited(N)
+    {}
 
     virtual void Execute(LPCSTR args)
     {
@@ -629,8 +620,7 @@ public:
     }
 
     virtual void Save(IWriter* F)
-    {
-    }
+    {}
 };
 
 class ENGINE_API CCC_HideConsole : public IConsole_Command
@@ -811,10 +801,8 @@ void CCC_Register()
 
     CMD1(CCC_r2, "renderer");
 
-#ifndef DEDICATED_SERVER
     CMD1(CCC_soundDevice, "snd_device");
-#endif
-    //psSoundRolloff = pSettings->r_float ("sound","rolloff"); clamp(psSoundRolloff, EPS_S, 2.f);
+
     psSoundOcclusionScale = pSettings->r_float("sound", "occlusion_scale");
     clamp(psSoundOcclusionScale, 0.1f, .5f);
 

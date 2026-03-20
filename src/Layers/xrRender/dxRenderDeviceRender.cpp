@@ -3,8 +3,7 @@
 
 #include "ResourceManager.h"
 
-dxRenderDeviceRender::dxRenderDeviceRender()
-	:	Resources(0)
+dxRenderDeviceRender::dxRenderDeviceRender() : Resources(0)
 {
 	;
 }
@@ -50,8 +49,8 @@ void dxRenderDeviceRender::ValidateHW()
 
 void dxRenderDeviceRender::DestroyHW()
 {
-	xr_delete					(Resources);
-	HW.DestroyDevice			();
+	xr_delete(Resources);
+	HW.DestroyDevice();
 }
 
 void dxRenderDeviceRender::SwitchViewPortRTZB(ViewPort vp)
@@ -67,100 +66,105 @@ void dxRenderDeviceRender::SwitchViewPortRTZB(ViewPort vp)
 	}*/
 }
 
-
 void  dxRenderDeviceRender::Reset( HWND hWnd, u32 &dwWidth, u32 &dwHeight, float &fWidth_2, float &fHeight_2)
 {
 #ifdef DEBUG
 	_SHOW_REF("*ref -CRenderDevice::ResetTotal: DeviceREF:",HW.pDevice);
 #endif // DEBUG	
 
-	Resources->reset_begin	();
-	Memory.mem_compact		();
-	HW.Reset				(hWnd);
+	Resources->reset_begin();
+	Memory.mem_compact();
+	HW.Reset(hWnd);
 
 #if defined(USE_DX10) || defined(USE_DX11)
-	dwWidth					= HW.m_ChainDesc.BufferDesc.Width;
-	dwHeight				= HW.m_ChainDesc.BufferDesc.Height;
+	dwWidth = HW.m_ChainDesc.BufferDesc.Width;
+	dwHeight = HW.m_ChainDesc.BufferDesc.Height;
 #else	//	USE_DX10
-	dwWidth					= HW.DevPP.BackBufferWidth;
-	dwHeight				= HW.DevPP.BackBufferHeight;
+	dwWidth = HW.DevPP.BackBufferWidth;
+	dwHeight = HW.DevPP.BackBufferHeight;
 #endif	//	USE_DX10
 
-	fWidth_2				= float(dwWidth/2);
-	fHeight_2				= float(dwHeight/2);
-	Resources->reset_end	();
+	fWidth_2 = float(dwWidth / 2);
+	fHeight_2 = float(dwHeight / 2);
+	Resources->reset_end();
 
 #ifdef DEBUG
-	_SHOW_REF("*ref +CRenderDevice::ResetTotal: DeviceREF:",HW.pDevice);
+	_SHOW_REF("*ref +CRenderDevice::ResetTotal: DeviceREF:", HW.pDevice);
 #endif // DEBUG
 }
 
 void dxRenderDeviceRender::SetupStates()
 {
-	HW.Caps.Update			();
+	HW.Caps.Update();
 
 #if defined(USE_DX10) || defined(USE_DX11)
-	//	TODO: DX10: Implement Resetting of render states into default mode
-	//VERIFY(!"dxRenderDeviceRender::SetupStates not implemented.");
-#else	//	USE_DX10
-	for (u32 i=0; i<HW.Caps.raster.dwStages; i++)				{
-		float fBias = -.5f	;
-		CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MAXANISOTROPY, 4				));
-		CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD) (&fBias))));
-		CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MINFILTER,	D3DTEXF_LINEAR 		));
-		CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MAGFILTER,	D3DTEXF_LINEAR 		));
-		CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MIPFILTER,	D3DTEXF_LINEAR		));
+
+#else
+	for (u32 i=0; i<HW.Caps.raster.dwStages; i++)				
+	{
+		float fBias = -.5f;
+		CHK_DX(HW.pDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, 4));
+		CHK_DX(HW.pDevice->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD)(&fBias))));
+		CHK_DX(HW.pDevice->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
+		CHK_DX(HW.pDevice->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
+		CHK_DX(HW.pDevice->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
 	}
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_DITHERENABLE,		TRUE				));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_COLORVERTEX,		TRUE				));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_ZENABLE,			TRUE				));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_SHADEMODE,			D3DSHADE_GOURAUD	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_CULLMODE,			D3DCULL_CCW			));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_ALPHAFUNC,			D3DCMP_GREATER		));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_LOCALVIEWER,		TRUE				));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_DITHERENABLE, TRUE));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_COLORVERTEX, TRUE));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_ZENABLE, TRUE));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_LOCALVIEWER, TRUE));
 
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_SPECULARMATERIALSOURCE,D3DMCS_MATERIAL	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_EMISSIVEMATERIALSOURCE,D3DMCS_COLOR1	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS,	FALSE			));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_NORMALIZENORMALS,		TRUE			));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_EMISSIVEMATERIALSOURCE, D3DMCS_COLOR1));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE));
 
-	if (psDeviceFlags.test(rsWireframe))	{ CHK_DX(HW.pDevice->SetRenderState( D3DRS_FILLMODE,			D3DFILL_WIREFRAME	)); }
-	else									{ CHK_DX(HW.pDevice->SetRenderState( D3DRS_FILLMODE,			D3DFILL_SOLID		)); }
+	if (psDeviceFlags.test(rsWireframe))
+	{ 
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME)); 
+	}
+	else
+	{ 
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID)); 
+	}
 
 	// ******************** Fog parameters
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGCOLOR,			0					));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_RANGEFOGENABLE,	FALSE				));
-	if (HW.Caps.bTableFog)	{
-		CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGTABLEMODE,	D3DFOG_LINEAR		));
-		CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGVERTEXMODE,	D3DFOG_NONE			));
-	} else {
-		CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGTABLEMODE,	D3DFOG_NONE			));
-		CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGVERTEXMODE,	D3DFOG_LINEAR		));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_FOGCOLOR, 0));
+	CHK_DX(HW.pDevice->SetRenderState(D3DRS_RANGEFOGENABLE, FALSE));
+	if (HW.Caps.bTableFog)	
+	{
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FOGTABLEMODE, D3DFOG_LINEAR));
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_NONE));
 	}
-
+	else
+	{
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FOGTABLEMODE, D3DFOG_NONE));
+		CHK_DX(HW.pDevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR));
+	}
 #endif	//	USE_DX10
 }
 
 void dxRenderDeviceRender::OnDeviceCreate(LPCSTR shName)
 {
 	// Signal everyone - device created
-	RCache.OnDeviceCreate		();
-	m_Gamma.Update				();
-	Resources->OnDeviceCreate	(shName);
-	::Render->create			();
-	Device.Statistic->OnDeviceCreate	();
+	RCache.OnDeviceCreate();
+	m_Gamma.Update();
+	Resources->OnDeviceCreate(shName);
+	::Render->create();
+	Device.Statistic->OnDeviceCreate();
 
-//#ifndef DEDICATED_SERVER
 	if (!g_dedicated_server)
 	{
-		m_WireShader.create			("editor\\wire");
-		m_SelectionShader.create	("editor\\selection");
+		m_WireShader.create("editor\\wire");
+		m_SelectionShader.create("editor\\selection");
 
-		DUImpl.OnDeviceCreate			();
+		DUImpl.OnDeviceCreate();
 	}
-//#endif
 }
 
 void dxRenderDeviceRender::Create( HWND hWnd, u32 &dwWidth, u32 &dwHeight, float &fWidth_2, float &fHeight_2, bool move_window)
@@ -281,21 +285,19 @@ void dxRenderDeviceRender::ResourcesDumpMemoryUsage()
 
 dxRenderDeviceRender::DeviceState dxRenderDeviceRender::GetDeviceState()
 {
-	HW.Validate		();
+	HW.Validate();
 #if defined(USE_DX10) || defined(USE_DX11)
-	//	TODO: DX10: Implement GetDeviceState
-	//	TODO: DX10: Implement DXGI_PRESENT_TEST testing
-	//VERIFY(!"dxRenderDeviceRender::overdrawBegin not implemented.");
+
 #else	//	USE_DX10
-	HRESULT	_hr		= HW.pDevice->TestCooperativeLevel();
+	HRESULT	_hr = HW.pDevice->TestCooperativeLevel();
 	if (FAILED(_hr))
 	{
 		// If the device was lost, do not render until we get it back
-		if		(D3DERR_DEVICELOST==_hr)
+		if (D3DERR_DEVICELOST == _hr)
 			return dsLost;
 
 		// Check if the device is ready to be reset
-		if		(D3DERR_DEVICENOTRESET==_hr)
+		if (D3DERR_DEVICENOTRESET == _hr)
 			return dsNeedReset;
 	}
 #endif	//	USE_DX10
@@ -316,32 +318,27 @@ u32 dxRenderDeviceRender::GetCacheStatPolys()
 void dxRenderDeviceRender::Begin()
 {
 #if !defined(USE_DX10) && !defined(USE_DX11)
-	CHK_DX					(HW.pDevice->BeginScene());
+	CHK_DX(HW.pDevice->BeginScene());
 #endif	//	USE_DX10
-	RCache.OnFrameBegin		();
-	RCache.set_CullMode		(CULL_CW);
-	RCache.set_CullMode		(CULL_CCW);
-	if (HW.Caps.SceneMode)	overdrawBegin	();
+	RCache.OnFrameBegin();
+	RCache.set_CullMode(CULL_CW);
+	RCache.set_CullMode(CULL_CCW);
+	if (HW.Caps.SceneMode)
+		overdrawBegin();
 }
 
 void dxRenderDeviceRender::Clear()
 {
 #if defined(USE_DX10) || defined(USE_DX11)
-	HW.pContext->ClearDepthStencilView(RCache.get_ZB(), 
-		D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
+	HW.pContext->ClearDepthStencilView(RCache.get_ZB(), D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
 
 	if (psDeviceFlags.test(rsClearBB))
 	{
-		FLOAT ColorRGBA[4] = {0.0f,0.0f,0.0f,0.0f};
+		FLOAT ColorRGBA[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		HW.pContext->ClearRenderTargetView(RCache.get_RT(), ColorRGBA);
 	}
 #else	//	USE_DX10
-	CHK_DX(HW.pDevice->Clear(0,0,
-		D3DCLEAR_ZBUFFER|
-		(psDeviceFlags.test(rsClearBB)?D3DCLEAR_TARGET:0)|
-		(HW.Caps.bStencil?D3DCLEAR_STENCIL:0),
-		D3DCOLOR_XRGB(0,0,0),1,0
-		));
+	CHK_DX(HW.pDevice->Clear(0, 0, D3DCLEAR_ZBUFFER | (psDeviceFlags.test(rsClearBB) ? D3DCLEAR_TARGET : 0) | (HW.Caps.bStencil ? D3DCLEAR_STENCIL : 0), D3DCOLOR_XRGB(0, 0, 0), 1 , 0));
 #endif	//	USE_DX10
 }
 
@@ -349,31 +346,29 @@ void DoAsyncScreenshot();
 
 void dxRenderDeviceRender::End()
 {
-	VERIFY	(HW.pDevice);
+	VERIFY(HW.pDevice);
 
-	if (HW.Caps.SceneMode)	overdrawEnd();
+	if (HW.Caps.SceneMode)
+		overdrawEnd();
 
-	RCache.OnFrameEnd	();
-	Memory.dbg_check		();
+	RCache.OnFrameEnd();
+	Memory.dbg_check();
 
-	if(RImplementation.currentViewPort == MAIN_VIEWPORT)
+	if (RImplementation.currentViewPort == MAIN_VIEWPORT)
 		DoAsyncScreenshot();
 
 #if defined(USE_DX10) || defined(USE_DX11)
-	//HW.m_pSwapChain->Present( 0, 0 );
 	if (RImplementation.needPresenting) //--#SM+#-- +SecondVP+ Не выводим кадр из второго рендера на экран
 	{
 		bool bUseVSync = psDeviceFlags.is(rsFullscreen) && psDeviceFlags.test(rsVSync); // xxx: weird tearing glitches when VSync turned on for windowed mode in DX10\11
 		HW.m_pSwapChain->Present(bUseVSync ? 1 : 0, 0);
 	}
 #else	//	USE_DX10
-	CHK_DX				(HW.pDevice->EndScene());
+	CHK_DX(HW.pDevice->EndScene());
 
 	if (RImplementation.needPresenting) //--#SM+#-- +SecondVP+ Не выводим кадр из второго рендера на экран
 		HW.pDevice->Present(NULL, NULL, NULL, NULL);
 #endif	//	USE_DX10
-	//HRESULT _hr		= HW.pDevice->Present( NULL, NULL, NULL, NULL );
-	//if				(D3DERR_DEVICELOST==_hr)	return;			// we will handle this later
 }
 
 void dxRenderDeviceRender::ResourcesDestroyNecessaryTextures()
@@ -384,10 +379,10 @@ void dxRenderDeviceRender::ResourcesDestroyNecessaryTextures()
 void dxRenderDeviceRender::ClearTarget()
 {
 #if defined(USE_DX10) || defined(USE_DX11)
-	FLOAT ColorRGBA[4] = {0.0f,0.0f,0.0f,0.0f};
+	FLOAT ColorRGBA[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	HW.pContext->ClearRenderTargetView(RCache.get_RT(), ColorRGBA);
 #else	//	USE_DX10
-	CHK_DX(HW.pDevice->Clear(0,0,D3DCLEAR_TARGET,D3DCOLOR_XRGB(0,0,0),1,0));
+	CHK_DX(HW.pDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1, 0));
 #endif	//	USE_DX10
 }
 
@@ -399,9 +394,9 @@ void dxRenderDeviceRender::SetCacheXform(Fmatrix &mView, Fmatrix &mProject)
 
 bool dxRenderDeviceRender::HWSupportsShaderYUV2RGB()
 {
-	u32		v_dev	= CAP_VERSION(HW.Caps.raster_major, HW.Caps.raster_minor);
-	u32		v_need	= CAP_VERSION(2,0);
-	return (v_dev>=v_need);
+	u32 v_dev = CAP_VERSION(HW.Caps.raster_major, HW.Caps.raster_minor);
+	u32 v_need = CAP_VERSION(2, 0);
+	return (v_dev >= v_need);
 }
 
 void  dxRenderDeviceRender::OnAssetsChanged()

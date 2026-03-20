@@ -32,7 +32,6 @@ BOOL g_bIntroFinished = FALSE;
 extern void Intro(void* fn);
 extern void Intro_DSHOW(void* fn);
 extern int PASCAL IntroDSHOW_wnd(HINSTANCE hInstC, HINSTANCE hInstP, LPSTR lpCmdLine, int nCmdShow);
-//int max_load_stage = 0;
 
 const TCHAR* c_szSplashClass = _T("SplashWindow");
 
@@ -60,13 +59,9 @@ static int start_month = 2; // January
 static int start_year = 2019; // 1999
 
 // binary hash, mainly for copy-protection
-
-#ifndef DEDICATED_SERVER
-
 #include "md5.h"
 #include <ctype.h>
 
-//#include <wincodec.h>
 #include <thread>
 
 #define DEFAULT_MODULE_HASH "3CAABCFCFF6F3A810019C6A72180F166"
@@ -123,7 +118,6 @@ PROTECT_API char* ComputeModuleHash(char* pszHash)
 
     return pszHash;
 }
-#endif // DEDICATED_SERVER
 
 void compute_build_id()
 {
@@ -162,7 +156,6 @@ struct _SoundProcessor : public pureFrame
 {
     virtual void _BCL OnFrame()
     {
-        //Msg ("------------- sound: %d [%3.2f,%3.2f,%3.2f]",u32(Device.dwFrame),VPUSH(Device.vCameraPosition));
         Device.Statistic->Sound.Begin();
         ::Sound->update(Device.vCameraPosition, Device.vCameraDirection, Device.vCameraTop);
         Device.Statistic->Sound.End();
@@ -179,25 +172,23 @@ void doBenchmark(LPCSTR name);
 ENGINE_API bool g_bBenchmark = false;
 string512 g_sBenchmarkName;
 
-
 ENGINE_API string512 g_sLaunchOnExit_params;
 ENGINE_API string512 g_sLaunchOnExit_app;
 ENGINE_API string_path g_sLaunchWorkingFolder;
-// -------------------------------------------
+
 // startup point
 void InitEngine()
 {
     Engine.Initialize();
-    while (!g_bIntroFinished) Sleep(100);
+    while (!g_bIntroFinished)
+		Sleep(100);
     Device.Initialize();
 }
 
 struct path_excluder_predicate
 {
-    explicit path_excluder_predicate(xr_auth_strings_t const* ignore) :
-        m_ignore(ignore)
-    {
-    }
+    explicit path_excluder_predicate(xr_auth_strings_t const* ignore) : m_ignore(ignore)
+    {}
     bool xr_stdcall is_allow_include(LPCSTR path)
     {
         if (!m_ignore)
@@ -209,23 +200,18 @@ struct path_excluder_predicate
 };
 
 template <typename T>
-void InitConfig(T& config, pcstr name, bool fatal = true,
-	bool readOnly = true, bool loadAtStart = true, bool saveAtEnd = true,
-	u32 sectCount = 0, const CInifile::allow_include_func_t& allowIncludeFunc = nullptr)
+void InitConfig(T& config, pcstr name, bool fatal = true, bool readOnly = true, bool loadAtStart = true, bool saveAtEnd = true, u32 sectCount = 0, const CInifile::allow_include_func_t& allowIncludeFunc = nullptr)
 {
 	string_path fname;
 	FS.update_path(fname, "$game_config$", name);
 	config = new CInifile(fname, readOnly, loadAtStart, saveAtEnd, sectCount, allowIncludeFunc);
 
-	CHECK_OR_EXIT(config->section_count() || !fatal,
-		make_string("Cannot find file %s.\nReinstalling application may fix this problem.", fname));
+	CHECK_OR_EXIT(config->section_count() || !fatal, make_string("Cannot find file %s.\nReinstalling application may fix this problem.", fname));
 }
 
 PROTECT_API void InitSettings()
 {
-#ifndef DEDICATED_SERVER
     Msg("EH: %s\n", ComputeModuleHash(szEngineHash));
-#endif // DEDICATED_SERVER
 
     string_path fname;
     FS.update_path(fname, "$game_config$", "system.ltx");
@@ -243,18 +229,10 @@ PROTECT_API void InitSettings()
 	InitConfig(pFFSettings, "stcop_config.ltx", false, true, true, false);
 	InitConfig(pGameIni, "game.ltx");
 }
+
 PROTECT_API void InitConsole()
 {
-#ifdef DEDICATED_SERVER
-    {
-        Console = xr_new<CTextConsole>();
-    }
-#else
-    // else
-    {
-        Console = xr_new<CConsole>();
-    }
-#endif
+    Console = xr_new<CConsole>();
     Console->Initialize();
 
     xr_strcpy(Console->ConfigFile, "user.ltx");
@@ -269,9 +247,9 @@ PROTECT_API void InitConsole()
 PROTECT_API void InitInput()
 {
     BOOL bCaptureInput = !strstr(Core.Params, "-i");
-
     pInput = xr_new<CInput>(bCaptureInput);
 }
+
 void destroyInput()
 {
     xr_delete(pInput);
@@ -320,17 +298,23 @@ void execUserScript()
 
 void slowdownthread(void*)
 {
-    // Sleep (30*1000);
     for (;;)
     {
-        if (Device.Statistic->fFPS < 30) Sleep(1);
-        if (Device.mt_bMustExit) return;
-        if (0 == pSettings) return;
-        if (0 == Console) return;
-        if (0 == pInput) return;
-        if (0 == pApp) return;
+        if (Device.Statistic->fFPS < 30)
+			Sleep(1);
+        if (Device.mt_bMustExit)
+			return;
+        if (0 == pSettings)
+			return;
+        if (0 == Console)
+			return;
+        if (0 == pInput)
+			return;
+        if (0 == pApp)
+			return;
     }
 }
+
 void CheckPrivilegySlowdown()
 {
 #ifdef DEBUG
@@ -363,10 +347,8 @@ void Startup()
     }
 
     // Initialize APP
-    //#ifndef DEDICATED_SERVER
     ShowWindow(Device.m_hWnd, SW_SHOWNORMAL);
     Device.Create();
-    //#endif
     LALib.OnCreate();
     pApp = xr_new<CApplication>();
     g_pGamePersistent = (IGame_Persistent*)NEW_INSTANCE(CLSID_GAME_PERSISTANT);
@@ -389,7 +371,6 @@ void Startup()
     Engine.Event.Dump();
 
     // Destroying
-    //. destroySound();
     destroyInput();
 
     if (!g_bBenchmark && !g_SASH.IsRunning())
@@ -459,10 +440,8 @@ void RegisterWindowClass(HINSTANCE hInst)
 
 HWND CreateSplashWindow(HINSTANCE hInst)
 {
-    HWND hwndOwner = CreateWindow(c_szSplashClass, NULL, WS_POPUP,
-        0, 0, 0, 0, NULL, NULL, hInst, NULL);
-    return CreateWindowEx(WS_EX_LAYERED, c_szSplashClass, NULL, WS_POPUP | WS_VISIBLE,
-        0, 0, 0, 0, hwndOwner, NULL, hInst, NULL);
+    HWND hwndOwner = CreateWindow(c_szSplashClass, NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, hInst, NULL);
+    return CreateWindowEx(WS_EX_LAYERED, c_szSplashClass, NULL, WS_POPUP | WS_VISIBLE, 0, 0, 0, 0, hwndOwner, NULL, hInst, NULL);
 }
 
 HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
@@ -471,7 +450,7 @@ HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
     HWND hWnd;
 
     //image
-    CImage img;                             //объект изображения
+    CImage img; //объект изображения
 
     WCHAR path[MAX_PATH];
 
@@ -482,10 +461,10 @@ HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
     splash_path = splash_path.erase(splash_path.find_last_of('\\'), splash_path.size() - 1);
     splash_path += "\\splash.png";
 
-    img.Load(splash_path.c_str());              //загрузка сплеша
+    img.Load(splash_path.c_str()); //загрузка сплеша
 
-    int splashWidth = img.GetWidth();            //фиксируем ширину картинки
-    int splashHeight = img.GetHeight();            //фиксируем высоту картинки
+    int splashWidth = img.GetWidth(); //фиксируем ширину картинки
+    int splashHeight = img.GetHeight(); //фиксируем высоту картинки
 
     if (splashWidth == 0 || splashHeight == 0)  //если картинки нет на диске, то грузим из ресурсов
     {
@@ -495,18 +474,16 @@ HWND WINAPI ShowSplash(HINSTANCE hInstance, int nCmdShow)
         splashHeight = img.GetHeight();
     }
 
-    //float temp_x_size = 860.f;
-    //float temp_y_size = 461.f;
     int scr_x = GetSystemMetrics(SM_CXSCREEN);
     int scr_y = GetSystemMetrics(SM_CYSCREEN);
 
     int pos_x = (scr_x / 2) - (splashWidth / 2);
     int pos_y = (scr_y / 2) - (splashHeight / 2);
 
-    //if (!RegClass(SplashProc, szClass, COLOR_WINDOW)) return FALSE;
     hWnd = CreateSplashWindow(hInstance);
 
-    if (!hWnd) return FALSE;
+    if (!hWnd)
+		return FALSE;
 
     HDC hdcScreen = GetDC(NULL);
     HDC hDC = CreateCompatibleDC(hdcScreen);
@@ -573,83 +550,18 @@ static INT_PTR CALLBACK logDlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
     }
     return TRUE;
 }
-/*
-void test_rtc ()
-{
-CStatTimer tMc,tM,tC,tD;
-u32 bytes=0;
-tMc.FrameStart ();
-tM.FrameStart ();
-tC.FrameStart ();
-tD.FrameStart ();
-::Random.seed (0x12071980);
-for (u32 test=0; test<10000; test++)
-{
-u32 in_size = ::Random.randI(1024,256*1024);
-u32 out_size_max = rtc_csize (in_size);
-u8* p_in = xr_alloc<u8> (in_size);
-u8* p_in_tst = xr_alloc<u8> (in_size);
-u8* p_out = xr_alloc<u8> (out_size_max);
-for (u32 git=0; git<in_size; git++) p_in[git] = (u8)::Random.randI (8); // garbage
-bytes += in_size;
 
-tMc.Begin ();
-memcpy (p_in_tst,p_in,in_size);
-tMc.End ();
-
-tM.Begin ();
-CopyMemory(p_in_tst,p_in,in_size);
-tM.End ();
-
-tC.Begin ();
-u32 out_size = rtc_compress (p_out,out_size_max,p_in,in_size);
-tC.End ();
-
-tD.Begin ();
-u32 in_size_tst = rtc_decompress(p_in_tst,in_size,p_out,out_size);
-tD.End ();
-
-// sanity check
-R_ASSERT (in_size == in_size_tst);
-for (u32 tit=0; tit<in_size; tit++) R_ASSERT(p_in[tit] == p_in_tst[tit]); // garbage
-
-xr_free (p_out);
-xr_free (p_in_tst);
-xr_free (p_in);
-}
-tMc.FrameEnd (); float rMc = 1000.f*(float(bytes)/tMc.result)/(1024.f*1024.f);
-tM.FrameEnd (); float rM = 1000.f*(float(bytes)/tM.result)/(1024.f*1024.f);
-tC.FrameEnd (); float rC = 1000.f*(float(bytes)/tC.result)/(1024.f*1024.f);
-tD.FrameEnd (); float rD = 1000.f*(float(bytes)/tD.result)/(1024.f*1024.f);
-Msg ("* memcpy: %5.2f M/s (%3.1f%%)",rMc,100.f*rMc/rMc);
-Msg ("* mm-memcpy: %5.2f M/s (%3.1f%%)",rM,100.f*rM/rMc);
-Msg ("* compression: %5.2f M/s (%3.1f%%)",rC,100.f*rC/rMc);
-Msg ("* decompression: %5.2f M/s (%3.1f%%)",rD,100.f*rD/rMc);
-}
-*/
 extern void testbed(void);
 
-// video
-/*
-static HINSTANCE g_hInstance ;
-static HINSTANCE g_hPrevInstance ;
-static int g_nCmdShow ;
-void __cdecl intro_dshow_x (void*)
-{
-IntroDSHOW_wnd (g_hInstance,g_hPrevInstance,"GameData\\Stalker_Intro.avi",g_nCmdShow);
-g_bIntroFinished = TRUE ;
-}
-*/
-#define dwStickyKeysStructSize sizeof( STICKYKEYS )
-#define dwFilterKeysStructSize sizeof( FILTERKEYS )
-#define dwToggleKeysStructSize sizeof( TOGGLEKEYS )
+#define dwStickyKeysStructSize sizeof(STICKYKEYS)
+#define dwFilterKeysStructSize sizeof(FILTERKEYS)
+#define dwToggleKeysStructSize sizeof(TOGGLEKEYS)
 
 struct damn_keys_filter
 {
     BOOL bScreenSaverState;
 
     // Sticky & Filter & Toggle keys
-
     STICKYKEYS StickyKeysStruct;
     FILTERKEYS FilterKeysStruct;
     TOGGLEKEYS ToggleKeysStruct;
@@ -661,14 +573,13 @@ struct damn_keys_filter
     damn_keys_filter()
     {
         // Screen saver stuff
-
         bScreenSaverState = FALSE;
 
         // Saveing current state
         SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, (PVOID)&bScreenSaverState, 0);
 
+        // Disable screensaver
         if (bScreenSaverState)
-            // Disable screensaver
             SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, NULL, 0);
 
         dwStickyKeysFlags = 0;
@@ -716,8 +627,8 @@ struct damn_keys_filter
 
     ~damn_keys_filter()
     {
+        // Restoring screen saver
         if (bScreenSaverState)
-            // Restoring screen saver
             SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, NULL, 0);
 
         if (dwStickyKeysFlags)
@@ -789,64 +700,19 @@ BOOL IsOutOfVirtualMemory()
 
 #include "xr_ioc_cmd.h"
 
-//typedef void DUMMY_STUFF (const void*,const u32&,void*);
-//XRCORE_API DUMMY_STUFF *g_temporary_stuff;
-
 //#define TRIVIAL_ENCRYPTOR_DECODER
 //#include "trivial_encryptor.h"
 
 //#define RUSSIAN_BUILD
 
-#if 0
-void foo()
-{
-    typedef std::map<int, int> TEST_MAP;
-    TEST_MAP temp;
-    temp.insert(std::make_pair(0, 0));
-    TEST_MAP::const_iterator I = temp.upper_bound(2);
-    if (I == temp.end())
-        OutputDebugString("end() returned\r\n");
-    else
-        OutputDebugString("last element returned\r\n");
-
-    typedef void* pvoid;
-
-    LPCSTR path = "d:\\network\\stalker_net2";
-    FILE* f = fopen(path, "rb");
-    int file_handle = _fileno(f);
-    u32 buffer_size = _filelength(file_handle);
-    pvoid buffer = xr_malloc(buffer_size);
-    size_t result = fread(buffer, buffer_size, 1, f);
-    R_ASSERT3(!buffer_size || (result && (buffer_size >= result)), "Cannot read from file", path);
-    fclose(f);
-
-    u32 compressed_buffer_size = rtc_csize(buffer_size);
-    pvoid compressed_buffer = xr_malloc(compressed_buffer_size);
-    u32 compressed_size = rtc_compress(compressed_buffer, compressed_buffer_size, buffer, buffer_size);
-
-    LPCSTR compressed_path = "d:\\network\\stalker_net2.rtc";
-    FILE* f1 = fopen(compressed_path, "wb");
-    fwrite(compressed_buffer, compressed_size, 1, f1);
-    fclose(f1);
-}
-#endif // 0
-
 ENGINE_API bool g_dedicated_server = false;
 
-#ifndef DEDICATED_SERVER
 // forward declaration for Parental Control checks
 BOOL IsPCAccessAllowed();
-#endif // DEDICATED_SERVER
 
-int APIENTRY WinMain_impl(HINSTANCE hInstance,
-                          HINSTANCE hPrevInstance,
-                          char* lpCmdLine,
-                          int nCmdShow)
+int APIENTRY WinMain_impl(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* lpCmdLine, int nCmdShow)
 {
     Debug._initialize(false);
-    
-    // foo();
-#ifndef DEDICATED_SERVER
 
     // Check for another instance
 #ifdef NO_MULTI_INSTANCES
@@ -869,15 +735,12 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
         return 1;
     }
 #endif
-#else // DEDICATED_SERVER
-    g_dedicated_server = true;
-#endif // DEDICATED_SERVER
+
     RegisterWindowClass(hInstance);
-    //logoWindow = CreateSplashWindow(hInstance);
+
     logoWindow = ShowSplash(hInstance, nCmdShow);
 
     SendMessage(logoWindow, WM_DESTROY, 0, 0);
-
    
     g_bIntroFinished = TRUE;
 
@@ -886,15 +749,12 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 
     LPCSTR fsgame_ltx_name = "-fsltx ";
     string_path fsgame = "";
-    //MessageBox(0, lpCmdLine, "my cmd string", MB_OK);
+
     if (strstr(lpCmdLine, fsgame_ltx_name))
     {
         int sz = xr_strlen(fsgame_ltx_name);
         sscanf(strstr(lpCmdLine, fsgame_ltx_name) + sz, "%[^ ] ", fsgame);
-        //MessageBox(0, fsgame, "using fsltx", MB_OK);
     }
-
-    // g_temporary_stuff = &trivial_encryptor::decode;
 
     compute_build_id();
     Core._initialize("xray", NULL, TRUE, fsgame[0] ? fsgame : NULL);
@@ -908,11 +768,9 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
         xr_strcpy(Core.CompName, sizeof(Core.CompName), "Computer");
     }
 
-#ifndef DEDICATED_SERVER
     {
         damn_keys_filter filter;
         (void)filter;
-#endif // DEDICATED_SERVER
 
         FPU::m24r();
         InitEngine();
@@ -940,7 +798,6 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
             int sz = xr_strlen(sashName);
             string512 sash_arg;
             sscanf(strstr(Core.Params, sashName) + sz, "%[^ ] ", sash_arg);
-            //doBenchmark (sash_arg);
             g_SASH.Init(sash_arg);
             g_SASH.MainLoop();
             return 0;
@@ -953,7 +810,6 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
                 return 0;
         };
 
-#ifndef DEDICATED_SERVER
         if (strstr(Core.Params, "-r2a"))
             Console->Execute("renderer renderer_r2a");
         else if (strstr(Core.Params, "-r2"))
@@ -964,10 +820,7 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
             pTmp->Execute(Console->ConfigFile);
             xr_delete(pTmp);
         }
-#else
-        Console->Execute("renderer renderer_r1");
-#endif
-        //. InitInput ( );
+
         Engine.External.Initialize();
         Console->Execute("stat_memory");
 
@@ -975,7 +828,7 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
         Core._destroy();
 
         // check for need to execute something external
-        if (/*xr_strlen(g_sLaunchOnExit_params) && */xr_strlen(g_sLaunchOnExit_app))
+        if (xr_strlen(g_sLaunchOnExit_app))
         {
             //CreateProcess need to return results to next two structures
             STARTUPINFO si;
@@ -985,19 +838,15 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
             ZeroMemory(&pi, sizeof(pi));
             //We use CreateProcess to setup working folder
             char const* temp_wf = (xr_strlen(g_sLaunchWorkingFolder) > 0) ? g_sLaunchWorkingFolder : NULL;
-            CreateProcess(g_sLaunchOnExit_app, g_sLaunchOnExit_params, NULL, NULL, FALSE, 0, NULL,
-                          temp_wf, &si, &pi);
-
+            CreateProcess(g_sLaunchOnExit_app, g_sLaunchOnExit_params, NULL, NULL, FALSE, 0, NULL, temp_wf, &si, &pi);
         }
-#ifndef DEDICATED_SERVER
 #ifdef NO_MULTI_INSTANCES
         // Delete application presence mutex
         CloseHandle(hCheckPresenceMutex);
 #endif
     }
-    // here damn_keys_filter class instanse will be destroyed
-#endif // DEDICATED_SERVER
 
+    // here damn_keys_filter class instanse will be destroyed
     return 0;
 }
 
@@ -1035,7 +884,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* lpCmdLi
 LPCSTR _GetFontTexName(LPCSTR section)
 {
     static char* tex_names[] = {"texture800", "texture", "texture1600"};
-    int def_idx = 1;//default 1024x768
+    int def_idx = 1;
     int idx = def_idx;
 
     u32 h = Device.dwHeight;
@@ -1103,8 +952,10 @@ CApplication::CApplication()
     // Register us
     Device.seqFrame.Add(this, REG_PRIORITY_HIGH + 1000);
 
-    if (psDeviceFlags.test(mtSound)) Device.seqFrameMT.Add(&SoundProcessor);
-    else Device.seqFrame.Add(&SoundProcessor);
+    if (psDeviceFlags.test(mtSound))
+		Device.seqFrameMT.Add(&SoundProcessor);
+    else
+		Device.seqFrame.Add(&SoundProcessor);
 
     Console->Show();
 
@@ -1124,7 +975,6 @@ CApplication::~CApplication()
     Device.seqFrameMT.Remove(&SoundProcessor);
     Device.seqFrame.Remove(&SoundProcessor);
     Device.seqFrame.Remove(this);
-
 
     // events
     Engine.Event.Handler_Detach(eConsole, this);
@@ -1233,9 +1083,7 @@ void CApplication::OnEvent(EVENT E, u64 P1, u64 P2)
         g_pGameLevel = (IGame_Level*)NEW_INSTANCE(CLSID_GAME_LEVEL);
         shared_str server_options = g_pGameLevel->OpenDemoFile(demo_file);
 
-        //-----------------------------------------------------------
         g_pGamePersistent->PreStart(server_options.c_str());
-        //-----------------------------------------------------------
 
         pApp->LoadBegin();
         g_pGamePersistent->Start("");
@@ -1257,11 +1105,10 @@ void CApplication::LoadBegin()
 
         g_appLoaded = FALSE;
 
-#ifndef DEDICATED_SERVER
         _InitializeFont(pFontSystem, "ui_font_letterica18_russian", 0);
 
         m_pRender->LoadBegin();
-#endif
+
         phase_timer.Start();
         load_stage = 0;
     }
@@ -1498,7 +1345,6 @@ void CApplication::LoadAllArchives()
     }
 }
 
-#ifndef DEDICATED_SERVER
 // Parential control for Vista and upper
 typedef BOOL(*PCCPROC)(CHAR*);
 
@@ -1547,12 +1393,13 @@ BOOL IsPCAccessAllowed()
 
     return bAllowed;
 }
-#endif // DEDICATED_SERVER
 
 //launcher stuff----------------------------
-extern "C" {
+extern "C" 
+{
     typedef int __cdecl LauncherFunc(int);
 }
+
 HMODULE hLauncher = NULL;
 LauncherFunc* pLauncher = NULL;
 
@@ -1622,6 +1469,7 @@ void doBenchmark(LPCSTR name)
         Startup();
     }
 }
+
 #pragma optimize("g", off)
 void CApplication::load_draw_internal()
 {
