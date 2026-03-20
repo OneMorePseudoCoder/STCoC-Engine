@@ -52,20 +52,19 @@ void CUIRankingsCoC::Update()
 		{
 			if (!ParentHasMe())
 			{
-				luabind::functor<pcstr> functorSetName;
+				luabind::functor<LPCSTR> functorSetName;
 				if (ai().script_engine().functor("pda.coc_rankings_set_name", functorSetName))
 					SetName(functorSetName(m_index));
-				 
-				luabind::functor<pcstr> functorSetDescription;
+
+				luabind::functor<LPCSTR> functorSetDescription;
 				if (ai().script_engine().functor("pda.coc_rankings_set_description", functorSetDescription))
 					SetDescription(functorSetDescription(m_index));
-				 
-				
-				luabind::functor<pcstr> functorSetHint;
+
+				luabind::functor<LPCSTR> functorSetHint;
 				if (ai().script_engine().functor("pda.coc_rankings_set_hint", functorSetHint))
 					SetHint(functorSetHint(m_index));
-				 
-				luabind::functor<pcstr> functorSetIcon;
+
+				luabind::functor<LPCSTR> functorSetIcon;
 				if (ai().script_engine().functor("pda.coc_rankings_set_icon", functorSetIcon))
 					SetIcon(functorSetIcon(m_index));
 
