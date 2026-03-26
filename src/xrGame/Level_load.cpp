@@ -13,8 +13,6 @@
 #include "level_sounds.h"
 #include "GamePersistent.h"
 
-ENGINE_API	bool g_dedicated_server;
-
 bool CLevel::Load_GameSpecific_Before()
 {
 	// AI space
@@ -25,7 +23,8 @@ bool CLevel::Load_GameSpecific_Before()
 	if (!ai().get_alife() && FS.exist(fn_game,"$level$","level.ai") && !net_Hosts.empty())
 		ai().load						(net_SessionName());
 
-	if (!g_dedicated_server && !ai().get_alife() && ai().get_game_graph() && FS.exist(fn_game, "$level$", "level.game")) {
+	if (!ai().get_alife() && ai().get_game_graph() && FS.exist(fn_game, "$level$", "level.game")) 
+	{
 		IReader							*stream = FS.r_open		(fn_game);
 		ai().patrol_path_storage_raw	(*stream);
 		FS.r_close						(stream);
@@ -81,7 +80,6 @@ bool CLevel::Load_GameSpecific_After()
 		FS.r_close		(F);
 	}
 	
-	if	(!g_dedicated_server)
 	{
 		// loading static sounds
 		VERIFY								(m_level_sound_manager);
@@ -137,19 +135,17 @@ bool CLevel::Load_GameSpecific_After()
 		}
 	}	
 
-	if (!g_dedicated_server) {
-		// loading scripts
-		ai().script_engine().remove_script_process(ScriptEngine::eScriptProcessorLevel);
+	// loading scripts
+	ai().script_engine().remove_script_process(ScriptEngine::eScriptProcessorLevel);
 
-		if (pLevel->section_exist("level_scripts") && pLevel->line_exist("level_scripts","script"))
-			ai().script_engine().add_script_process(ScriptEngine::eScriptProcessorLevel,xr_new<CScriptProcess>("level",pLevel->r_string("level_scripts","script")));
-		else
-			ai().script_engine().add_script_process(ScriptEngine::eScriptProcessorLevel,xr_new<CScriptProcess>("level",""));
-	}
+	if (pLevel->section_exist("level_scripts") && pLevel->line_exist("level_scripts","script"))
+		ai().script_engine().add_script_process(ScriptEngine::eScriptProcessorLevel,xr_new<CScriptProcess>("level",pLevel->r_string("level_scripts","script")));
+	else
+		ai().script_engine().add_script_process(ScriptEngine::eScriptProcessorLevel,xr_new<CScriptProcess>("level",""));
 		
 	BlockCheatLoad();
 
-	g_pGamePersistent->Environment().SetGameTime	(GetEnvironmentGameDayTimeSec(),game->GetEnvironmentGameTimeFactor());
+	g_pGamePersistent->Environment().SetGameTime(GetEnvironmentGameDayTimeSec(),game->GetEnvironmentGameTimeFactor());
 
 	return TRUE;
 }

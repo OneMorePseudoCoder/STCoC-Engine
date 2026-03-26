@@ -258,7 +258,7 @@ void CConsole::OnRender()
     if (!m_hShader_back)
     {
         m_hShader_back = xr_new< FactoryPtr<IUIShader> >();
-        (*m_hShader_back)->create("hud\\default", "ui\\ui_console"); // "ui\\ui_empty"
+        (*m_hShader_back)->create("hud\\default", "ui\\ui_console");
     }
 
     if (!pFont)
@@ -273,21 +273,16 @@ void CConsole::OnRender()
     }
 
     bool bGame = false;
-    if ((g_pGameLevel && g_pGameLevel->bReady) ||
-            (g_pGamePersistent && g_pGamePersistent->m_pMainMenu && g_pGamePersistent->m_pMainMenu->IsActive()))
+    if ((g_pGameLevel && g_pGameLevel->bReady) || (g_pGamePersistent && g_pGamePersistent->m_pMainMenu && g_pGamePersistent->m_pMainMenu->IsActive()))
     {
         bGame = true;
-    }
-    if (g_dedicated_server)
-    {
-        bGame = false;
     }
 
     DrawBackgrounds(bGame);
 
     float fMaxY;
     float dwMaxY = (float)Device.dwHeight;
-    // float dwMaxX=float(Device.dwWidth/2);
+
     if (bGame)
     {
         fMaxY = 0.0f;
@@ -311,7 +306,6 @@ void CConsole::OnRender()
     LPCSTR s_mark = ec().str_mark();
     LPCSTR s_mark_a = ec().str_after_mark();
 
-    // strncpy_s( buf1, cur_pos, editor, MAX_LEN );
     float str_length = ioc_d + pFont->SizeOf_(s_cursor);
     float out_pos = 0.0f;
     if (str_length > scr_width)
@@ -357,7 +351,6 @@ void CConsole::OnRender()
         }
     }
 
-    // ===== ==============================================
     pFont->SetColor(cmd_font_color);
     pFont2->SetColor(cmd_font_color);
 
@@ -367,15 +360,12 @@ void CConsole::OnRender()
     out_pos += pFont2->SizeOf_(s_mark);
     pFont->OutI(-1.0f + out_pos * scr_x, ypos, "%s", s_mark_a);
 
-    //pFont2->OutI( -1.0f + ioc_d * scr_x, ypos, "%s", editor=all );
-
     if (ec().cursor_view())
     {
         pFont->SetColor(cursor_font_color);
         pFont->OutI(-1.0f + str_length * scr_x, ypos, "%s", ch_cursor);
     }
 
-    // ---------------------
     u32 log_line = LogFile->size() - 1;
     ypos -= LDIST;
     for (int i = log_line - scroll_delta; i >= 0; --i)
@@ -393,8 +383,6 @@ void CConsole::OnRender()
         }
         Console_mark cm = (Console_mark)ls[0];
         pFont->SetColor(get_mark_color(cm));
-        //u8 b = (is_mark( cm ))? 2 : 0;
-        //OutFont( ls + b, ypos );
         OutFont(ls, ypos);
     }
 
@@ -479,7 +467,6 @@ void CConsole::DrawBackgrounds(bool bGame)
     DrawRect(sr, tips_select_color);
 
     // --------------------------- highlight words --------------------
-
     if (m_select_tip < (int)m_tips.size())
     {
         Frect r;
@@ -675,12 +662,6 @@ void CConsole::Hide()
     {
         return;
     }
-    if (g_pGamePersistent && g_dedicated_server)
-    {
-        return;
-    }
-    // if ( g_pGameLevel ||
-    // ( g_pGamePersistent && g_pGamePersistent->m_pMainMenu && g_pGamePersistent->m_pMainMenu->IsActive() ))
 
     if (pInput->get_exclusive_mode())
     {

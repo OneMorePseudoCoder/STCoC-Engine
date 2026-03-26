@@ -53,7 +53,6 @@
 #include "PHDebug.h"
 #include "debug_text_tree.h"
 
-ENGINE_API bool g_dedicated_server;
 extern CUISequencer* g_tutorial;
 extern CUISequencer* g_tutorial2;
 
@@ -73,24 +72,18 @@ CLevel::CLevel() :
     eEnvironment = Engine.Event.Handler_Attach("LEVEL:Environment", this);
     eEntitySpawn = Engine.Event.Handler_Attach("LEVEL:spawn", this);
     m_pBulletManager = xr_new<CBulletManager>();
-    if (!g_dedicated_server)
-    {
-        m_map_manager = xr_new<CMapManager>();
-        m_game_task_manager = xr_new<CGameTaskManager>();
-    }
+    m_map_manager = xr_new<CMapManager>();
+    m_game_task_manager = xr_new<CGameTaskManager>();
     m_dwDeltaUpdate = u32(fixed_step*1000);
     m_seniority_hierarchy_holder = xr_new<CSeniorityHierarchyHolder>();
-    if (!g_dedicated_server)
-    {
-        m_level_sound_manager = xr_new<CLevelSoundManager>();
-        m_space_restriction_manager = xr_new<CSpaceRestrictionManager>();
-        m_client_spawn_manager = xr_new<CClientSpawnManager>();
-        m_autosave_manager = xr_new<CAutosaveManager>();
-        m_debug_renderer = xr_new<CDebugRenderer>();
+    m_level_sound_manager = xr_new<CLevelSoundManager>();
+    m_space_restriction_manager = xr_new<CSpaceRestrictionManager>();
+    m_client_spawn_manager = xr_new<CClientSpawnManager>();
+    m_autosave_manager = xr_new<CAutosaveManager>();
+    m_debug_renderer = xr_new<CDebugRenderer>();
 #ifdef DEBUG
-        m_level_debug = xr_new<CLevelDebug>();
+    m_level_debug = xr_new<CLevelDebug>();
 #endif
-    }
     m_ph_commander = xr_new<CPHCommander>();
     m_ph_commander_scripts = xr_new<CPHCommander>();
     pObjects4CrPr.clear();
@@ -138,8 +131,7 @@ CLevel::~CLevel()
     xr_delete(m_client_spawn_manager);
     xr_delete(m_autosave_manager);
     xr_delete(m_debug_renderer);
-    if (!g_dedicated_server)
-        ai().script_engine().remove_script_process(ScriptEngine::eScriptProcessorLevel);
+    ai().script_engine().remove_script_process(ScriptEngine::eScriptProcessorLevel);
     xr_delete(game);
     xr_delete(game_events);
     xr_delete(m_pBulletManager);
@@ -419,24 +411,26 @@ void CLevel::OnFrame()
         ClientReceive();
         Device.Statistic->netClient1.End();
     }
+
     ProcessGameEvents();
+
     if (m_bNeed_CrPr)
         make_NetCorrectionPrediction();
-    if (!g_dedicated_server)
-    {
-        if (g_mt_config.test(mtMap))
-            Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(m_map_manager, &CMapManager::Update));
-        else
-            MapManager().Update();
-        if (Device.dwPrecacheFrame == 0)
-        {							
-            GameTaskManager().UpdateTasks();
-        }
+
+    if (g_mt_config.test(mtMap))
+        Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(m_map_manager, &CMapManager::Update));
+    else
+        MapManager().Update();
+    if (Device.dwPrecacheFrame == 0)
+    {							
+        GameTaskManager().UpdateTasks();
     }
-    // Inherited update
+    
+	// Inherited update
     inherited::OnFrame();
-    // Draw client/server stats
-    if (!g_dedicated_server && psDeviceFlags.test(rsStatistic))
+    
+	// Draw client/server stats
+    if (psDeviceFlags.test(rsStatistic))
     {
         CGameFont* F = UI().Font().pFontDI;
         if (!psNET_direct_connect)
@@ -447,10 +441,8 @@ void CLevel::OnFrame()
                 F->SetHeightI(0.015f);
                 F->OutSetI(0.0f, 0.5f);
                 F->SetColor(D3DCOLOR_XRGB(0, 255, 0));
-                F->OutNext("IN:  %4d/%4d (%2.1f%%)", S->bytes_in_real, S->bytes_in,
-                    100.f*float(S->bytes_in_real) / float(S->bytes_in));
-                F->OutNext("OUT: %4d/%4d (%2.1f%%)", S->bytes_out_real, S->bytes_out,
-                    100.f*float(S->bytes_out_real) / float(S->bytes_out));
+                F->OutNext("IN:  %4d/%4d (%2.1f%%)", S->bytes_in_real, S->bytes_in, 100.f*float(S->bytes_in_real) / float(S->bytes_in));
+                F->OutNext("OUT: %4d/%4d (%2.1f%%)", S->bytes_out_real, S->bytes_out, 100.f*float(S->bytes_out_real) / float(S->bytes_out));
                 F->OutNext("client_2_sever ping: %d", net_Statistic.getPing());
                 F->OutNext("SPS/Sended : %4d/%4d", S->dwBytesPerSec, S->dwBytesSended);
                 F->SetColor(D3DCOLOR_XRGB(255, 255, 255));
@@ -461,15 +453,7 @@ void CLevel::OnFrame()
                     void operator()(IClient* C)
                     {
                         m_server->UpdateClientStatistic(C);
-                        F->OutNext("0x%08x: P(%d), BPS(%2.1fK), MRR(%2d), MSR(%2d), Retried(%2d), Blocked(%2d)",
-                            //Server->game->get_option_s(*C->Name,"name",*C->Name),
-                            C->ID.value(),
-                            C->stats.getPing(),
-                            float(C->stats.getBPS()),// /1024,
-                            C->stats.getMPS_Receive(),
-                            C->stats.getMPS_Send(),
-                            C->stats.getRetriedCount(),
-                            C->stats.dwTimesBlocked);
+                        F->OutNext("0x%08x: P(%d), BPS(%2.1fK), MRR(%2d), MSR(%2d), Retried(%2d), Blocked(%2d)", C->ID.value(), C->stats.getPing(), float(C->stats.getBPS()), C->stats.getMPS_Receive(), C->stats.getMPS_Send(), C->stats.getRetriedCount(), C->stats.dwTimesBlocked);
                     }
                 };
                 net_stats_functor tmp_functor;
@@ -485,17 +469,12 @@ void CLevel::OnFrame()
                 F->SetColor(D3DCOLOR_XRGB(0, 255, 0));
                 F->OutNext("client_2_sever ping: %d", net_Statistic.getPing());
                 F->SetColor(D3DCOLOR_XRGB(255, 255, 255));
-                F->OutNext("BReceivedPs(%2d), BSendedPs(%2d), Retried(%2d), Blocked(%2d)",
-                    net_Statistic.getReceivedPerSec(),
-                    net_Statistic.getSendedPerSec(),
-                    net_Statistic.getRetriedCount(),
-                    net_Statistic.dwTimesBlocked);
+                F->OutNext("BReceivedPs(%2d), BSendedPs(%2d), Retried(%2d), Blocked(%2d)", net_Statistic.getReceivedPerSec(), net_Statistic.getSendedPerSec(), net_Statistic.getRetriedCount(), net_Statistic.dwTimesBlocked);
 #ifdef DEBUG
                 if (!pStatGraphR)
                 {
                     pStatGraphR = xr_new<CStatGraph>();
                     pStatGraphR->SetRect(50, 700, 300, 68, 0xff000000, 0xff000000);
-                    //m_stat_graph->SetGrid(0, 0.0f, 10, 1.0f, 0xff808080, 0xffffffff);
                     pStatGraphR->SetMinMax(0.0f, 65536.0f, 1000);
                     pStatGraphR->SetStyle(CStatGraph::stBarLine);
                     pStatGraphR->AppendSubGraph(CStatGraph::stBarLine);
@@ -517,34 +496,28 @@ void CLevel::OnFrame()
 #ifdef DEBUG
     g_pGamePersistent->Environment().m_paused = m_bEnvPaused;
 #endif
-    g_pGamePersistent->Environment().SetGameTime(GetEnvironmentGameDayTimeSec(),
-        game->GetEnvironmentGameTimeFactor());
-    if (!g_dedicated_server)
-        ai().script_engine().script_process(ScriptEngine::eScriptProcessorLevel)->update();
+    g_pGamePersistent->Environment().SetGameTime(GetEnvironmentGameDayTimeSec(), game->GetEnvironmentGameTimeFactor());
+    ai().script_engine().script_process(ScriptEngine::eScriptProcessorLevel)->update();
     m_ph_commander->update();
     m_ph_commander_scripts->update();
     Device.Statistic->TEST0.Begin();
     BulletManager().CommitRenderSet();
     Device.Statistic->TEST0.End();
+
     // update static sounds
-    if (!g_dedicated_server)
+    if (g_mt_config.test(mtLevelSounds))
     {
-        if (g_mt_config.test(mtLevelSounds))
-        {
-            Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(
-                m_level_sound_manager, &CLevelSoundManager::Update));
-        }
-        else
-            m_level_sound_manager->Update();
+        Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(m_level_sound_manager, &CLevelSoundManager::Update));
     }
+    else
+        m_level_sound_manager->Update();
+
     // defer LUA-GC-STEP
-    if (!g_dedicated_server)
-    {
-        if (g_mt_config.test(mtLUA_GC))
-            Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(this, &CLevel::script_gc));
-        else
-            script_gc();
-    }
+    if (g_mt_config.test(mtLUA_GC))
+        Device.seqParallel.push_back(fastdelegate::FastDelegate0<>(this, &CLevel::script_gc));
+    else
+        script_gc();
+
     if (pStatGraphR)
     {
         static float fRPC_Mult = 10.0f;
@@ -574,15 +547,14 @@ void CLevel::OnRender()
 {
 	::Render->BeforeWorldRender();	//--#SM+#-- +SecondVP+
 
-	//Level().rend
-	//debug_renderer().render();
     inherited::OnRender();
+
     if (!game)
         return;
+
     Game().OnRender();
-    //Device.Statistic->TEST1.Begin();
+
     BulletManager().Render();
-    //Device.Statistic->TEST1.End();
 
 	::Render->AfterWorldRender(); //--#SM+#-- +SecondVP+
 

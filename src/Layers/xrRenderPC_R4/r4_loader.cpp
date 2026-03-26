@@ -22,99 +22,94 @@
 
 void CRender::level_Load(IReader* fs)
 {
-	R_ASSERT						(0!=g_pGameLevel);
-	R_ASSERT						(!b_loaded);
+	R_ASSERT(0 != g_pGameLevel);
+	R_ASSERT(!b_loaded);
 
 	// Begin
-	pApp->LoadBegin					();
-	dxRenderDeviceRender::Instance().Resources->DeferredLoad	(TRUE);
-	IReader*						chunk;
+	pApp->LoadBegin();
+	dxRenderDeviceRender::Instance().Resources->DeferredLoad(TRUE);
+	IReader* chunk;
 
 	// Shaders
-//	g_pGamePersistent->LoadTitle		("st_loading_shaders");
-	g_pGamePersistent->LoadTitle		();
+//	g_pGamePersistent->LoadTitle("st_loading_shaders");
+	g_pGamePersistent->LoadTitle();
 	{
-		chunk = fs->open_chunk		(fsL_SHADERS);
-		R_ASSERT2					(chunk,"Level doesn't builded correctly.");
-		u32 count = chunk->r_u32	();
-		Shaders.resize				(count);
-		for(u32 i=0; i<count; i++)	// skip first shader as "reserved" one
+		chunk = fs->open_chunk(fsL_SHADERS);
+		R_ASSERT2(chunk, "Level doesn't builded correctly.");
+		u32 count = chunk->r_u32();
+		Shaders.resize(count);
+		for(u32 i = 0; i < count; i++)	// skip first shader as "reserved" one
 		{
-			string512				n_sh,n_tlist;
-			LPCSTR			n		= LPCSTR(chunk->pointer());
-			chunk->skip_stringZ		();
-			if (0==n[0])			continue;
-			xr_strcpy					(n_sh,n);
-			LPSTR			delim	= strchr(n_sh,'/');
-			*delim					= 0;
-			xr_strcpy					(n_tlist,delim+1);
-			Shaders[i]				= dxRenderDeviceRender::Instance().Resources->Create(n_sh,n_tlist);
+			string512 n_sh, n_tlist;
+			LPCSTR n = LPCSTR(chunk->pointer());
+			chunk->skip_stringZ();
+			if (0 == n[0])
+				continue;
+			xr_strcpy(n_sh, n);
+			LPSTR delim = strchr(n_sh, '/');
+			*delim = 0;
+			xr_strcpy(n_tlist, delim + 1);
+			Shaders[i] = dxRenderDeviceRender::Instance().Resources->Create(n_sh, n_tlist);
 		}
 		chunk->close();
 	}
 
 	// Components
-	Wallmarks					= xr_new<CWallmarksEngine>	();
-	Details						= xr_new<CDetailManager>	();
+	Wallmarks = xr_new<CWallmarksEngine>();
+	Details = xr_new<CDetailManager>();
 
-	if	(!g_dedicated_server)	{
-		// VB,IB,SWI
-//		g_pGamePersistent->LoadTitle("st_loading_geometry");
-		g_pGamePersistent->LoadTitle();
-		{
-			CStreamReader			*geom = FS.rs_open("$level$","level.geom");
-			R_ASSERT2				(geom, "level.geom");
-			LoadBuffers				(geom,FALSE);
-			LoadSWIs				(geom);
-			FS.r_close				(geom);
-		}
+	// VB,IB,SWI
+//	g_pGamePersistent->LoadTitle("st_loading_geometry");
+	g_pGamePersistent->LoadTitle();
+	CStreamReader *geom = FS.rs_open("$level$", "level.geom");
+	R_ASSERT2(geom, "level.geom");
+	LoadBuffers(geom, FALSE);
+	LoadSWIs(geom);
+	FS.r_close(geom);
 
-		//...and alternate/fast geometry
-		{
-			CStreamReader			*geom = FS.rs_open("$level$","level.geomx");
-			R_ASSERT2				(geom, "level.geomX");
-			LoadBuffers				(geom,TRUE);
-			FS.r_close				(geom);
-		}
+	//...and alternate/fast geometry
+	CStreamReader *geomx = FS.rs_open("$level$", "level.geomx");
+	R_ASSERT2(geomx, "level.geomX");
+	LoadBuffers(geomx, TRUE);
+	FS.r_close(geomx);
 
-		// Visuals
-//		g_pGamePersistent->LoadTitle("st_loading_spatial_db");
-		g_pGamePersistent->LoadTitle();
-		chunk						= fs->open_chunk(fsL_VISUALS);
-		LoadVisuals					(chunk);
-		chunk->close				();
+	// Visuals
+//	g_pGamePersistent->LoadTitle("st_loading_spatial_db");
+	g_pGamePersistent->LoadTitle();
+	chunk = fs->open_chunk(fsL_VISUALS);
+	LoadVisuals(chunk);
+	chunk->close();
 
-		// Details
-//		g_pGamePersistent->LoadTitle("st_loading_details");
-		g_pGamePersistent->LoadTitle();
-		Details->Load				();
-	}
+	// Details
+//	g_pGamePersistent->LoadTitle("st_loading_details");
+	g_pGamePersistent->LoadTitle();
+	Details->Load();
 
 	// Sectors
 //	g_pGamePersistent->LoadTitle("st_loading_sectors_portals");
 	g_pGamePersistent->LoadTitle();
-	LoadSectors					(fs);
+	LoadSectors	(fs);
 
 	// 3D Fluid
-	Load3DFluid					();
+	Load3DFluid();
 
 	// HOM
-	HOM.Load					();
+	HOM.Load();
 
 	// Lights
-	// pApp->LoadTitle			("Loading lights...");
-	LoadLights					(fs);
+	// pApp->LoadTitle("Loading lights...");
+	LoadLights(fs);
 
 	// End
-	pApp->LoadEnd				();
+	pApp->LoadEnd();
 
 	// sanity-clear
-	lstLODs.clear				();
-	lstLODgroups.clear			();
-	mapLOD.clear				();
+	lstLODs.clear();
+	lstLODgroups.clear();
+	mapLOD.clear();
 
 	// signal loaded
-	b_loaded					= TRUE	;
+	b_loaded = TRUE;
 }
 
 void CRender::level_Unload()

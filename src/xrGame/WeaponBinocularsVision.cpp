@@ -187,17 +187,14 @@ CBinocularsVision::~CBinocularsVision()
 
 void CBinocularsVision::Update()
 {
-	if (g_dedicated_server)
-		return;
-	//-----------------------------------------------------
 	const CActor* pActor = Actor();
 	if (!pActor) 
 		return;
-	//-----------------------------------------------------
+
 	const CVisualMemoryManager::VISIBLES& vVisibles = pActor->memory().visual().objects();
 
 	VIS_OBJECTS_IT	it = m_active_objects.begin();
-	for(;it!=m_active_objects.end();++it)
+	for (;it != m_active_objects.end(); ++it)
 		(*it)->m_flags.set(flVisObjNotValid, TRUE) ;
 
 	CVisualMemoryManager::VISIBLES::const_iterator v_it = vVisibles.begin();

@@ -14,16 +14,12 @@
 #include "level.h"
 #include "xrMessages.h"
 #include "../xrEngine/gamemtllib.h"
-//#include "tri-colliderknoopc/dTriList.h"
 #include "../Include/xrRender/RenderVisual.h"
-//#include "CalculateTriangle.h"
 #include "actor.h"
 #ifdef DEBUG
 #include "PHDebug.h"
 #include "game_base_space.h"
 #endif
-
-extern ENGINE_API	bool g_dedicated_server;
 
 #define CHOOSE_MAX(x,inst_x,y,inst_y,z,inst_z)\
 	if(x>y)\
@@ -32,6 +28,7 @@ extern ENGINE_API	bool g_dedicated_server;
 	else\
 	if(y>z){inst_y;}\
 		else{inst_z;}
+
 CCustomRocket::CCustomRocket() 
 {
 	m_eState					= eInactive;

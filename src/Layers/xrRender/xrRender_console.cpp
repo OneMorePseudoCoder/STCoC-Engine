@@ -337,10 +337,8 @@ class CCC_Screenshot : public IConsole_Command
 {
 public:
 	CCC_Screenshot(LPCSTR N) : IConsole_Command(N)  { };
-	virtual void Execute(LPCSTR args) {
-		if (g_dedicated_server)
-			return;
-
+	virtual void Execute(LPCSTR args) 
+	{
 		string_path	name;	name[0]=0;
 		sscanf		(args,"%s",	name);
 		LPCSTR		image	= xr_strlen(name)?name:0;
@@ -352,7 +350,8 @@ class CCC_RestoreQuadIBData : public IConsole_Command
 {
 public:
 	CCC_RestoreQuadIBData(LPCSTR N) : IConsole_Command(N)  { };
-	virtual void Execute(LPCSTR args) {
+	virtual void Execute(LPCSTR args) 
+	{
 		RCache.RestoreQuadIBData();
 	}
 };
@@ -361,18 +360,20 @@ class CCC_ModelPoolStat : public IConsole_Command
 {
 public:
 	CCC_ModelPoolStat(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = TRUE; };
-	virtual void Execute(LPCSTR args) {
+	virtual void Execute(LPCSTR args) 
+	{
 		RImplementation.Models->dump();
 	}
 };
 
-class	CCC_SSAO_Mode		: public CCC_Token
+class CCC_SSAO_Mode : public CCC_Token
 {
 public:
-	CCC_SSAO_Mode(LPCSTR N, u32* V, xr_token* T) : CCC_Token(N,V,T)	{}	;
+	CCC_SSAO_Mode(LPCSTR N, u32* V, xr_token* T) : CCC_Token(N,V,T)	{};
 
-	virtual void	Execute	(LPCSTR args)	{
-		CCC_Token::Execute	(args);
+	virtual void Execute(LPCSTR args)	
+	{
+		CCC_Token::Execute(args);
 				
 		switch	(*value)
 		{

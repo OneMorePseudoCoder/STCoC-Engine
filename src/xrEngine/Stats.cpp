@@ -23,9 +23,6 @@ public:
     optimizer()
     {
         average_ = 30.f;
-        //  enabled_ = TRUE;
-        //  disable ();
-        // because Engine is not exist
         enabled_ = FALSE;
     }
 
@@ -145,7 +142,6 @@ void CStats::Show()
     if (Device.fTimeDelta > EPS_S)
     {
         float fps = 1.f / Device.fTimeDelta;
-        //if (Engine.External.tune_enabled) vtune.update (fps);
         float fOne = 0.3f;
         float fInv = 1.f - fOne;
         fFPS = fInv*fFPS + fOne*fps;
@@ -154,7 +150,6 @@ void CStats::Show()
         {
             u32 rendered_polies = Device.m_pRender->GetCacheStatPolys();
             fTPS = fInv*fTPS + fOne*float(rendered_polies) / (RenderTOTAL.result*1000.f);
-            //fTPS = fInv*fTPS + fOne*float(RCache.stat.polys)/(RenderTOTAL.result*1000.f);
             fRFPS = fInv*fRFPS + fOne*1000.f / RenderTOTAL.result;
         }
     }
@@ -165,9 +160,6 @@ void CStats::Show()
         Memory.stat_calls = 0;
     }
 
-    ////////////////////////////////////////////////
-    if (g_dedicated_server) return;
-    ////////////////////////////////////////////////
     int frm = 2000;
     div_t ddd = div(Device.dwFrame, frm);
     if (ddd.rem < frm / 2.0f)

@@ -158,35 +158,32 @@ void dxRenderDeviceRender::OnDeviceCreate(LPCSTR shName)
 	::Render->create();
 	Device.Statistic->OnDeviceCreate();
 
-	if (!g_dedicated_server)
-	{
-		m_WireShader.create("editor\\wire");
-		m_SelectionShader.create("editor\\selection");
+	m_WireShader.create("editor\\wire");
+	m_SelectionShader.create("editor\\selection");
 
-		DUImpl.OnDeviceCreate();
-	}
+	DUImpl.OnDeviceCreate();
 }
 
-void dxRenderDeviceRender::Create( HWND hWnd, u32 &dwWidth, u32 &dwHeight, float &fWidth_2, float &fHeight_2, bool move_window)
+void dxRenderDeviceRender::Create(HWND hWnd, u32 &dwWidth, u32 &dwHeight, float &fWidth_2, float &fHeight_2, bool move_window)
 {
-	HW.CreateDevice		(hWnd, move_window);
+	HW.CreateDevice(hWnd, move_window);
 #if defined(USE_DX10) || defined(USE_DX11)
-	dwWidth					= HW.m_ChainDesc.BufferDesc.Width;
-	dwHeight				= HW.m_ChainDesc.BufferDesc.Height;
+	dwWidth = HW.m_ChainDesc.BufferDesc.Width;
+	dwHeight = HW.m_ChainDesc.BufferDesc.Height;
 #else	//	USE_DX10
-	dwWidth					= HW.DevPP.BackBufferWidth;
-	dwHeight				= HW.DevPP.BackBufferHeight;
+	dwWidth = HW.DevPP.BackBufferWidth;
+	dwHeight = HW.DevPP.BackBufferHeight;
 #endif	//	USE_DX10
-	fWidth_2			= float(dwWidth/2)			;
-	fHeight_2			= float(dwHeight/2)			;
-	Resources			= xr_new<CResourceManager>		();
+	fWidth_2 = float(dwWidth / 2);
+	fHeight_2 = float(dwHeight / 2);
+	Resources = xr_new<CResourceManager>();
 }
 
 void dxRenderDeviceRender::SetupGPU( BOOL bForceGPU_SW, BOOL bForceGPU_NonPure, BOOL bForceGPU_REF)
 {
-	HW.Caps.bForceGPU_SW		= bForceGPU_SW;
-	HW.Caps.bForceGPU_NonPure	= bForceGPU_NonPure;
-	HW.Caps.bForceGPU_REF		= bForceGPU_REF;
+	HW.Caps.bForceGPU_SW = bForceGPU_SW;
+	HW.Caps.bForceGPU_NonPure = bForceGPU_NonPure;
+	HW.Caps.bForceGPU_REF = bForceGPU_REF;
 }
 
 void dxRenderDeviceRender::overdrawBegin()

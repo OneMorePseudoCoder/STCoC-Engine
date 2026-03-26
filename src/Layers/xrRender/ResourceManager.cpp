@@ -21,22 +21,26 @@ void fix_texture_name(LPSTR fn);
 
 //--------------------------------------------------------------------------------------------------------------
 template <class T>
-BOOL	reclaim		(xr_vector<T*>& vec, const T* ptr)
+BOOL reclaim(xr_vector<T*>& vec, const T* ptr)
 {
-	xr_vector<T*>::iterator it	= vec.begin	();
-	xr_vector<T*>::iterator end	= vec.end	();
+	xr_vector<T*>::iterator it	= vec.begin();
+	xr_vector<T*>::iterator end	= vec.end();
 	for (; it!=end; it++)
-		if (*it == ptr)	{ vec.erase	(it); return TRUE; }
-		return FALSE;
+		if (*it == ptr)
+		{ 
+			vec.erase(it);
+			return TRUE; 
+		}
+	return FALSE;
 }
 
 //--------------------------------------------------------------------------------------------------------------
-IBlender* CResourceManager::_GetBlender		(LPCSTR Name)
+IBlender* CResourceManager::_GetBlender(LPCSTR Name)
 {
 	R_ASSERT(Name && Name[0]);
 
 	LPSTR N = LPSTR(Name);
-	map_Blender::iterator I = m_blenders.find	(N);
+	map_Blender::iterator I = m_blenders.find(N);
 //	TODO: DX10: When all shaders are ready switch to common path
 #if defined(USE_DX10) || defined(USE_DX11)
 	if (I==m_blenders.end())	
@@ -54,69 +58,72 @@ IBlender* CResourceManager::_GetBlender		(LPCSTR Name)
 		return I->second;
 }
 
-IBlender* CResourceManager::_FindBlender		(LPCSTR Name)
+IBlender* CResourceManager::_FindBlender(LPCSTR Name)
 {
 	if (!(Name && Name[0]))
 		return 0;
 
 	LPSTR N = LPSTR(Name);
-	map_Blender::iterator I = m_blenders.find	(N);
+	map_Blender::iterator I = m_blenders.find(N);
 	if (I == m_blenders.end())
 		return 0;
 	else
 		return I->second;
 }
 
-void	CResourceManager::ED_UpdateBlender	(LPCSTR Name, IBlender* data)
+void CResourceManager::ED_UpdateBlender(LPCSTR Name, IBlender* data)
 {
 	LPSTR N = LPSTR(Name);
-	map_Blender::iterator I = m_blenders.find	(N);
-	if (I!=m_blenders.end())	
+	map_Blender::iterator I = m_blenders.find(N);
+	if (I != m_blenders.end())	
 	{
-		R_ASSERT	(data->getDescription().CLS == I->second->getDescription().CLS);
-		xr_delete	(I->second);
-		I->second	= data;
+		R_ASSERT(data->getDescription().CLS == I->second->getDescription().CLS);
+		xr_delete(I->second);
+		I->second = data;
 	} 
-	else 
+	else
 	{
-		m_blenders.insert	(std::make_pair(xr_strdup(Name),data));
+		m_blenders.insert(std::make_pair(xr_strdup(Name), data));
 	}
 }
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-void	CResourceManager::_ParseList(sh_list& dest, LPCSTR names)
+void CResourceManager::_ParseList(sh_list& dest, LPCSTR names)
 {
-	if (0==names || 0==names[0])
- 		names 	= "$null";
+	if (0 == names || 0 == names[0])
+ 		names = "$null";
 
-	ZeroMemory			(&dest, sizeof(dest));
-	char*	P			= (char*) names;
-	svector<char,128>	N;
+	ZeroMemory(&dest, sizeof(dest));
+	char* P = (char*) names;
+	svector<char, 128> N;
 
 	while (*P)
 	{
-		if (*P == ',') {
+		if (*P == ',') 
+		{
 			// flush
-			N.push_back	(0);
-			strlwr		(N.begin());
+			N.push_back(0);
+			strlwr(N.begin());
 
-			fix_texture_name( N.begin() );
+			fix_texture_name(N.begin());
 			dest.push_back(N.begin());
-			N.clear		();
-		} else {
-			N.push_back	(*P);
+			N.clear();
+		} 
+		else 
+		{
+			N.push_back(*P);
 		}
 		P++;
 	}
 	if (N.size())
 	{
 		// flush
-		N.push_back	(0);
-		strlwr		(N.begin());
+		N.push_back(0);
+		strlwr(N.begin());
 
-		fix_texture_name( N.begin() );
+		fix_texture_name(N.begin());
 		dest.push_back(N.begin());
 	}
 }
@@ -227,72 +234,52 @@ Shader*	CResourceManager::_cpp_Create	(IBlender* B, LPCSTR s_shader, LPCSTR s_te
 	return N;
 }
 
-Shader*	CResourceManager::_cpp_Create	(LPCSTR s_shader, LPCSTR s_textures, LPCSTR s_constants, LPCSTR s_matrices)
+Shader*	CResourceManager::_cpp_Create(LPCSTR s_shader, LPCSTR s_textures, LPCSTR s_constants, LPCSTR s_matrices)
 {
-	if (!g_dedicated_server) 
-	{
-		//	TODO: DX10: When all shaders are ready switch to common path
+	//	TODO: DX10: When all shaders are ready switch to common path
 #if defined(USE_DX10) || defined(USE_DX11)
-		IBlender	*pBlender = _GetBlender(s_shader?s_shader:"null");
-		if (!pBlender) return NULL;
-		return	_cpp_Create(pBlender ,s_shader,s_textures,s_constants,s_matrices);
+	IBlender	*pBlender = _GetBlender(s_shader ? s_shader : "null");
+	if (!pBlender)
+		return NULL;
+	return _cpp_Create(pBlender, s_shader, s_textures, s_constants, s_matrices);
 #else	//	USE_DX10
-		return	_cpp_Create(_GetBlender(s_shader?s_shader:"null"),s_shader,s_textures,s_constants,s_matrices);
+	return _cpp_Create(_GetBlender(s_shader ? s_shader : "null"), s_shader, s_textures, s_constants, s_matrices);
 #endif	//	USE_DX10
-	}
-	else
-	{
-		return NULL;
-	}
 }
 
-Shader*		CResourceManager::Create	(IBlender*	B,		LPCSTR s_shader,	LPCSTR s_textures,	LPCSTR s_constants, LPCSTR s_matrices)
+Shader* CResourceManager::Create(IBlender* B, LPCSTR s_shader, LPCSTR s_textures, LPCSTR s_constants, LPCSTR s_matrices)
 {
-	if (!g_dedicated_server)
-	{
-		return	_cpp_Create	(B,s_shader,s_textures,s_constants,s_matrices);
-	}
-	else
-	{
-		return NULL;
-	}
+	return	_cpp_Create	(B,s_shader,s_textures,s_constants,s_matrices);
 }
 
-Shader*		CResourceManager::Create	(LPCSTR s_shader,	LPCSTR s_textures,	LPCSTR s_constants,	LPCSTR s_matrices)
+Shader* CResourceManager::Create(LPCSTR s_shader, LPCSTR s_textures, LPCSTR s_constants, LPCSTR s_matrices)
 {
-	if (!g_dedicated_server)
-	{
-		//	TODO: DX10: When all shaders are ready switch to common path
+	//	TODO: DX10: When all shaders are ready switch to common path
 #if defined(USE_DX10) || defined(USE_DX11)
-		if	(_lua_HasShader(s_shader))		
-			return	_lua_Create	(s_shader,s_textures);
-		else								
+	if	(_lua_HasShader(s_shader))		
+		return	_lua_Create(s_shader, s_textures);
+	else								
+	{
+		Shader* pShader = _cpp_Create(s_shader, s_textures, s_constants, s_matrices);
+		if (pShader)
+			return pShader;
+		else
 		{
-			Shader* pShader = _cpp_Create	(s_shader,s_textures,s_constants,s_matrices);
-			if (pShader)
-				return pShader;
+			if (_lua_HasShader("stub_default"))
+				return	_lua_Create("stub_default", s_textures);
 			else
 			{
-				if (_lua_HasShader("stub_default"))
-					return	_lua_Create	("stub_default",s_textures);
-				else
-				{
-					FATAL("Can't find stub_default.s");
-					return 0;
-				}
+				FATAL("Can't find stub_default.s");
+				return 0;
 			}
 		}
+	}
 #else	//	USE_DX10
-		if	(_lua_HasShader(s_shader))		
-			return	_lua_Create	(s_shader,s_textures);
-		else								
-			return	_cpp_Create	(s_shader,s_textures,s_constants,s_matrices);
+	if	(_lua_HasShader(s_shader))		
+		return _lua_Create(s_shader, s_textures);
+	else								
+		return _cpp_Create(s_shader, s_textures, s_constants, s_matrices);
 #endif	//	USE_DX10
-	}
-	else
-	{
-		return NULL;
-	}
 }
 
 void CResourceManager::Delete(const Shader* S)

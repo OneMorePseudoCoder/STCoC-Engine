@@ -239,23 +239,24 @@ void CSector::traverse			(CFrustum &F, _scissor& R_scissor)
 	}
 }
 
-void CSector::load		(IReader& fs)
+void CSector::load(IReader& fs)
 {
 	// Assign portal polygons
-	u32 size			= fs.find_chunk(fsP_Portals); R_ASSERT(0==(size&1));
-	u32 count			= size/2;
-	m_portals.reserve	(count);
-	while (count) {
-		u16 ID		= fs.r_u16();
-		CPortal* P	= (CPortal*)RImplementation.getPortal	(ID);
+	u32 size = fs.find_chunk(fsP_Portals); 
+	R_ASSERT(0 == (size & 1));
+	u32 count = size / 2;
+	m_portals.reserve(count);
+
+	while (count) 
+	{
+		u16 ID = fs.r_u16();
+		CPortal* P = (CPortal*)RImplementation.getPortal(ID);
 		m_portals.push_back(P);
 		count--;
 	}
 
-	if	(g_dedicated_server)	m_root	= 0;
-	else {
-		// Assign visual
-		size	= fs.find_chunk(fsP_Root);	R_ASSERT(size==4);
-		m_root	= (dxRender_Visual*)RImplementation.getVisual	(fs.r_u32());
-	}
+	// Assign visual
+	size = fs.find_chunk(fsP_Root);
+	R_ASSERT(size == 4);
+	m_root = (dxRender_Visual*)RImplementation.getVisual(fs.r_u32());
 }

@@ -9,9 +9,6 @@
 
 void stats_manager::increment_stats( u32 size, enum_stats_buffer_type type, _D3DPOOL location )
 {
-	if( g_dedicated_server )
-		return;
-
 	R_ASSERT( type >= 0 && type < enum_stats_buffer_type_COUNT );
 	R_ASSERT( location >= 0 && location <= D3DPOOL_SCRATCH );
 	memory_usage_summary [type][location]		+= size;
@@ -19,9 +16,6 @@ void stats_manager::increment_stats( u32 size, enum_stats_buffer_type type, _D3D
  
 void stats_manager::increment_stats( u32 size, enum_stats_buffer_type type, _D3DPOOL location, void* buff_ptr )
 {
-	if( g_dedicated_server )
-		return;
-
 	R_ASSERT( buff_ptr != NULL );
 	R_ASSERT( type >= 0 && type < enum_stats_buffer_type_COUNT );
 	R_ASSERT( location >= 0 && location <= D3DPOOL_SCRATCH );
@@ -40,9 +34,6 @@ void stats_manager::increment_stats( u32 size, enum_stats_buffer_type type, _D3D
 
 void stats_manager::increment_stats_rtarget( ID3DTexture2D*		buff )
 {
-	if( g_dedicated_server )
-		return;
-
 	_D3DPOOL pool = D3DPOOL_MANAGED;
 #if defined(USE_DX10) || defined(USE_DX11)
 	D3D_TEXTURE2D_DESC desc;
@@ -59,9 +50,6 @@ void stats_manager::increment_stats_rtarget( ID3DTexture2D*		buff )
 
 void stats_manager::increment_stats_vb( ID3DVertexBuffer* buff )
 {
-	if( g_dedicated_server )
-		return;
-
 #if defined(USE_DX10) || defined(USE_DX11)
 	D3D_BUFFER_DESC desc;
 	buff->GetDesc( &desc );
@@ -75,9 +63,6 @@ void stats_manager::increment_stats_vb( ID3DVertexBuffer* buff )
 
 void stats_manager::increment_stats_ib( ID3DIndexBuffer*	buff )
 {
-	if( g_dedicated_server )
-		return;
-
 #if defined(USE_DX10) || defined(USE_DX11)
 	D3D_BUFFER_DESC desc;
 	buff->GetDesc( &desc );
@@ -91,7 +76,7 @@ void stats_manager::increment_stats_ib( ID3DIndexBuffer*	buff )
 
 void stats_manager::decrement_stats_rtarget( ID3DTexture2D*		buff )
 {
-	if( buff == NULL || g_dedicated_server )
+	if( buff == NULL )
 		return;
 
 	buff->AddRef();
@@ -111,12 +96,11 @@ void stats_manager::decrement_stats_rtarget( ID3DTexture2D*		buff )
 
 	u32 size = desc.Height*desc.Width*get_format_pixel_size(desc.Format);
 	decrement_stats( size, enum_stats_buffer_type_rtarget, pool, buff );
-
 }
 
 void stats_manager::decrement_stats_vb( ID3DVertexBuffer* buff )
 {
-	if( buff == NULL || g_dedicated_server )
+	if (buff == NULL)
 		return;
 
 	buff->AddRef();
@@ -137,7 +121,7 @@ void stats_manager::decrement_stats_vb( ID3DVertexBuffer* buff )
 
 void stats_manager::decrement_stats_ib( ID3DIndexBuffer*	buff )
 {	
-	if( buff == NULL || g_dedicated_server)
+	if (buff == NULL)
 		return;
 
 	buff->AddRef();
@@ -158,9 +142,6 @@ void stats_manager::decrement_stats_ib( ID3DIndexBuffer*	buff )
 
 void stats_manager::decrement_stats( u32 size, enum_stats_buffer_type type, _D3DPOOL location )
 {
-	if( g_dedicated_server )
-		return;
-
 	R_ASSERT( type >= 0 && type < enum_stats_buffer_type_COUNT );
 	R_ASSERT( location >= 0 && location <= D3DPOOL_SCRATCH );
 	memory_usage_summary [type][location]		-= size;
@@ -168,7 +149,7 @@ void stats_manager::decrement_stats( u32 size, enum_stats_buffer_type type, _D3D
 
 void stats_manager::decrement_stats( u32 size, enum_stats_buffer_type type, _D3DPOOL location, void* buff_ptr )
 {
-	if( buff_ptr == 0 || g_dedicated_server )
+	if (buff_ptr == 0)
 		return;
 
 #ifdef DEBUG
@@ -197,7 +178,6 @@ stats_manager::~stats_manager ()
 {
 #ifdef DEBUG
 	Msg		( "m_buffers_list.size() = %d", m_buffers_list.size() );
-//	R_ASSERT( m_buffers_list.size() == 0);	//  Some buffers stats are not removed from the list.
 #endif 
 }
 
@@ -209,7 +189,6 @@ u32 get_format_pixel_size( D3DFORMAT format )
 		{
 			return 16;
 		}
-
 	case D3DFMT_A16B16G16R16 :
 	case D3DFMT_A16B16G16R16F :
 	case D3DFMT_G32R32F:
@@ -232,7 +211,6 @@ u32 get_format_pixel_size( D3DFORMAT format )
 		{
 			return 4;
 		}
-
 	case D3DFMT_R5G6B5 :
 	case D3DFMT_X1R5G5B5 :
 	case D3DFMT_A1R5G5B5 :
@@ -243,7 +221,6 @@ u32 get_format_pixel_size( D3DFORMAT format )
 		{
 			return 2;
 		}
-
 	default :
 		return 0;
 	}

@@ -12,22 +12,24 @@
 #include "script_engine.h"
 #include "object_item_script.h"
 
-void CObjectFactory::register_script_class	(LPCSTR client_class, LPCSTR server_class, LPCSTR clsid, LPCSTR script_clsid)
+void CObjectFactory::register_script_class(LPCSTR client_class, LPCSTR server_class, LPCSTR clsid, LPCSTR script_clsid)
 {
 #ifndef NO_XR_GAME
-	luabind::object				client;
-	if (!ai().script_engine().function_object(client_class,client,LUA_TUSERDATA)) {
-		ai().script_engine().script_log	(eLuaMessageTypeError,"Cannot register class %s",client_class);
+	luabind::object client;
+	if (!ai().script_engine().function_object(client_class,client,LUA_TUSERDATA)) 
+	{
+		ai().script_engine().script_log(eLuaMessageTypeError, "Cannot register class %s", client_class);
 		return;
 	}
 #endif
-	luabind::object				server;
-	if (!ai().script_engine().function_object(server_class,server,LUA_TUSERDATA)) {
-		ai().script_engine().script_log	(eLuaMessageTypeError,"Cannot register class %s",server_class);
+	luabind::object server;
+	if (!ai().script_engine().function_object(server_class,server,LUA_TUSERDATA)) 
+	{
+		ai().script_engine().script_log(eLuaMessageTypeError, "Cannot register class %s", server_class);
 		return;
 	}
 	
-	add							(
+	add(
 		xr_new<CObjectItemScript>(
 #ifndef NO_XR_GAME
 			client,
@@ -39,14 +41,15 @@ void CObjectFactory::register_script_class	(LPCSTR client_class, LPCSTR server_c
 	);
 }
 
-void CObjectFactory::register_script_class			(LPCSTR unknown_class, LPCSTR clsid, LPCSTR script_clsid)
+void CObjectFactory::register_script_class(LPCSTR unknown_class, LPCSTR clsid, LPCSTR script_clsid)
 {
-	luabind::object				creator;
-	if (!ai().script_engine().function_object(unknown_class,creator,LUA_TUSERDATA)) {
-		ai().script_engine().script_log	(eLuaMessageTypeError,"Cannot register class %s",unknown_class);
+	luabind::object creator;
+	if (!ai().script_engine().function_object(unknown_class,creator,LUA_TUSERDATA)) 
+	{
+		ai().script_engine().script_log(eLuaMessageTypeError, "Cannot register class %s", unknown_class);
 		return;
 	}
-	add							(
+	add(
 		xr_new<CObjectItemScript>(
 #ifndef NO_XR_GAME
 			creator,
@@ -58,16 +61,9 @@ void CObjectFactory::register_script_class			(LPCSTR unknown_class, LPCSTR clsid
 	);
 }
 
-#ifndef NO_XR_GAME
-	ENGINE_API	bool g_dedicated_server;
-#endif // NO_XR_GAME
-
 void CObjectFactory::register_script_classes()
 {
-#ifndef NO_XR_GAME
-	if (!g_dedicated_server)
-#endif // NO_XR_GAME
-		ai();
+	ai();
 }
 
 using namespace luabind;

@@ -28,8 +28,7 @@ using namespace std::placeholders;
 
 u32 g_sv_traffic_optimization_level = eto_none;
 
-xrClientData::xrClientData	() :
-	IClient(Device.GetTimerGlobal())
+xrClientData::xrClientData() : IClient(Device.GetTimerGlobal())
 {
 	ps = NULL;
 	Clear		();
@@ -53,7 +52,7 @@ xrClientData::~xrClientData()
 }
 
 
-xrServer::xrServer() : IPureServer(Device.GetTimerGlobal(), g_dedicated_server)
+xrServer::xrServer() : IPureServer(Device.GetTimerGlobal(), false)
 {
 	m_file_transfers	= NULL;
 	m_aDelayedPackets.clear();

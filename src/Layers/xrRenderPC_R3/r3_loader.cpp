@@ -22,174 +22,183 @@
 
 void CRender::level_Load(IReader* fs)
 {
-	R_ASSERT						(0!=g_pGameLevel);
-	R_ASSERT						(!b_loaded);
+	R_ASSERT(0 != g_pGameLevel);
+	R_ASSERT(!b_loaded);
 
 	// Begin
-	pApp->LoadBegin					();
-	dxRenderDeviceRender::Instance().Resources->DeferredLoad	(TRUE);
-	IReader*						chunk;
+	pApp->LoadBegin();
+	dxRenderDeviceRender::Instance().Resources->DeferredLoad(TRUE);
+	IReader* chunk;
 
 	// Shaders
-//	g_pGamePersistent->LoadTitle		("st_loading_shaders");
-	g_pGamePersistent->LoadTitle		();
+//	g_pGamePersistent->LoadTitle("st_loading_shaders");
+	g_pGamePersistent->LoadTitle();
 	{
-		chunk = fs->open_chunk		(fsL_SHADERS);
-		R_ASSERT2					(chunk,"Level doesn't builded correctly.");
-		u32 count = chunk->r_u32	();
-		Shaders.resize				(count);
-		for(u32 i=0; i<count; i++)	// skip first shader as "reserved" one
+		chunk = fs->open_chunk(fsL_SHADERS);
+		R_ASSERT2(chunk, "Level doesn't builded correctly.");
+		u32 count = chunk->r_u32();
+		Shaders.resize(count);
+		for(u32 i = 0; i < count; i++)	// skip first shader as "reserved" one
 		{
-			string512				n_sh,n_tlist;
-			LPCSTR			n		= LPCSTR(chunk->pointer());
-			chunk->skip_stringZ		();
-			if (0==n[0])			continue;
-			xr_strcpy					(n_sh,n);
-			LPSTR			delim	= strchr(n_sh,'/');
-			*delim					= 0;
-			xr_strcpy					(n_tlist,delim+1);
-			Shaders[i]				= dxRenderDeviceRender::Instance().Resources->Create(n_sh,n_tlist);
+			string512 n_sh, n_tlist;
+			LPCSTR n = LPCSTR(chunk->pointer());
+			chunk->skip_stringZ();
+			if (0 == n[0])
+				continue;
+			xr_strcpy(n_sh, n);
+			LPSTR delim	= strchr(n_sh, '/');
+			*delim = 0;
+			xr_strcpy(n_tlist, delim + 1);
+			Shaders[i] = dxRenderDeviceRender::Instance().Resources->Create(n_sh, n_tlist);
 		}
 		chunk->close();
 	}
 
 	// Components
-	Wallmarks					= xr_new<CWallmarksEngine>	();
-	Details						= xr_new<CDetailManager>	();
+	Wallmarks = xr_new<CWallmarksEngine>();
+	Details = xr_new<CDetailManager>();
 
-	if	(!g_dedicated_server)	{
-		// VB,IB,SWI
-//		g_pGamePersistent->LoadTitle("st_loading_geometry");
-		g_pGamePersistent->LoadTitle();
-		{
-			CStreamReader			*geom = FS.rs_open("$level$","level.geom");
-			R_ASSERT2				(geom, "level.geom");
-			LoadBuffers				(geom,FALSE);
-			LoadSWIs				(geom);
-			FS.r_close				(geom);
-		}
+	// VB,IB,SWI
+//	g_pGamePersistent->LoadTitle("st_loading_geometry");
+	g_pGamePersistent->LoadTitle();
+	CStreamReader *geom = FS.rs_open("$level$","level.geom");
+	R_ASSERT2(geom, "level.geom");
+	LoadBuffers(geom, FALSE);
+	LoadSWIs(geom);
+	FS.r_close(geom);
 
-		//...and alternate/fast geometry
-		{
-			CStreamReader			*geom = FS.rs_open("$level$","level.geomx");
-			R_ASSERT2				(geom, "level.geomX");
-			LoadBuffers				(geom,TRUE);
-			FS.r_close				(geom);
-		}
+	//...and alternate/fast geometry
+	CStreamReader *geomx = FS.rs_open("$level$", "level.geomx");
+	R_ASSERT2(geomx, "level.geomX");
+	LoadBuffers(geomx, TRUE);
+	FS.r_close(geomx);
 
-		// Visuals
-//		g_pGamePersistent->LoadTitle("st_loading_spatial_db");
-		g_pGamePersistent->LoadTitle();
-		chunk						= fs->open_chunk(fsL_VISUALS);
-		LoadVisuals					(chunk);
-		chunk->close				();
+	// Visuals
+//	g_pGamePersistent->LoadTitle("st_loading_spatial_db");
+	g_pGamePersistent->LoadTitle();
+	chunk = fs->open_chunk(fsL_VISUALS);
+	LoadVisuals(chunk);
+	chunk->close();
 
-		// Details
-//		g_pGamePersistent->LoadTitle("st_loading_details");
-		g_pGamePersistent->LoadTitle();
-		Details->Load				();
-	}
+	// Details
+//	g_pGamePersistent->LoadTitle("st_loading_details");
+	g_pGamePersistent->LoadTitle();
+	Details->Load();
 
 	// Sectors
 //	g_pGamePersistent->LoadTitle("st_loading_sectors_portals");
 	g_pGamePersistent->LoadTitle();
-	LoadSectors					(fs);
+	LoadSectors(fs);
 
 	// 3D Fluid
-	Load3DFluid					();
+	Load3DFluid();
 
 	// HOM
-	HOM.Load					();
+	HOM.Load();
 
 	// Lights
-	// pApp->LoadTitle			("Loading lights...");
-	LoadLights					(fs);
+	// pApp->LoadTitle("Loading lights...");
+	LoadLights(fs);
 
 	// End
-	pApp->LoadEnd				();
+	pApp->LoadEnd();
 
 	// sanity-clear
-	lstLODs.clear				();
-	lstLODgroups.clear			();
-	mapLOD.clear				();
+	lstLODs.clear();
+	lstLODgroups.clear();
+	mapLOD.clear();
 
 	// signal loaded
-	b_loaded					= TRUE	;
+	b_loaded = TRUE;
 }
 
 void CRender::level_Unload()
 {
-	if (0==g_pGameLevel)		return;
-	if (!b_loaded)				return;
+	if (0 == g_pGameLevel)
+		return;
+
+	if (!b_loaded)
+		return;
 
 	u32 I;
 
 	// HOM
-	HOM.Unload				();
+	HOM.Unload();
 
 	//*** Details
-	Details->Unload			();
+	Details->Unload();
 
 	//*** Sectors
 	// 1.
-	xr_delete				(rmPortals);
-	pLastSector				= 0;
-	vLastCameraPos.set		(0,0,0);
+	xr_delete(rmPortals);
+	pLastSector = 0;
+	vLastCameraPos.set(0, 0, 0);
 	// 2.
-	for (I=0; I<Sectors.size(); I++)	xr_delete(Sectors[I]);
-	Sectors.clear			();
+	for (I = 0; I < Sectors.size(); I++)
+		xr_delete(Sectors[I]);
+	Sectors.clear();
+
 	// 3.
-	for (I=0; I<Portals.size(); I++)	xr_delete(Portals[I]);
-	Portals.clear			();
+	for (I = 0; I < Portals.size(); I++)
+		xr_delete(Portals[I]);
+	Portals.clear();
 
 	//*** Lights
-	// Glows.Unload			();
-	Lights.Unload			();
+	// Glows.Unload();
+	Lights.Unload();
 
 	//*** Visuals
-	for (I=0; I<Visuals.size(); I++)
+	for (I = 0; I < Visuals.size(); I++)
 	{
 		Visuals[I]->Release();
 		xr_delete(Visuals[I]);
 	}
-	Visuals.clear			();
+	Visuals.clear();
 
 	//*** SWI
-	for (I=0; I<SWIs.size();I++)xr_free	(SWIs[I].sw);
-	SWIs.clear				();
+	for (I = 0; I < SWIs.size(); I++)
+		xr_free(SWIs[I].sw);
+	SWIs.clear();
 
 	//*** VB/IB
-	for (I=0; I<nVB.size(); I++)
+	for (I = 0; I < nVB.size(); I++)
 	{
-		HW.stats_manager.decrement_stats_vb	( nVB[I] );
+		HW.stats_manager.decrement_stats_vb(nVB[I]);
 		_RELEASE(nVB[I]);
 	}
-	for (I=0; I<xVB.size(); I++)
+
+	for (I = 0; I < xVB.size(); I++)
 	{
-		HW.stats_manager.decrement_stats_vb ( xVB[I] );
+		HW.stats_manager.decrement_stats_vb(xVB[I]);
 		_RELEASE(xVB[I]);
 	}
-	nVB.clear(); xVB.clear();
 
-	for (I=0; I<nIB.size(); I++)	
+	nVB.clear();
+	xVB.clear();
+
+	for (I = 0; I < nIB.size(); I++)	
 	{
-		HW.stats_manager.decrement_stats_ib ( nIB[I] );
+		HW.stats_manager.decrement_stats_ib(nIB[I]);
 		_RELEASE(nIB[I]);
 	}
-	for (I=0; I<xIB.size(); I++)	
+
+	for (I = 0; I < xIB.size(); I++)	
 	{
-		HW.stats_manager.decrement_stats_ib ( xIB[I] );
+		HW.stats_manager.decrement_stats_ib(xIB[I]);
 		_RELEASE(xIB[I]);
 	}
-	nIB.clear(); xIB.clear();
-	nDC.clear(); xDC.clear();
+
+	nIB.clear();
+	xIB.clear();
+	nDC.clear();
+	xDC.clear();
 
 	//*** Components
-	xr_delete					(Details);
-	xr_delete					(Wallmarks);
+	xr_delete(Details);
+	xr_delete(Wallmarks);
 
 	//*** Shaders
-	Shaders.clear		();
+	Shaders.clear();
 
 	if (ps_clear_models_on_unload == true)
 	{
@@ -198,14 +207,13 @@ void CRender::level_Unload()
 		dxRenderDeviceRender::Instance().Resources->Dump(false);
 	}
 
-	b_loaded					= FALSE;
+	b_loaded = FALSE;
 }
 
 void CRender::LoadBuffers		(CStreamReader *base_fs,	BOOL _alternative)
 {
 	R_ASSERT2					(base_fs,"Could not load geometry. File not found.");
 	dxRenderDeviceRender::Instance().Resources->Evict		();
-//	u32	dwUsage					= D3DUSAGE_WRITEONLY;
 
 	xr_vector<VertexDeclarator>				&_DC	= _alternative?xDC:nDC;
 	xr_vector<ID3DVertexBuffer*>		&_VB	= _alternative?xVB:nVB;
@@ -221,40 +229,27 @@ void CRender::LoadBuffers		(CStreamReader *base_fs,	BOOL _alternative)
 		_VB.resize				(count);
         u32 bufferSize = (MAXD3DDECLLENGTH+1)*sizeof(D3DVERTEXELEMENT9);
         D3DVERTEXELEMENT9* dcl = (D3DVERTEXELEMENT9*)_alloca(bufferSize);
-		for (u32 i=0; i<count; i++)
+		for (u32 i = 0; i < count; i++)
 		{
-			// decl
-//			D3DVERTEXELEMENT9*	dcl		= (D3DVERTEXELEMENT9*) fs().pointer();
-			fs->r				(dcl,bufferSize);
-			fs->advance			(-(int)bufferSize);
+			fs->r(dcl, bufferSize);
+			fs->advance(-(int)bufferSize);
 
-			u32 dcl_len			= D3DXGetDeclLength		(dcl)+1;
-			_DC[i].resize		(dcl_len);
-			fs->r				(_DC[i].begin(),dcl_len*sizeof(D3DVERTEXELEMENT9));
+			u32 dcl_len = D3DXGetDeclLength(dcl) + 1;
+			_DC[i].resize(dcl_len);
+			fs->r(_DC[i].begin(), dcl_len * sizeof(D3DVERTEXELEMENT9));
 
 			// count, size
-			u32 vCount			= fs->r_u32	();
-			u32 vSize			= D3DXGetDeclVertexSize	(dcl,0);
-			Msg	("* [Loading VB] %d verts, %d Kb",vCount,(vCount*vSize)/1024);
+			u32 vCount = fs->r_u32();
+			u32 vSize = D3DXGetDeclVertexSize(dcl, 0);
+			Msg	("* [Loading VB] %d verts, %d Kb", vCount, (vCount * vSize) / 1024);
 
-			// Create and fill
-			//BYTE*	pData		= 0;
-			//R_CHK				(HW.pDevice->CreateVertexBuffer(vCount*vSize,dwUsage,0,D3DPOOL_MANAGED,&_VB[i],0));
-			//R_CHK				(_VB[i]->Lock(0,0,(void**)&pData,0));
-//			CopyMemory			(pData,fs().pointer(),vCount*vSize);
-			//fs->r				(pData,vCount*vSize);
-			//_VB[i]->Unlock		();
-			//	TODO: DX10: Check fragmentation.
-			//	Check if buffer is less then 2048 kb
-			BYTE*	pData		= xr_alloc<BYTE>(vCount*vSize);
-			fs->r				(pData,vCount*vSize);
-			dx10BufferUtils::CreateVertexBuffer	(&_VB[i], pData, vCount*vSize);
-			HW.stats_manager.increment_stats_vb	(_VB[i]);
+			BYTE* pData = xr_alloc<BYTE>(vCount*vSize);
+			fs->r(pData, vCount * vSize);
+			dx10BufferUtils::CreateVertexBuffer(&_VB[i], pData, vCount*vSize);
+			HW.stats_manager.increment_stats_vb(_VB[i]);
 			xr_free(pData);
-
-//			fs->advance			(vCount*vSize);
 		}
-		fs->close				();
+		fs->close();
 	}
 
 	// Index buffers
@@ -266,24 +261,11 @@ void CRender::LoadBuffers		(CStreamReader *base_fs,	BOOL _alternative)
 		{
 			u32 iCount			= fs->r_u32	();
 			Msg("* [Loading IB] %d indices, %d Kb",iCount,(iCount*2)/1024);
-
-			// Create and fill
-			//BYTE*	pData		= 0;
-			//R_CHK				(HW.pDevice->CreateIndexBuffer(iCount*2,dwUsage,D3DFMT_INDEX16,D3DPOOL_MANAGED,&_IB[i],0));
-			//R_CHK				(_IB[i]->Lock(0,0,(void**)&pData,0));
-//			CopyMemory			(pData,fs().pointer(),iCount*2);
-			//fs->r				(pData,iCount*2);
-			//_IB[i]->Unlock		();
-
-			//	TODO: DX10: Check fragmentation.
-			//	Check if buffer is less then 2048 kb
 			BYTE*	pData		= xr_alloc<BYTE>(iCount*2);
 			fs->r				(pData,iCount*2);
 			dx10BufferUtils::CreateIndexBuffer	(&_IB[i], pData, iCount*2);
 			HW.stats_manager.increment_stats_ib	(_IB[i]);
 			xr_free(pData);
-
-//			fs().advance		(iCount*2);
 		}
 		fs->close				();
 	}
@@ -324,27 +306,27 @@ struct b_portal
 };
 #pragma pack(pop)
 
-
 void CRender::LoadSectors(IReader* fs)
 {
 	// allocate memory for portals
 	u32 size = fs->find_chunk(fsL_PORTALS); 
-	R_ASSERT(0==size%sizeof(b_portal));
-	u32 count = size/sizeof(b_portal);
-	Portals.resize	(count);
-	for (u32 c=0; c<count; c++)
-		Portals[c]	= xr_new<CPortal> ();
+	R_ASSERT(0 == size % sizeof(b_portal));
+	u32 count = size / sizeof(b_portal);
+	Portals.resize(count);
+	for (u32 c = 0; c < count; c++)
+		Portals[c] = xr_new<CPortal>();
 
 	// load sectors
 	IReader* S = fs->open_chunk(fsL_SECTORS);
-	for (u32 i=0; ; i++)
+	for (u32 i = 0; ; i++)
 	{
 		IReader* P = S->open_chunk(i);
-		if (0==P) break;
+		if (0 == P)
+			break;
 
-		CSector* __S		= xr_new<CSector> ();
-		__S->load			(*P);
-		Sectors.push_back	(__S);
+		CSector* __S = xr_new<CSector>();
+		__S->load(*P);
+		Sectors.push_back(__S);
 
 		P->close();
 	}
@@ -353,41 +335,34 @@ void CRender::LoadSectors(IReader* fs)
 	// load portals
 	if (count) 
 	{
-		CDB::Collector	CL;
-		fs->find_chunk	(fsL_PORTALS);
-		for (i=0; i<count; i++)
+		CDB::Collector CL;
+		fs->find_chunk(fsL_PORTALS);
+		for (i = 0; i < count; i++)
 		{
-			b_portal	P;
-			fs->r		(&P,sizeof(P));
-			CPortal*	__P	= (CPortal*)Portals[i];
-			__P->Setup	(P.vertices.begin(),P.vertices.size(),
-				(CSector*)getSector(P.sector_front),
-				(CSector*)getSector(P.sector_back));
-			for (u32 j=2; j<P.vertices.size(); j++)
-				CL.add_face_packed_D(
-				P.vertices[0],P.vertices[j-1],P.vertices[j],
-				u32(i)
-				);
+			b_portal P;
+			fs->r(&P, sizeof(P));
+			CPortal* __P = (CPortal*)Portals[i];
+			__P->Setup(P.vertices.begin(),P.vertices.size(), (CSector*)getSector(P.sector_front), (CSector*)getSector(P.sector_back));
+			for (u32 j = 2; j<P.vertices.size(); j++)
+				CL.add_face_packed_D(P.vertices[0],P.vertices[j-1],P.vertices[j], u32(i));
 		}
-		if (CL.getTS()<2)
+		if (CL.getTS() < 2)
 		{
-			Fvector					v1,v2,v3;
-			v1.set					(-20000.f,-20000.f,-20000.f);
-			v2.set					(-20001.f,-20001.f,-20001.f);
-			v3.set					(-20002.f,-20002.f,-20002.f);
-			CL.add_face_packed_D	(v1,v2,v3,0);
+			Fvector v1,v2,v3;
+			v1.set(-20000.f,-20000.f,-20000.f);
+			v2.set(-20001.f,-20001.f,-20001.f);
+			v3.set(-20002.f,-20002.f,-20002.f);
+			CL.add_face_packed_D(v1,v2,v3,0);
 		}
 
 		// build portal model
-		rmPortals = xr_new<CDB::MODEL> ();
-		rmPortals->build	(CL.getV(),int(CL.getVS()),CL.getT(),int(CL.getTS()));
-	} else {
+		rmPortals = xr_new<CDB::MODEL>();
+		rmPortals->build(CL.getV(),int(CL.getVS()),CL.getT(),int(CL.getTS()));
+	}
+	else 
+	{
 		rmPortals = 0;
 	}
-
-	// debug
-	//	for (int d=0; d<Sectors.size(); d++)
-	//		Sectors[d]->DebugDump	();
 
 	pLastSector = 0;
 }

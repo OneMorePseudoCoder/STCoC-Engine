@@ -703,8 +703,6 @@ BOOL IsOutOfVirtualMemory()
 
 //#define RUSSIAN_BUILD
 
-ENGINE_API bool g_dedicated_server = false;
-
 // forward declaration for Parental Control checks
 BOOL IsPCAccessAllowed();
 
@@ -1126,10 +1124,7 @@ void CApplication::LoadDraw()
     if (!Device.Begin())
 		return;
 
-    if (g_dedicated_server)
-        Console->OnRender();
-    else
-        load_draw_internal();
+    load_draw_internal();
 
     Device.End();
 }

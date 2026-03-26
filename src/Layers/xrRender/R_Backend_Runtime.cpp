@@ -13,48 +13,39 @@
 #include "../xrRenderDX10/StateManager/dx10ShaderResourceStateCache.h"
 #endif	USE_DX10
 
-void CBackend::OnFrameEnd	()
+void CBackend::OnFrameEnd()
 {
-	if (!g_dedicated_server)
-	{
 #if defined(USE_DX10) || defined(USE_DX11)
-		HW.pContext->ClearState();
-		Invalidate			();
+	HW.pContext->ClearState();
+	Invalidate();
 #else	//	USE_DX10
 
-		for (u32 stage=0; stage<HW.Caps.raster.dwStages; stage++)
-			CHK_DX(HW.pDevice->SetTexture(0,0));
-		CHK_DX				(HW.pDevice->SetStreamSource	(0,0,0,0));
-		CHK_DX				(HW.pDevice->SetIndices			(0));
-		CHK_DX				(HW.pDevice->SetVertexShader	(0));
-		CHK_DX				(HW.pDevice->SetPixelShader		(0));
-		Invalidate			();
+	for (u32 stage = 0; stage < HW.Caps.raster.dwStages; stage++)
+		CHK_DX(HW.pDevice->SetTexture(0, 0));
+	CHK_DX(HW.pDevice->SetStreamSource(0, 0, 0, 0));
+	CHK_DX(HW.pDevice->SetIndices(0));
+	CHK_DX(HW.pDevice->SetVertexShader(0));
+	CHK_DX(HW.pDevice->SetPixelShader(0));
+	Invalidate();
 #endif	//	USE_DX10
-	}
 }
 
 void CBackend::OnFrameBegin	()
 {
-	if (!g_dedicated_server)   
-	{
-		PGO					(Msg("PGO:*****frame[%d]*****",RDEVICE.dwFrame));
+	PGO(Msg("PGO:*****frame[%d]*****", RDEVICE.dwFrame));
 #if defined(USE_DX10) || defined(USE_DX11)
-		Invalidate();
-
-		HW.SwitchVP(RImplementation.currentViewPort);
-		RImplementation.Target->SwitchViewPort(RImplementation.currentViewPort);
-		// Below are just in case
-		RImplementation.Target->u_setrt(Device.dwWidth, Device.dwHeight, HW.pBaseRT, NULL, NULL, HW.pBaseZB); // Set up HW base as RT and ZB
-		//	DX9 sets base rt nd base zb by default
-		RImplementation.rmNormal();
-		//set_RT				(HW.pBaseRT);
-		//set_ZB				(HW.pBaseZB);
+	Invalidate();
+	HW.SwitchVP(RImplementation.currentViewPort);
+	RImplementation.Target->SwitchViewPort(RImplementation.currentViewPort);
+	// Below are just in case
+	RImplementation.Target->u_setrt(Device.dwWidth, Device.dwHeight, HW.pBaseRT, NULL, NULL, HW.pBaseZB); // Set up HW base as RT and ZB
+	//	DX9 sets base rt nd base zb by default
+	RImplementation.rmNormal();
 #endif	//	USE_DX10
-		Memory.mem_fill		(&stat,0,sizeof(stat));
-		Vertex.Flush		();
-		Index.Flush			();
-		set_Stencil			(FALSE);
-	}
+	Memory.mem_fill(&stat, 0, sizeof(stat));
+	Vertex.Flush();
+	Index.Flush();
+	set_Stencil(FALSE);
 }
 
 void CBackend::Invalidate	()

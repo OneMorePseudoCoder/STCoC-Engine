@@ -22,65 +22,61 @@
 
 extern bool b_shniaganeed_pp;
 
-CMainMenu*	MainMenu()	{return (CMainMenu*)g_pGamePersistent->m_pMainMenu; };
+CMainMenu*	MainMenu() { return (CMainMenu*)g_pGamePersistent->m_pMainMenu; };
+
 //----------------------------------------------------------------------------------
-#define INIT_MSGBOX(_box, _template)	{ _box = xr_new<CUIMessageBoxEx>(); _box->InitMessageBox(_template);}
+#define INIT_MSGBOX(_box, _template) { _box = xr_new<CUIMessageBoxEx>(); _box->InitMessageBox(_template);}
 //----------------------------------------------------------------------------------
 
-CMainMenu::CMainMenu	()
+CMainMenu::CMainMenu()
 {
-	m_Flags.zero					();
-	m_startDialog					= NULL;
-	m_screenshotFrame				= u32(-1);
-	g_pGamePersistent->m_pMainMenu	= this;
-	if (Device.b_is_Ready)			OnDeviceCreate();  	
-	ReadTextureInfo					();
-	CUIXmlInit::InitColorDefs		();
-	g_btnHint						= NULL;
-	g_statHint						= NULL;
-	m_deactivated_frame				= 0;	
+	m_Flags.zero();
+	m_startDialog = NULL;
+	m_screenshotFrame = u32(-1);
+	g_pGamePersistent->m_pMainMenu = this;
+	if (Device.b_is_Ready)
+		OnDeviceCreate();  	
+	ReadTextureInfo();
+	CUIXmlInit::InitColorDefs();
+	g_btnHint = NULL;
+	g_statHint = NULL;
+	m_deactivated_frame = 0;	
 	
-	//-------------------------------------------
+	m_start_time = 0;
 
-	m_start_time					= 0;
-
-	if(!g_dedicated_server)
-	{
-		g_btnHint						= xr_new<CUIButtonHint>();
-		g_statHint						= xr_new<CUIButtonHint>();
-	}
+	g_btnHint = xr_new<CUIButtonHint>();
+	g_statHint = xr_new<CUIButtonHint>();
 	
-	Device.seqFrame.Add		(this,REG_PRIORITY_LOW-1000);
+	Device.seqFrame.Add	(this, REG_PRIORITY_LOW - 1000);
 }
 
-CMainMenu::~CMainMenu	()
+CMainMenu::~CMainMenu()
 {
-	Device.seqFrame.Remove			(this);
-	xr_delete						(g_btnHint);
-	xr_delete						(g_statHint);
-	xr_delete						(m_startDialog);
-	g_pGamePersistent->m_pMainMenu	= NULL;
+	Device.seqFrame.Remove(this);
+	xr_delete(g_btnHint);
+	xr_delete(g_statHint);
+	xr_delete(m_startDialog);
+	g_pGamePersistent->m_pMainMenu = NULL;
 }
 
 void CMainMenu::ReadTextureInfo()
 {
 	FS_FileSet fset;
-	FS.file_list(fset, "$game_config$", FS_ListFiles,"ui\\textures_descr\\*.xml");
-	FS_FileSetIt fit	= fset.begin();
-	FS_FileSetIt fit_e	= fset.end();
+	FS.file_list(fset, "$game_config$", FS_ListFiles, "ui\\textures_descr\\*.xml");
+	FS_FileSetIt fit = fset.begin();
+	FS_FileSetIt fit_e = fset.end();
 
-	for( ;fit!=fit_e; ++fit)
+	for ( ;fit != fit_e; ++fit)
 	{
     	string_path	fn1, fn2,fn3;
-        _splitpath	((*fit).name.c_str(),fn1,fn2,fn3,0);
-		xr_strcat(fn3,".xml");
+        _splitpath((*fit).name.c_str(), fn1, fn2, fn3, 0);
+		xr_strcat(fn3, ".xml");
 
 		CUITextureMaster::ParseShTexInfo(fn3);
 	}
-
 }
 
-extern ENGINE_API BOOL	bShowPauseString;
+extern ENGINE_API BOOL bShowPauseString;
 
 void CMainMenu::Activate(bool bActivate)
 {
@@ -91,9 +87,6 @@ void CMainMenu::Activate(bool bActivate)
 		return;
 
 	if ((m_screenshotFrame == Device.dwFrame) || (m_screenshotFrame == Device.dwFrame-1) || (m_screenshotFrame == Device.dwFrame+1))	
-		return;
-
-	if (g_dedicated_server && bActivate) 
 		return;
 
 	if (bActivate)
@@ -115,6 +108,7 @@ void CMainMenu::Activate(bool bActivate)
 
 		m_Flags.set(flRestorePauseStr, bShowPauseString);
 		bShowPauseString = FALSE;
+
 		if (!m_Flags.test(flRestorePause))
 			Device.Pause(TRUE, TRUE, FALSE, "mm_activate2");
 
@@ -158,7 +152,7 @@ void CMainMenu::Activate(bool bActivate)
 		};
 
 		if (m_Flags.test(flRestoreConsole))
-			Console->Show			();
+			Console->Show();
 
 		if (!m_Flags.test(flRestorePause))
 			Device.Pause(FALSE, TRUE, FALSE, "mm_deactivate1");
@@ -403,9 +397,7 @@ void CMainMenu::OnFrame()
 }
 
 void CMainMenu::OnDeviceCreate()
-{
-}
-
+{}
 
 void CMainMenu::Screenshot(IRender_interface::ScreenshotMode mode, LPCSTR name)
 {
@@ -468,41 +460,39 @@ void CMainMenu::OnDeviceReset()
 		SetNeedVidRestart();
 }
 
-// -------------------------------------------------------------------------------------------------
-
-LPCSTR AddHyphens( LPCSTR c )
+LPCSTR AddHyphens(LPCSTR c)
 {
 	static string64 buf;
 
 	u32 sz = xr_strlen(c);
 	u32 j = 0; 
 
-	for ( u32 i = 1; i <= 3; ++i )
+	for (u32 i = 1; i <= 3; ++i)
 	{
-		buf[i*5 - 1] = '-';
+		buf[i * 5 - 1] = '-';
 	}
 
-	for ( u32 i = 0; i < sz; ++i )
+	for (u32 i = 0; i < sz; ++i)
 	{
-		j = i + iFloor(i/4.0f);
+		j = i + iFloor(i / 4.0f);
 		buf[j] = c[i];		
 	}
-	buf[sz + iFloor(sz/4.0f)] = 0;
+	buf[sz + iFloor(sz / 4.0f)] = 0;
 
 	return buf;
 }
 
-LPCSTR DelHyphens( LPCSTR c )
+LPCSTR DelHyphens(LPCSTR c)
 {
 	static string64 buf;
 
-	u32 sz = xr_strlen( c );
-	u32 sz1 = _min( iFloor(sz/4.0f), 3 );
+	u32 sz = xr_strlen(c);
+	u32 sz1 = _min(iFloor(sz / 4.0f), 3);
 
 	u32 j = 0; 
-	for ( u32 i = 0; i < sz - sz1; ++i )
+	for (u32 i = 0; i < sz - sz1; ++i)
 	{
-		j = i + iFloor( i/4.0f );
+		j = i + iFloor(i / 4.0f);
 		buf[i] = c[j];		
 	}
 	buf[sz - sz1] = 0;

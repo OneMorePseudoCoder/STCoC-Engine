@@ -37,59 +37,59 @@
 
 CGamePersistent::CGamePersistent(void)
 {
-	m_bPickableDOF				= false;
-	m_game_params.m_e_game_type	= eGameIDNoGame;
-	ambient_effect_next_time	= 0;
-	ambient_effect_stop_time	= 0;
-	ambient_particles			= 0;
+	m_bPickableDOF = false;
+	m_game_params.m_e_game_type = eGameIDNoGame;
+	ambient_effect_next_time = 0;
+	ambient_effect_stop_time = 0;
+	ambient_particles = 0;
 
-	ambient_effect_wind_start	= 0.f;
-	ambient_effect_wind_in_time	= 0.f;
-	ambient_effect_wind_end		= 0.f;
-	ambient_effect_wind_out_time= 0.f;
-	ambient_effect_wind_on		= false;
+	ambient_effect_wind_start = 0.f;
+	ambient_effect_wind_in_time = 0.f;
+	ambient_effect_wind_end = 0.f;
+	ambient_effect_wind_out_time = 0.f;
+	ambient_effect_wind_on = false;
 
-	ZeroMemory					(ambient_sound_next_time, sizeof(ambient_sound_next_time));
+	ZeroMemory(ambient_sound_next_time, sizeof(ambient_sound_next_time));
 	
-	m_pUI_core					= NULL;
-	m_pMainMenu					= NULL;
-	m_intro						= NULL;
-	m_intro_event.bind			(this, &CGamePersistent::start_logo_intro);
+	m_pUI_core = NULL;
+	m_pMainMenu = NULL;
+	m_intro = NULL;
+	m_intro_event.bind(this, &CGamePersistent::start_logo_intro);
 #ifdef DEBUG
-	m_frame_counter				= 0;
-	m_last_stats_frame			= u32(-2);
+	m_frame_counter = 0;
+	m_last_stats_frame = u32(-2);
 #endif
 
-	BOOL	bDemoMode	= (0!=strstr(Core.Params,"-demomode "));
+	BOOL bDemoMode = (0 != strstr(Core.Params, "-demomode "));
 	if (bDemoMode)
 	{
-		string256	fname;
-		LPCSTR		name	=	strstr(Core.Params,"-demomode ") + 10;
-		sscanf				(name,"%s",fname);
-		R_ASSERT2			(fname[0],"Missing filename for 'demomode'");
-		Msg					("- playing in demo mode '%s'",fname);
-		pDemoFile			=	FS.r_open	(fname);
-		Device.seqFrame.Add	(this);
-		eDemoStart			=	Engine.Event.Handler_Attach("GAME:demo",this);	
-		uTime2Change		=	0;
+		string256 fname;
+		LPCSTR name = strstr(Core.Params, "-demomode ") + 10;
+		sscanf(name, "%s", fname);
+		R_ASSERT2(fname[0], "Missing filename for 'demomode'");
+		Msg("- playing in demo mode '%s'", fname);
+		pDemoFile = FS.r_open(fname);
+		Device.seqFrame.Add(this);
+		eDemoStart = Engine.Event.Handler_Attach("GAME:demo", this);	
+		uTime2Change = 0;
 	} 
 	else 
 	{
-		pDemoFile			=	NULL;
-		eDemoStart			=	NULL;
+		pDemoFile = NULL;
+		eDemoStart = NULL;
 	}
 
-	eQuickLoad				= Engine.Event.Handler_Attach("Game:QuickLoad",this);
-	Fvector3* DofValue		= Console->GetFVectorPtr("r2_dof");
-	SetBaseDof				(*DofValue);
+	eQuickLoad = Engine.Event.Handler_Attach("Game:QuickLoad", this);
+	Fvector3* DofValue = Console->GetFVectorPtr("r2_dof");
+	SetBaseDof(*DofValue);
 }
 
 CGamePersistent::~CGamePersistent(void)
 {	
-	FS.r_close					(pDemoFile);
-	Device.seqFrame.Remove		(this);
-	Engine.Event.Handler_Detach	(eDemoStart,this);
-	Engine.Event.Handler_Detach	(eQuickLoad,this);
+	FS.r_close(pDemoFile);
+	Device.seqFrame.Remove(this);
+	Engine.Event.Handler_Detach(eDemoStart, this);
+	Engine.Event.Handler_Detach(eQuickLoad, this);
 }
 
 void CGamePersistent::RegisterModel(IRenderVisual* V)
@@ -100,54 +100,60 @@ void CGamePersistent::RegisterModel(IRenderVisual* V)
 	case MT_SKELETON_ANIM:
 	case MT_SKELETON_RIGID:
 	{
-		u16 def_idx		= GMLib.GetMaterialIdx("default_object");
-		R_ASSERT2		(GMLib.GetMaterialByIdx(def_idx)->Flags.is(SGameMtl::flDynamic),"'default_object' - must be dynamic");
-		IKinematics* K	= smart_cast<IKinematics*>(V); VERIFY(K);
+		u16 def_idx = GMLib.GetMaterialIdx("default_object");
+		R_ASSERT2(GMLib.GetMaterialByIdx(def_idx)->Flags.is(SGameMtl::flDynamic), "'default_object' - must be dynamic");
+		IKinematics* K = smart_cast<IKinematics*>(V);
+		VERIFY(K);
 		int cnt = K->LL_BoneCount();
-		for (u16 k=0; k<cnt; k++){
-			CBoneData& bd	= K->LL_GetData(k); 
-			if (*(bd.game_mtl_name)){
+		for (u16 k = 0; k<cnt; k++)
+		{
+			CBoneData& bd = K->LL_GetData(k); 
+			if (*(bd.game_mtl_name))
+			{
 				bd.game_mtl_idx	= GMLib.GetMaterialIdx(*bd.game_mtl_name);
-				R_ASSERT2(GMLib.GetMaterialByIdx(bd.game_mtl_idx)->Flags.is(SGameMtl::flDynamic),"Required dynamic game material");
-			}else{
+				R_ASSERT2(GMLib.GetMaterialByIdx(bd.game_mtl_idx)->Flags.is(SGameMtl::flDynamic), "Required dynamic game material");
+			}
+			else
+			{
 				bd.game_mtl_idx	= def_idx;
 			}
 		}
-	}break;
+	}
+	break;
 	}
 }
 
-extern void clean_game_globals	();
-extern void init_game_globals	();
+extern void clean_game_globals();
+extern void init_game_globals();
 
 void CGamePersistent::OnAppStart()
 {
 	// load game materials
-	GMLib.Load					();
-	init_game_globals			();
-	__super::OnAppStart			();
-	m_pUI_core					= xr_new<ui_core>();
-	m_pMainMenu					= xr_new<CMainMenu>();
+	GMLib.Load();
+	init_game_globals();
+	__super::OnAppStart();
+	m_pUI_core = xr_new<ui_core>();
+	m_pMainMenu = xr_new<CMainMenu>();
 }
 
-void CGamePersistent::OnAppEnd	()
+void CGamePersistent::OnAppEnd()
 {
-	if(m_pMainMenu->IsActive())
+	if (m_pMainMenu->IsActive())
 		m_pMainMenu->Activate(false);
 
-	xr_delete					(m_pMainMenu);
-	xr_delete					(m_pUI_core);
+	xr_delete(m_pMainMenu);
+	xr_delete(m_pUI_core);
 
-	__super::OnAppEnd			();
+	__super::OnAppEnd();
 
-	clean_game_globals			();
+	clean_game_globals();
 
-	GMLib.Unload				();
+	GMLib.Unload();
 }
 
-void CGamePersistent::Start		(LPCSTR op)
+void CGamePersistent::Start(LPCSTR op)
 {
-	__super::Start				(op);
+	__super::Start(op);
 }
 
 void CGamePersistent::Disconnect()
@@ -155,9 +161,9 @@ void CGamePersistent::Disconnect()
 	// destroy ambient particles
 	CParticlesObject::Destroy(ambient_particles);
 
-	__super::Disconnect			();
+	__super::Disconnect();
 	// stop all played emitters
-	::Sound->stop_emitters		();
+	::Sound->stop_emitters();
 	m_game_params.m_e_game_type	= eGameIDNoGame;
 }
 
@@ -165,50 +171,50 @@ void CGamePersistent::Disconnect()
 
 void CGamePersistent::OnGameStart()
 {
-	__super::OnGameStart		();
-	UpdateGameType				();
+	__super::OnGameStart();
+	UpdateGameType();
 }
 
-void CGamePersistent::UpdateGameType			()
+void CGamePersistent::UpdateGameType()
 {
-	__super::UpdateGameType		();
+	__super::UpdateGameType();
 
 	m_game_params.m_e_game_type = eGameIDSingle;
 
 	g_current_keygroup = _sp;
 }
 
-void CGamePersistent::OnGameEnd	()
+void CGamePersistent::OnGameEnd()
 {
-	__super::OnGameEnd					();
+	__super::OnGameEnd();
 
-	xr_delete							(g_stalker_animation_data_storage);
-	xr_delete							(g_stalker_velocity_holder);
+	xr_delete(g_stalker_animation_data_storage);
+	xr_delete(g_stalker_velocity_holder);
 }
 
 void CGamePersistent::WeathersUpdate()
 {
-	if (g_pGameLevel && !g_dedicated_server)
+	if (g_pGameLevel)
 	{
-		CActor* actor				= smart_cast<CActor*>(Level().CurrentViewEntity());
-		BOOL bIndoor				= TRUE;
+		CActor* actor = smart_cast<CActor*>(Level().CurrentViewEntity());
+		BOOL bIndoor = TRUE;
 		if (actor) 
-			bIndoor			= actor->renderable_ROS()->get_luminocity_hemi()<0.05f;
+			bIndoor = actor->renderable_ROS()->get_luminocity_hemi() < 0.05f;
 
-		int data_set				= (Random.randF()<(1.f-Environment().CurrentEnv->weight))?0:1; 
+		int data_set = (Random.randF()<(1.f-Environment().CurrentEnv->weight)) ? 0 : 1; 
 		
-		CEnvDescriptor* const current_env	= Environment().Current[0]; 
-		VERIFY						(current_env);
+		CEnvDescriptor* const current_env = Environment().Current[0]; 
+		VERIFY(current_env);
 
-		CEnvDescriptor* const _env	= Environment().Current[data_set]; 
-		VERIFY						(_env);
+		CEnvDescriptor* const _env = Environment().Current[data_set]; 
+		VERIFY(_env);
 
-		CEnvAmbient* env_amb		= _env->env_ambient;
+		CEnvAmbient* env_amb = _env->env_ambient;
 		if (env_amb) 
 		{
-			CEnvAmbient::SSndChannelVec& vec	= current_env->env_ambient->get_snd_channels();
-			CEnvAmbient::SSndChannelVecIt I		= vec.begin();
-			CEnvAmbient::SSndChannelVecIt E		= vec.end();
+			CEnvAmbient::SSndChannelVec& vec = current_env->env_ambient->get_snd_channels();
+			CEnvAmbient::SSndChannelVecIt I = vec.begin();
+			CEnvAmbient::SSndChannelVecIt E = vec.end();
 			
 			for (u32 idx=0; I!=E; ++I,++idx) 
 			{
@@ -356,7 +362,7 @@ void CGamePersistent::start_logo_intro()
 	if(Device.dwPrecacheFrame==0)
 	{
 		m_intro_event.bind		(this, &CGamePersistent::update_logo_intro);
-		if (!g_dedicated_server && 0==xr_strlen(m_game_params.m_game_or_spawn) && NULL==g_pGameLevel)
+		if (0==xr_strlen(m_game_params.m_game_or_spawn) && NULL==g_pGameLevel)
 		{
 			VERIFY				(NULL==m_intro);
 			m_intro				= xr_new<CUISequencer>();
@@ -445,39 +451,45 @@ void CGamePersistent::update_game_intro()
 extern CUISequencer * g_tutorial;
 extern CUISequencer * g_tutorial2;
 
-void CGamePersistent::OnFrame	()
+void CGamePersistent::OnFrame()
 {
-	if(Device.dwPrecacheFrame==5 && m_intro_event.empty())
+	if (Device.dwPrecacheFrame == 5 && m_intro_event.empty())
 	{
-		m_intro_event.bind			(this,&CGamePersistent::game_loaded);
+		m_intro_event.bind(this, &CGamePersistent::game_loaded);
 	}
 
-	if(g_tutorial2)
+	if (g_tutorial2)
 	{ 
-		g_tutorial2->Destroy	();
-		xr_delete				(g_tutorial2);
+		g_tutorial2->Destroy();
+		xr_delete(g_tutorial2);
 	}
 
-	if(g_tutorial && !g_tutorial->IsActive())
+	if (g_tutorial && !g_tutorial->IsActive())
 	{
 		xr_delete(g_tutorial);
 	}
-	if(0==Device.dwFrame%200)
+
+	if (0 == Device.dwFrame % 200)
 		CUITextureMaster::FreeCachedShaders();
 
 #ifdef DEBUG
 	++m_frame_counter;
 #endif
-	if (!g_dedicated_server && !m_intro_event.empty())	m_intro_event();
+
+	if (!m_intro_event.empty())
+		m_intro_event();
 	
-	if(!g_dedicated_server && Device.dwPrecacheFrame==0 && !m_intro && m_intro_event.empty())
+	if (Device.dwPrecacheFrame == 0 && !m_intro && m_intro_event.empty())
 		load_screen_renderer.stop();
 
-	if( !m_pMainMenu->IsActive() )
+	if (!m_pMainMenu->IsActive())
 		m_pMainMenu->DestroyInternal(false);
 
-	if(!g_pGameLevel)			return;
-	if(!g_pGameLevel->bReady)	return;
+	if (!g_pGameLevel)
+		return;
+
+	if(!g_pGameLevel->bReady)
+		return;
 
 	if(Device.Paused())
 	{
