@@ -17,7 +17,6 @@
 #include "clsid_game.h"
 
 // client entities includes
-#ifndef NO_XR_GAME
 #include "../xrEngine/std_classes.h"
 #include "level.h"
 #include "gamepersistent.h"
@@ -162,15 +161,11 @@
 
 #include "smart_cover_object.h"
 #include "..\xrGame\HolderEntityObject.h"
-#endif // NO_XR_GAME
 
-#ifndef NO_XR_GAME
 #define ADD(a, b, c, d) add<a, b>(c, d)
-#endif
 
 void CObjectFactory::register_classes	()
 {
-#ifndef NO_XR_GAME
 	// client entities
 	add<CLevel>													(CLSID_GAME_LEVEL				,"level");
 	add<CGamePersistent>										(CLSID_GAME_PERSISTANT			,"game");
@@ -183,7 +178,6 @@ void CObjectFactory::register_classes	()
 	add<CUIGameSP>												(CLSID_GAME_UI_SINGLE			,"game_ui_single");
 
 	ADD(CActor					,CSE_ALifeCreatureActor			,CLSID_OBJECT_ACTOR				,"actor");
-#endif // NO_XR_GAME
 
 	// server entities
 	add<CSE_ALifeGroupTemplate<CSE_ALifeMonsterBase> >			(CLSID_AI_FLESH_GROUP			,"flesh_group");

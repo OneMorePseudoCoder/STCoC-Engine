@@ -18,32 +18,29 @@
 class CObjectFactory 
 {
 public:
-#ifndef NO_XR_GAME
-	typedef ObjectFactory::CLIENT_BASE_CLASS			CLIENT_BASE_CLASS;
-#endif
-	typedef ObjectFactory::SERVER_BASE_CLASS			SERVER_BASE_CLASS;
+	typedef ObjectFactory::CLIENT_BASE_CLASS CLIENT_BASE_CLASS;
+	typedef ObjectFactory::SERVER_BASE_CLASS SERVER_BASE_CLASS;
 
-#ifndef NO_XR_GAME
 	typedef ObjectFactory::CLIENT_SCRIPT_BASE_CLASS	CLIENT_SCRIPT_BASE_CLASS;
-#endif
 	typedef ObjectFactory::SERVER_SCRIPT_BASE_CLASS	SERVER_SCRIPT_BASE_CLASS;
 
 protected:
-	struct CObjectItemPredicate {
+	struct CObjectItemPredicate 
+	{
 		IC	bool					operator()							(const CObjectItemAbstract *item1, const CObjectItemAbstract *item2) const;
 		IC	bool					operator()							(const CObjectItemAbstract *item, const CLASS_ID &clsid) const;
 	};
 
-	struct CObjectItemPredicateCLSID {
+	struct CObjectItemPredicateCLSID 
+	{
 		CLASS_ID					m_clsid;
-
 		IC							CObjectItemPredicateCLSID			(const CLASS_ID &clsid);
 		IC	bool					operator()							(const CObjectItemAbstract *item) const;
 	};
 
-	struct CObjectItemPredicateScript {
+	struct CObjectItemPredicateScript 
+	{
 		shared_str					m_script_clsid_name;
-
 		IC							CObjectItemPredicateScript			(const shared_str &script_clsid_name);
 		IC	bool					operator()							(const CObjectItemAbstract *item) const;
 	};
@@ -65,25 +62,16 @@ protected:
 	template <typename _unknown_type>
 	IC		void						add								(const CLASS_ID &clsid, LPCSTR script_clsid);
 
-#ifndef NO_XR_GAME
 	template <typename _client_type, typename _server_type>
 	IC		void						add								(const CLASS_ID &clsid, LPCSTR script_clsid);
 	IC		const CObjectItemAbstract	&item							(const CLASS_ID &clsid) const;
-#else
-	IC		const CObjectItemAbstract	*item							(const CLASS_ID &clsid, bool no_assert) const;
-#endif
 
 public:
 										CObjectFactory					();
 	virtual								~CObjectFactory					();
 			void						init							();
-#ifndef NO_XR_GAME
 	IC		CLIENT_BASE_CLASS			*client_object					(const CLASS_ID &clsid) const;
 	IC		SERVER_BASE_CLASS			*server_object					(const CLASS_ID &clsid, LPCSTR section) const;
-#else
-	IC		SERVER_BASE_CLASS			*server_object					(const CLASS_ID &clsid, LPCSTR section) const;
-#endif
-
 	IC		int							script_clsid					(const CLASS_ID &clsid) const;
 			void						register_script					() const;
 			void						register_script_class			(LPCSTR client_class, LPCSTR server_class, LPCSTR clsid, LPCSTR script_clsid);
